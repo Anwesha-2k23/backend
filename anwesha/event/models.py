@@ -2,7 +2,7 @@ from django.db import models
 
 class Events(models.Model) :
 
-    id                    = models.CharField(unique=True, max_length=10);  
+    id                    = models.CharField(unique=True, max_length=10)
     name                  = models.CharField(max_length=100)
     organizer             = models.CharField(max_length=100)
     venue                 = models.CharField(max_length=255)
