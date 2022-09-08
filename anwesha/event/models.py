@@ -7,15 +7,13 @@ class Events(models.Model) :
     name                  = models.CharField(max_length=100)
     organizer             = models.CharField(max_length=100)
     venue                 = models.CharField(max_length=255)
-    start_time            = models.DateTimefield()
+    date                  = models.dateField()
+    start_time            = models.DateTimefield(blank=True)
     description           = models.TextField()
-    end_time              = models.DateTimeField()
+    end_time              = models.DateTimeField(blank=True)
     prize                 = models.CharField(max_length=150)
     registration_fee      = models.DecimalField(max_digits=8, decimal_places=2)
-    video                 = models.URLField()
+    video                 = models.URLField(blank=True)
     max_team_size         = models.SmallIntegerField()
-    registration_deadline = models.DateTimeField()
-    poster                = models.URLField()
-
-    class Meta:
-        db_table = 'events'
+    registration_deadline = models.DateTimeField(blank=True)
+    poster                = models.URLField(blank=True)
