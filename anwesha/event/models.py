@@ -19,4 +19,3 @@ class Events(models.Model) :
     
     class Meta:
         db_table = 'events'
-    
