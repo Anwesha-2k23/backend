@@ -3,11 +3,11 @@ from django.db import models
 class Events(models.Model) :
 
     #enum for type
-    id                    = models.CharField(unique=True, max_length=10);  
+    id                    = models.CharField(unique=True, max_length=10, primary_key=True)  
     name                  = models.CharField(max_length=100)
     organizer             = models.CharField(max_length=100)
     venue                 = models.CharField(max_length=255)
-    start_time            = models.DateTimefield()
+    start_time            = models.DateTimeField()
     description           = models.TextField()
     end_time              = models.DateTimeField()
     prize                 = models.CharField(max_length=150)
