@@ -128,3 +128,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     BASE_DIR / "file",
 ]
+
+
+# CSRF_COOKIE_SECURE = False
+
+# SMTP Configuration for sending mails for reset password work
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT =  587 # insert email port (mignt not be correct port)
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '' #<insert account that will send emails>
+EMAIL_HOST_PASSWORD = '' # <insert password of email>
