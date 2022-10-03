@@ -7,6 +7,7 @@ from .models import User
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.auth.hashers import make_password, check_password
 
 class register(View):
     def post(self, request):
@@ -31,9 +32,11 @@ class register(View):
 
         
             new_user = User.objects.create(anwesha_id=anwesha_id, password=password, phone_number=phone_number, email_id=email_id, full_name=full_name, college_name=college_name, profile_photo=profile_photo, age=age, is_email_verified=is_email_verified, user_type=user_type, qr_code=qr_code, gender=gender, accomadation_selected=accomadation_selected, is_profile_completed=is_profile_completed, instagram_id=instagram_id, facebook_id=facebook_id, time_of_registration=time_of_registration)
-
+            password = make_password(password)
             new_user.save()
             return JsonResponse({'message': 'User created successfully!'})
+        else:
+            return JsonResponse({'message': 'User not created!'})
 
 
 class Login(View):
