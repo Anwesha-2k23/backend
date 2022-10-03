@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
 
-from .serializers import UserSerializers
+# from .serializers import UserSerializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from utility import hashpassword

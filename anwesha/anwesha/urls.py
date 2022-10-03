@@ -20,9 +20,9 @@ from django.urls import path, include
 from user.urls import user_urls
 from event.urls import event_urls
 
-from rest_framework.routers import DefaultRouter
+# from rest_framework.routers import DefaultRouter
 from user import views
-from user.views import UserViewSet
+# from user.views import UserViewSet
 
 
 
