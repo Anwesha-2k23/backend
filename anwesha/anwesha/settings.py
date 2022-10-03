@@ -40,7 +40,17 @@ INSTALLED_APPS = [
     'user',
     'event',
     'map',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+    ],
+
+
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -128,3 +138,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+
+CSRF_COOKIE_SECURE = True
+
+
+#  reference fot login api and authanaction :- https://www.youtube.com/watch?v=ARy_ozfWj-I
