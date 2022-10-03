@@ -40,7 +40,17 @@ INSTALLED_APPS = [
     'user',
     'event',
     'map',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+    ],
+
+
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -134,11 +144,5 @@ STATICFILES_DIRS = [
 
 CSRF_COOKIE_SECURE = True
 
-# SMTP Configuration for sending mails for reset password work
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT =  587 # insert email port (mignt not be correct port)
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'djangobackendtester001@gmail.com' #<insert account that will send emails>
-EMAIL_HOST_PASSWORD = 'AnweshaBackend001' # <insert password of email>
+#  reference fot login api and authanaction :- https://www.youtube.com/watch?v=ARy_ozfWj-I
