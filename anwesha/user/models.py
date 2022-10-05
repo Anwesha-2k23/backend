@@ -14,7 +14,7 @@ class User(models.Model):
     full_name               = models.CharField(max_length=100)
     college_name            = models.CharField(max_length=150)
     profile_photo           = models.URLField(blank=True , null=True)
-    age                     = models.SmallIntegerField(blank=True , null=True)
+    age                     = models.SmallIntegerField(blank=True, null=True)
     is_email_verified       = models.BooleanField(default=False)
     user_type               = models.CharField(max_length=11 , choices=User_type_choice.choices)
     qr_code                 = models.ImageField(blank=True , null=True)
