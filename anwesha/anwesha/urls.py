@@ -22,7 +22,7 @@ from event.urls import event_urls
 
 from rest_framework.routers import DefaultRouter
 from user import views
-from user.views import UserViewSet
+# from user.views import UserViewSet
 
 
 
