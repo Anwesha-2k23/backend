@@ -4,21 +4,21 @@ from django.db import models
 ###  Code for TAGS  ###
 # Add your Event Tags here
 TAGS =(
-    ("1", "Tech"),
-    ("2", "Cultural"),
-    ("3", "Sports"),
-    ("4", "Gaming"),
-    ("5", "Workshop"),
-    ("6", "Other"),
+    ("1", "tech"),
+    ("2", "cultural"),
+    ("3", "sports"),
+    ("4", "gaming"),
+    ("5", "workshop"),
+    ("6", "other"),
 )
 
 tag_dict = {
-    "Tech":"1",
-    "Cultural":"2",
-    "Sports":"3",
-    "Gaming":"4",
-    "Workshop":"5",
-    "Other":"6",
+    "tech":"1",
+    "cultural":"2",
+    "sports":"3",
+    "gaming":"4",
+    "workshop":"5",
+    "other":"6",
 }
 ### Code for TAGS ends here ###
 

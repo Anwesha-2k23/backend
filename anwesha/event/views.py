@@ -30,9 +30,7 @@ class Get_Event_By_Tags(View):
     def get(self, request, event_tags):
         try:
             events = Events.objects.filter(tags=tag_dict[event_tags])
-            print(events)
             events = list(events.values())
-            print(events)
             return JsonResponse(events, safe=False)
         except:
             response = JsonResponse({'message': 'An Error occured'})
