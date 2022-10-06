@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
 import json
-from .models import Events
+from .models import Events,tag_dict
 
 # Create your views here.
 
@@ -22,6 +22,16 @@ class Get_Event_By_Id(View):
             event = event.__dict__
             event.pop('_state')
             return JsonResponse(event, safe=False)
+        except:
+            response = JsonResponse({'message': 'An Error occured'})
+            return response
+
+class Get_Event_By_Tags(View):
+    def get(self, request, event_tags):
+        try:
+            events = Events.objects.filter(tags=tag_dict[event_tags])
+            events = list(events.values())
+            return JsonResponse(events, safe=False)
         except:
             response = JsonResponse({'message': 'An Error occured'})
             return response
