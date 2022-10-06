@@ -16,3 +16,7 @@ class Events(models.Model) :
     max_team_size         = models.SmallIntegerField()
     registration_deadline = models.DateTimeField(blank=True)
     poster                = models.URLField(blank=True)
+
+    def __str__(self):
+        return self.name
+    
