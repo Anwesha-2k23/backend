@@ -1,4 +1,27 @@
+from ctypes.wintypes import tagSIZE
 from django.db import models
+
+###  Code for TAGS  ###
+# Add your Event Tags here
+TAGS =(
+    ("1", "Tech"),
+    ("2", "Cultural"),
+    ("3", "Sports"),
+    ("4", "Gaming"),
+    ("5", "Workshop"),
+    ("6", "Other"),
+)
+
+tag_dict = {
+    "Tech":"1",
+    "Cultural":"2",
+    "Sports":"3",
+    "Gaming":"4",
+    "Workshop":"5",
+    "Other":"6",
+}
+### Code for TAGS ends here ###
+
 
 class Events(models.Model) :
 
@@ -16,7 +39,10 @@ class Events(models.Model) :
     max_team_size         = models.SmallIntegerField()
     registration_deadline = models.DateTimeField(blank=True)
     poster                = models.URLField(blank=True)
+    tags                  = models.CharField(max_length=40,choices=TAGS, blank=True)
 
     def __str__(self):
         return self.name
     
+
+
