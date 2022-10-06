@@ -15,45 +15,21 @@ from django.contrib.auth.hashers import make_password, check_password
 # from .serializers import UserSerializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from utility import hashpassword
 import datetime
 import jwt
-from utility import hashpassword
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# from rest_framework import viewsets
-# from rest_framework.permissions import IsAuthenticated
-
-# class UserViewSet(viewsets.ModelViewSet):
-#     permission_classes = IsAuthenticated
-#     serializer_class = UserSerializers
-#     queryset = User.objects.all()
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-# class Login(APIView):
-#     def login(request):
-#         print(request)  
-#         if request.method == 'POST':
-#             anwesha_id  = request.POST.get('anwesha_id')
-#             password = request.POST.get('password')
-#             user = User.objects.filter(anwesha_id =anwesha_id , password=password)
-#             if user:
-#                 this_user = list(User.objects.get(anwesha_id =anwesha_id , password=password))
-#                 return JsonResponse(this_user)
-#             else:
-#                 return JsonResponse({'message': 'Invalid Anwesha ID or Password'})
-#         else:
-#             return JsonResponse({'message': 'Invalid Request'})
+from utility import hashpassword, createId, isemail
 
 class Login(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')
         if not token:
+            print("no token")
             raise AuthenticationError("Unauthenticated")
 
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithm = 'HS256')
+            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
+            print("expired")
             raise AuthenticationError("Cookie Expired")
 
         user = User.objects.get(anwesha_id = payload["id"]) 
@@ -67,7 +43,7 @@ class Login(APIView):
     def post(self, request):
         response = Response()
         try:
-            anwesha_id = request.data['anwesha_id']
+            username = request.data['username']
             password = request.data['password']
         except:
             response.data = { "status" : "Incorrrect input" }
@@ -75,17 +51,23 @@ class Login(APIView):
 
         password = hashpassword(password)
         print(password)
-        user = User.objects.filter(anwesha_id =anwesha_id , password=password)
+        user = None
+        if isemail(username):
+            user = User.objects.filter(email_id = username, password = password)
+        else:
+            user = User.objects.filter(anwesha_id = username , password=password)
+        
         if user:
             this_user = user[0]
 
             payload = {
-                "id" : anwesha_id,
+                "id" : this_user.anwesha_id,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
                 "iat": datetime.datetime.utcnow()
             }
 
-            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256').decode('utf-8')
+            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+            
             response.data = { "success" : True , "name" : this_user.full_name}
             response.set_cookie(key='jwt', value=token, httponly=True)
 
@@ -109,25 +91,23 @@ class LogOut(APIView):
 
 
 
-# @csrf_exempt
-# # @ensure_csrf_cookie
-# def logout(request):
-#         if request.method == 'POST':
-#             request.session.clear()
-#             return JsonResponse({'message': 'Logout Successful'})
-#         else:
-#             return JsonResponse({'message': 'Invalid Request'})
-
 class register(View):
     def post(self, request):
-        if request.method == 'POST':
-            password=request.POST.get('password')
-            email_id=request.POST.get('email_id')
-            full_name=request.POST.get('full_name')
-            password = hashpassword(password)
-        
-            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password)
-            new_user.save()
-            return JsonResponse({'message': 'User created successfully!'})
-        else:
-            return JsonResponse({'message': 'User not created!'})
+        password=request.POST.get('password')
+        email_id=request.POST.get('email_id')
+        full_name=request.POST.get('full_name')
+
+        password = hashpassword(password)
+        anwesha_id = createId("ANW", 10)
+
+        # checking if the created id is not already present in the database
+        check_exist = User.objects.filter(anwesha_id = anwesha_id)
+        while check_exist:  # very unlikely to happen
+            anwesha_id = createId("ANW", 10)
+            check_exist = User.objects.filter(anwesha_id = anwesha_id)
+
+        # code for sending email
+
+        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
+        new_user.save()
+        return JsonResponse({'message': 'User created successfully!'})
