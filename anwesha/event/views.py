@@ -25,3 +25,4 @@ class Get_Event_By_Id(View):
         except:
             response = JsonResponse({'message': 'An Error occured'})
             return response
+
