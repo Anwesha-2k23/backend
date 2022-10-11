@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'user',
     'event',
     'map',
+    'participant',
     'rest_framework',
 ]
 
