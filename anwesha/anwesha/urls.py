@@ -19,6 +19,7 @@ from django.conf import settings
 from django.urls import path, include
 from user.urls import user_urls
 from event.urls import event_urls
+from participant.urls import participant_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -31,4 +32,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include(user_urls)),
     path('event/', include(event_urls)),
+    path('participant/', include(participant_urls)),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
