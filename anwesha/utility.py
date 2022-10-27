@@ -1,6 +1,7 @@
 import hashlib
 import uuid
 import jwt
+import qrcode
 
 def hashpassword(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -44,3 +45,7 @@ def get_anwesha_id(request):
         return id
     except jwt.ExpiredSignatureError:
         return None
+
+def generate_qr(anwesha_id):
+    img = qrcode.make(anwesha_id)
+    img.save(anwesha_id+".png")
