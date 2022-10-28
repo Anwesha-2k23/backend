@@ -101,12 +101,13 @@ class LogOut(APIView):
 
 
 
-class register(View):
+class register(APIView):
     def post(self, request):
-        password=request.POST.get('password')
-        email_id=request.POST.get('email_id')
-        full_name=request.POST.get('full_name')
+        password = request.data['password']
+        email_id = request.data['email_id']
+        full_name = request.data['full_name']
 
+        print(password)
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
 
@@ -132,10 +133,13 @@ class editProfile(APIView):
         token = request.COOKIES.get('jwt')
         if not token:
             raise AuthenticationError("Unauthenticated")
+
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithm = 'HS256')
+            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
+            print("expired")
             raise AuthenticationError("Cookie Expired")
+
         user = User.objects.get(anwesha_id = payload["id"]) 
         response = Response()
         response.data = {
@@ -154,23 +158,25 @@ class editProfile(APIView):
         return response
 
     def post(self ,request):
-       token = request.COOKIES.get('jwt')
-       if not token:
-           raise AuthenticationError("Unauthenticated")      
-       try:
-           payload = jwt.decode(token, "ufdhufhufgefef", algorithm = 'HS256')
-       except jwt.ExpiredSignatureError:
-           raise AuthenticationError("Cookie Expired")      
-       user = User.objects.get(anwesha_id = payload["id"]) 
-       user.phone_number = request.data['phone_number']
-       user.full_name  = request.data['full_name ']
-       user.college_name = request.data['college_name']
-       user.age = request.data['age']
-       user.user_type  = request.data['user_type ']
-       user. instagram_id = request.data['instagram_id']
-       user.facebook_id  = request.data['facebook_id']
-       user.save()
-       response = Response()
-       response.data = user
-       user.save()
-       return response
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationError("Unauthenticated")
+
+        try:
+            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+        except jwt.ExpiredSignatureError:
+            print("expired")
+            raise AuthenticationError("Cookie Expired")
+        user = User.objects.get(anwesha_id = payload["id"]) 
+        user.phone_number = request.data['phone_number']
+        user.full_name  = request.data['full_name ']
+        user.college_name = request.data['college_name']
+        user.age = request.data['age']
+        user.user_type  = request.data['user_type ']
+        user. instagram_id = request.data['instagram_id']
+        user.facebook_id  = request.data['facebook_id']
+        user.save()
+        response = Response()
+        response.data = user
+        user.save()
+        return response
