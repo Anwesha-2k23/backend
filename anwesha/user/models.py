@@ -22,7 +22,7 @@ class User(models.Model):
 
     anwesha_id              = models.CharField(max_length=10, primary_key=True, unique=True)
     password                = models.CharField(max_length=100)
-    phone_number            = models.CharField(max_length=13)
+    phone_number            = models.CharField(max_length=13, default="")
     email_id                = models.EmailField(unique= True)
     full_name               = models.CharField(max_length=100)
     college_name            = models.CharField(max_length=150 , blank=True, null=True)
