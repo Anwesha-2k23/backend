@@ -162,13 +162,14 @@ class editProfile(APIView):
        except jwt.ExpiredSignatureError:
            raise AuthenticationError("Cookie Expired")      
        user = User.objects.get(anwesha_id = payload["id"]) 
-       user.update(phone_number = request.data['phone_number'])
-       user.update(full_name  = request.data['full_name '])
-       user.update(college_name = request.data['college_name'])
-       user.update(age = request.data['age'])
-       user.update(user_type  = request.data['user_type '])
-       user.update( instagram_id = request.data['instagram_id'])
-       user.update(facebook_id  = request.data['facebook_id'])
+       user.phone_number = request.data['phone_number']
+       user.full_name  = request.data['full_name ']
+       user.college_name = request.data['college_name']
+       user.age = request.data['age']
+       user.user_type  = request.data['user_type ']
+       user. instagram_id = request.data['instagram_id']
+       user.facebook_id  = request.data['facebook_id']
+       user.save()
        response = Response()
        response.data = user
        user.save()
