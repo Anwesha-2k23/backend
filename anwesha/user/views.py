@@ -1,3 +1,4 @@
+import shutil
 from urllib import request
 from django.shortcuts import render
 from django.http.request import HttpRequest
@@ -17,7 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
 import jwt
-from utility import hashpassword, createId, isemail
+from utility import hashpassword, createId, isemail, generate_qr
 
 def alluser(request):
     if request.method == 'GET':
@@ -109,6 +110,8 @@ class register(View):
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
 
+        generate_qr(anwesha_id=anwesha_id)
+
         # checking if the created id is not already present in the database
         check_exist = User.objects.filter(anwesha_id = anwesha_id)
         while check_exist:  # very unlikely to happen
@@ -118,6 +121,8 @@ class register(View):
         # code for sending email
 
         new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
+        new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+        shutil.move(anwesha_id+".png","static/qrcode/")
         new_user.save()
         return JsonResponse({'message': 'User created successfully!'})
 
