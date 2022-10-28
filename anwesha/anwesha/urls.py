@@ -20,6 +20,7 @@ from django.urls import path, include
 from user.urls import user_urls
 from event.urls import event_urls
 from participant.urls import participant_urls
+from sponsor.urls import sponsor_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -33,4 +34,5 @@ urlpatterns = [
     path('user/', include(user_urls)),
     path('event/', include(event_urls)),
     path('participant/', include(participant_urls)),
+    path('sponsors/', include(sponsor_urls)),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
