@@ -1,5 +1,6 @@
 from ctypes.wintypes import tagSIZE
 from django.db import models
+import datetime
 
 ###  Code for TAGS  ###
 # Add your Event Tags here
@@ -44,5 +45,14 @@ class Events(models.Model) :
     def __str__(self):
         return self.name
     
+class Gallery(models.Model):
+    name = models.CharField(max_length=100)
+    file = models.FileField(upload_to='static/gallery/',default=None)
+    type = models.CharField(max_length=10, choices=(("1", "image"), ("2", "video")),default="1")   
+    tags = models.CharField(max_length=40,choices=TAGS, blank=True)
+    timestamp = models.DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self):
+        return self.name
 
 

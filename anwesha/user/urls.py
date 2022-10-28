@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views  import LogOut, alluser, Login, editProfile ,register
+from .views  import LogOut, alluser, Login, editProfile, register
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import views as auth_views
 

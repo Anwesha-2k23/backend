@@ -158,25 +158,24 @@ class editProfile(APIView):
         return response
 
     def post(self ,request):
-        token = request.COOKIES.get('jwt')
-        if not token:
-            raise AuthenticationError("Unauthenticated")
+       token = request.COOKIES.get('jwt')
+       if not token:
+           raise AuthenticationError("Unauthenticated")      
+       try:
+           payload = jwt.decode(token, "ufdhufhufgefef", algorithm = 'HS256')
+       except jwt.ExpiredSignatureError:
+           raise AuthenticationError("Cookie Expired")      
+       user = User.objects.get(anwesha_id = payload["id"]) 
+       user.phone_number = request.data['phone_number']
+       user.full_name  = request.data['full_name ']
+       user.college_name = request.data['college_name']
+       user.age = request.data['age']
+       user.user_type  = request.data['user_type ']
+       user. instagram_id = request.data['instagram_id']
+       user.facebook_id  = request.data['facebook_id']
+       user.save()
+       response = Response()
+       response.data = user
+       user.save()
+       return response
 
-        try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            print("expired")
-            raise AuthenticationError("Cookie Expired")
-        user = User.objects.get(anwesha_id = payload["id"]) 
-        user.phone_number = request.data['phone_number']
-        user.full_name  = request.data['full_name ']
-        user.college_name = request.data['college_name']
-        user.age = request.data['age']
-        user.user_type  = request.data['user_type ']
-        user. instagram_id = request.data['instagram_id']
-        user.facebook_id  = request.data['facebook_id']
-        user.save()
-        response = Response()
-        response.data = user
-        user.save()
-        return response
