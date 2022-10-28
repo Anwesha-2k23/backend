@@ -1,6 +1,6 @@
 from datetime import datetime
 from random import choices
-from time import clock_settime
+# from time import clock_settime
 from django.db import models
 from user.models import User
 from event.models import Events

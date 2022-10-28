@@ -1,5 +1,7 @@
 import hashlib
 import uuid
+import jwt
+import qrcode
 
 def hashpassword(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -29,3 +31,21 @@ def isemail( email_id : str):
     if "@" in email_id:
         return True
     return False
+
+def get_anwesha_id(request):
+    """
+        Utility function to get the anwesha_id of the user from the cookie
+    """
+    token = request.COOKIES.get('jwt')
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+        id = payload["id"]
+        return id
+    except jwt.ExpiredSignatureError:
+        return None
+
+def generate_qr(anwesha_id):
+    img = qrcode.make(anwesha_id)
+    img.save(anwesha_id+".png")
