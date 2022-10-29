@@ -5,6 +5,7 @@ from hashlib import blake2b
 from re import T
 from secrets import choice
 from django.db import models
+from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 
 class User(models.Model):
     class User_type_choice(models.TextChoices):
@@ -26,11 +27,11 @@ class User(models.Model):
     email_id                = models.EmailField(unique= True)
     full_name               = models.CharField(max_length=100)
     college_name            = models.CharField(max_length=150 , blank=True, null=True)
-    profile_photo           = models.ImageField(blank=True , null=True , upload_to = 'static/profile_photo' , default = 'static/images.jpeg')
+    profile_photo           = models.ImageField( storage = ProfileImageStorage, blank = True, null = True)
     age                     = models.SmallIntegerField(blank=True , null=True)
     is_email_verified       = models.BooleanField(default=False)
     user_type               = models.CharField(max_length=11 , choices=User_type_choice.choices , blank = True , null = True)
-    qr_code                 = models.ImageField(blank=True , null=True , upload_to = 'static/qrcode')
+    qr_code                 = models.ImageField(storage = PublicQrStorage, blank = True, null = True)
     gender                  = models.CharField(max_length=20 , choices =Gender.choices , blank=True, null=True)
     accomadation_selected   = models.BooleanField(default=False)
     is_profile_completed    = models.BooleanField(default=False)
