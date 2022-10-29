@@ -1,3 +1,4 @@
+import shutil
 from urllib import request
 from django.shortcuts import render
 from django.http.request import HttpRequest
@@ -19,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
 import jwt
-from utility import hashpassword, createId, isemail
+from utility import hashpassword, createId, isemail, generate_qr
 
 def alluser(request):
     if request.method == 'GET':
@@ -102,15 +103,16 @@ class LogOut(APIView):
 
 
 
-class register(View):
+class register(APIView):
     def post(self, request):
-        password=request.POST.get('password')
-        email_id=request.POST.get('email_id')
-        full_name=request.POST.get('full_name')
-        print(request.POST)
+        password = request.data['password']
+        email_id = request.data['email_id']
+        full_name = request.data['full_name']
 
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
+
+        generate_qr(anwesha_id=anwesha_id)
 
         # checking if the created id is not already present in the database
         check_exist = User.objects.filter(anwesha_id = anwesha_id)
@@ -124,6 +126,8 @@ class register(View):
         e.send_mail(mail)
 
         new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
+        new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+        shutil.move(anwesha_id+".png","static/qrcode/")
         new_user.save()
         return JsonResponse({'message': 'User created successfully!'})
 
@@ -133,10 +137,13 @@ class editProfile(APIView):
         token = request.COOKIES.get('jwt')
         if not token:
             raise AuthenticationError("Unauthenticated")
+
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithm = 'HS256')
+            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
+            print("expired")
             raise AuthenticationError("Cookie Expired")
+
         user = User.objects.get(anwesha_id = payload["id"]) 
         response = Response()
         response.data = {
@@ -163,14 +170,16 @@ class editProfile(APIView):
        except jwt.ExpiredSignatureError:
            raise AuthenticationError("Cookie Expired")      
        user = User.objects.get(anwesha_id = payload["id"]) 
-       user.update(phone_number = request.data['phone_number'])
-       user.update(full_name  = request.data['full_name '])
-       user.update(college_name = request.data['college_name'])
-       user.update(age = request.data['age'])
-       user.update(user_type  = request.data['user_type '])
-       user.update( instagram_id = request.data['instagram_id'])
-       user.update(facebook_id  = request.data['facebook_id'])
+       user.phone_number = request.data['phone_number']
+       user.full_name  = request.data['full_name ']
+       user.college_name = request.data['college_name']
+       user.age = request.data['age']
+       user.user_type  = request.data['user_type ']
+       user. instagram_id = request.data['instagram_id']
+       user.facebook_id  = request.data['facebook_id']
+       user.save()
        response = Response()
        response.data = user
        user.save()
        return response
+

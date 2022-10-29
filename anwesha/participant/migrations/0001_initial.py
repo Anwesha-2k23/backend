@@ -35,11 +35,11 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Leader',
+            name='Team',
             fields=[
                 ('team_id', models.CharField(max_length=10, primary_key=True, serialize=False, unique=True)),
                 ('event_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='event.events')),
-                ('leader_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='user.user')),
+                ('Team_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='user.user')),
             ],
         ),
     ]

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,11 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-fp*7b=2$ei(yig67kp1q6wgr+wsk45nx_218x7)n!$l)gba*ox'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.environ.get('DEBUG')
 ALLOWED_HOSTS = []
 
 
@@ -40,7 +41,9 @@ INSTALLED_APPS = [
     'user',
     'event',
     'map',
+    'sponsor',
     'participant',
+    'campus_ambassador',
     'rest_framework',
 ]
 
@@ -83,12 +86,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'anwesha.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME') ,
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+    },
+    'local': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
@@ -136,10 +146,27 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR , 'static')
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR , 'static')
+# ]
 
 
 CSRF_COOKIE_SECURE = True
 
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'anwesha-storage'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_STATIC_LOCATION = 'static'
+AWS_PUBLIC_MEDIA_LOCATION1 = 'static/profile'
+AWS_PUBLIC_MEDIA_LOCATION2 = 'static/qr'
+AWS_PUBLIC_MEDIA_LOCATION3 = 'static/gallery'
+
+STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
+STATICFILES_STORAGE = 'anwesha.storage_backend.StaticStorage'
+DEFAULT_PROFILE_STORAGE = 'anwesha.storage_backend.ProfileImageStorage'
+DEFAULT_QR_STORAGE = 'amwesha.storage_backend.ProfileQRStorage'
+DEFAULT_GALLERY_STORAGE = 'anwesha.storage_backend.PublicGalleryStorage'
