@@ -92,11 +92,11 @@ WSGI_APPLICATION = 'anwesha.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'anwesha',
-        'USER': 'admin',
-        'PASSWORD': '3crlymKBBmiYGYosZ2Uc',
-        'HOST': 'anwesha.cyvexllhquam.ap-south-1.rds.amazonaws.com',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME') ,
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     },
     'local': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -153,9 +153,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_COOKIE_SECURE = True
 
-AWS_ACCESS_KEY_ID = 'AKIAWRWY3ORD6XKNH5PC'
-AWS_SECRET_ACCESS_KEY = '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'
-# PPASSWORD = 'eTU&x+]0VEsvc(E'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'anwesha-storage'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 AWS_S3_OBJECT_PARAMETERS = {
