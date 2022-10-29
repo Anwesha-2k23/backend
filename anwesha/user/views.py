@@ -12,6 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
 
+from gmailauth import Email
+
 # from .serializers import UserSerializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -105,6 +107,7 @@ class register(View):
         password=request.POST.get('password')
         email_id=request.POST.get('email_id')
         full_name=request.POST.get('full_name')
+        print(request.POST)
 
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
@@ -116,6 +119,9 @@ class register(View):
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
         # code for sending email
+        e = Email('anwesha.backed@gmail.com')
+        mail = e.create_mail(to=email_id, subject='testing', text='Hello World', html='<h1 style="color:red">Hello World</h1>')
+        e.send_mail(mail)
 
         new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
         new_user.save()
