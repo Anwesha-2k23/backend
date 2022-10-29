@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,12 +86,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'anwesha.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'anwesha',
+        'USER': 'admin',
+        'PASSWORD': '3crlymKBBmiYGYosZ2Uc',
+        'HOST': 'anwesha.cyvexllhquam.ap-south-1.rds.amazonaws.com',
+        'PORT': '3306',
+    },
+    'local': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
@@ -137,10 +146,28 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR , 'static')
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR , 'static')
+# ]
 
 
 CSRF_COOKIE_SECURE = True
 
+AWS_ACCESS_KEY_ID = 'AKIAWRWY3ORD6XKNH5PC'
+AWS_SECRET_ACCESS_KEY = '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'
+# PPASSWORD = 'eTU&x+]0VEsvc(E'
+AWS_STORAGE_BUCKET_NAME = 'anwesha-storage'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_STATIC_LOCATION = 'static'
+AWS_PUBLIC_MEDIA_LOCATION1 = 'static/profile'
+AWS_PUBLIC_MEDIA_LOCATION2 = 'static/qr'
+AWS_PUBLIC_MEDIA_LOCATION3 = 'static/gallery'
+
+STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
+STATICFILES_STORAGE = 'anwesha.storage_backend.StaticStorage'
+DEFAULT_PROFILE_STORAGE = 'anwesha.storage_backend.ProfileImageStorage'
+DEFAULT_QR_STORAGE = 'amwesha.storage_backend.ProfileQRStorage'
+DEFAULT_GALLERY_STORAGE = 'anwesha.storage_backend.PublicGalleryStorage'
