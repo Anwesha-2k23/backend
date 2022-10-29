@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import imp
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
@@ -21,6 +22,7 @@ from user.urls import user_urls
 from event.urls import event_urls
 from participant.urls import participant_urls
 from sponsor.urls import sponsor_urls
+from campus_ambassador.urls import campus_ambassador_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -35,4 +37,5 @@ urlpatterns = [
     path('event/', include(event_urls)),
     path('participant/', include(participant_urls)),
     path('sponsors/', include(sponsor_urls)),
+    path('campasambassador/', include(campus_ambassador_urls)),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
