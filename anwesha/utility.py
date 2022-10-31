@@ -2,6 +2,8 @@ import hashlib
 import uuid
 import jwt
 import qrcode
+from django.core.files import File
+from io import BytesIO
 
 def hashpassword(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -48,4 +50,8 @@ def get_anwesha_id(request):
 
 def generate_qr(anwesha_id):
     img = qrcode.make(anwesha_id)
-    img.save(anwesha_id+".png")
+    blob = BytesIO()
+    img.save(blob, 'PNG')
+    qr = File(blob, name=anwesha_id+'.png')
+    return qr
+    # img.save(anwesha_id+".png")
