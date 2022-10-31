@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
 
+from gmailauth import Email
+
 # from .serializers import UserSerializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -107,7 +109,6 @@ class register(APIView):
         email_id = request.data['email_id']
         full_name = request.data['full_name']
 
-        print(password)
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
 
@@ -124,6 +125,9 @@ class register(APIView):
         new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id, qr_code=qr )
         # new_user.qr_code="static/qr/"+anwesha_id+".png"
         # shutil.move(anwesha_id+".png","static/qrcode/")
+        e = Email('anwesha.backed@gmail.com')
+        mail = e.create_mail(to=email_id, subject='testing', text='Hello World', html='<h1 style="color:red">Hello World</h1>')
+        e.send_mail(mail)
         return JsonResponse({'message': 'User created successfully!'})
 
 
