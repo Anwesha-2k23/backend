@@ -111,20 +111,19 @@ class register(APIView):
         password = hashpassword(password)
         anwesha_id = createId("ANW", 10)
 
-        generate_qr(anwesha_id=anwesha_id)
 
         # checking if the created id is not already present in the database
         check_exist = User.objects.filter(anwesha_id = anwesha_id)
+        print(check_exist)
         while check_exist:  # very unlikely to happen
             anwesha_id = createId("ANW", 10)
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
         # code for sending email
-
-        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
-        new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-        shutil.move(anwesha_id+".png","static/qrcode/")
-        new_user.save()
+        qr = generate_qr(anwesha_id=anwesha_id)
+        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id, qr_code=qr )
+        # new_user.qr_code="static/qr/"+anwesha_id+".png"
+        # shutil.move(anwesha_id+".png","static/qrcode/")
         return JsonResponse({'message': 'User created successfully!'})
 
 
