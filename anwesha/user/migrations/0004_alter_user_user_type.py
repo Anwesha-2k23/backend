@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0003_alter_user_accomadation_selected_and_more'),
+        ("user", "0003_alter_user_accomadation_selected_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='user_type',
-            field=models.CharField(choices=[('student', 'Student'), ('non-student', 'Non-Student'), ('alumni', 'Alumni')], max_length=11, null=True),
+            model_name="user",
+            name="user_type",
+            field=models.CharField(
+                choices=[
+                    ("student", "Student"),
+                    ("non-student", "Non-Student"),
+                    ("alumni", "Alumni"),
+                ],
+                max_length=11,
+                null=True,
+            ),
         ),
     ]

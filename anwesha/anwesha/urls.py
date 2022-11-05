@@ -26,16 +26,15 @@ from campus_ambassador.urls import campus_ambassador_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
+
 # from user.views import UserViewSet
 
 
-
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('user/', include(user_urls)),
-    path('event/', include(event_urls)),
-    path('participant/', include(participant_urls)),
-    path('sponsors/', include(sponsor_urls)),
-    path('campasambassador/', include(campus_ambassador_urls)),
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+    path("admin/", admin.site.urls),
+    path("user/", include(user_urls)),
+    path("event/", include(event_urls)),
+    path("participant/", include(participant_urls)),
+    path("sponsors/", include(sponsor_urls)),
+    path("campasambassador/", include(campus_ambassador_urls)),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -6,22 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('event', '0007_gallery'),
+        ("event", "0007_gallery"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='gallery',
-            name='element',
+            model_name="gallery",
+            name="element",
         ),
         migrations.AddField(
-            model_name='gallery',
-            name='file',
-            field=models.FileField(default=None, upload_to='static/gallery/'),
+            model_name="gallery",
+            name="file",
+            field=models.FileField(default=None, upload_to="static/gallery/"),
         ),
         migrations.AlterField(
-            model_name='gallery',
-            name='type',
-            field=models.CharField(choices=[('1', 'image'), ('2', 'video')], default='1', max_length=10),
+            model_name="gallery",
+            name="type",
+            field=models.CharField(
+                choices=[("1", "image"), ("2", "video")], default="1", max_length=10
+            ),
         ),
     ]

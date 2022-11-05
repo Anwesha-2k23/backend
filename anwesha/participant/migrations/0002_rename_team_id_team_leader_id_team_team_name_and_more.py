@@ -7,40 +7,59 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('event', '0006_alter_events_tags'),
-        ('user', '0011_alter_user_accomadation_selected_alter_user_email_id_and_more'),
-        ('participant', '0001_initial'),
+        ("event", "0006_alter_events_tags"),
+        ("user", "0011_alter_user_accomadation_selected_alter_user_email_id_and_more"),
+        ("participant", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='team',
-            old_name='Team_id',
-            new_name='leader_id',
+            model_name="team",
+            old_name="Team_id",
+            new_name="leader_id",
         ),
         migrations.AddField(
-            model_name='team',
-            name='team_name',
+            model_name="team",
+            name="team_name",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AlterField(
-            model_name='participant',
-            name='anwesha_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='user.user'),
+            model_name="participant",
+            name="anwesha_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="user.user",
+            ),
         ),
         migrations.AlterField(
-            model_name='participant',
-            name='event_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='event.events'),
+            model_name="participant",
+            name="event_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="event.events",
+            ),
         ),
         migrations.AlterField(
-            model_name='participant',
-            name='team_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='participant.team'),
+            model_name="participant",
+            name="team_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="participant.team",
+            ),
         ),
         migrations.AlterField(
-            model_name='payer',
-            name='team_id',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='participant.team'),
+            model_name="payer",
+            name="team_id",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="participant.team",
+            ),
         ),
     ]

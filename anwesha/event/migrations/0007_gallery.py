@@ -6,18 +6,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('event', '0006_alter_events_tags'),
+        ("event", "0006_alter_events_tags"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Gallery',
+            name="Gallery",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('element', models.URLField()),
-                ('type', models.CharField(choices=[('1', 'image'), ('2', 'video')], max_length=10)),
-                ('tags', models.CharField(blank=True, choices=[('1', 'tech'), ('2', 'cultural'), ('3', 'sports'), ('4', 'gaming'), ('5', 'workshop'), ('6', 'other')], max_length=40)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("element", models.URLField()),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[("1", "image"), ("2", "video")], max_length=10
+                    ),
+                ),
+                (
+                    "tags",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("1", "tech"),
+                            ("2", "cultural"),
+                            ("3", "sports"),
+                            ("4", "gaming"),
+                            ("5", "workshop"),
+                            ("6", "other"),
+                        ],
+                        max_length=40,
+                    ),
+                ),
             ],
         ),
     ]
