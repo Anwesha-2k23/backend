@@ -25,7 +25,7 @@ class register(APIView):
         # college_city=request.POST.get('college_city')
         # college_state=request.POST.get('college_state')
         # degree=request.POST.get('degree')
-        # years_of_study=request.POST.get('years_of_study')
+        years_of_study=request.POST.get('years_of_study')
         refferal_code=request.data['refferal_code']
         password=request.data['password']
         # intrests=request.POST.get('intrests')
@@ -50,7 +50,7 @@ class register(APIView):
             college_name = college_name , 
             # college_state = college_state , 
             # degree = degree , 
-            # years_of_study = years_of_study , 
+            years_of_study = years_of_study , 
             refferal_code = refferal_code , 
             # intrests = intrests , 
             # instagram_id = instagram_id , 
