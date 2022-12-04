@@ -61,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -171,5 +171,5 @@ STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
 DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
 DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
 DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
-CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
+# CSRF_COOKIE_SECURE = False
+# CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
