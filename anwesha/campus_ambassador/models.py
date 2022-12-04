@@ -22,7 +22,7 @@ class campus_ambassador(models.Model):
     college_city            = models.CharField(max_length=150 , blank=True, null=True , default= "Patna")
     college_state           = models.CharField(max_length=150 , blank=True, null=True , default="Bihar")
     degree                  = models.CharField(max_length=150 , blank=True, null=True , default="Btech") 
-    years_of_study          = models.DateField(blank=True, null=True , default="4 years")
+    years_of_study          = models.DateField(blank=True, null=True )
     refferal_code           = models.CharField(max_length=150 , blank=True, null=True) 
     profile_photo           = models.ImageField(blank=True , null=True , upload_to = 'static/profile_photo' , default = 'static/images.jpeg')
     age                     = models.SmallIntegerField(blank=True , null=True , default=19)
