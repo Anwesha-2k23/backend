@@ -103,29 +103,32 @@ class LogOut(APIView):
 
 class register(APIView):
     def post(self, request):
-        password = request.data['password']
-        email_id = request.data['email_id']
-        full_name = request.data['full_name']
+        try:
+            password = request.data['password']
+            email_id = request.data['email_id']
+            full_name = request.data['full_name']
 
-        # print(password)
-        password = hashpassword(password)
-        anwesha_id = createId("ANW", 10)
-
-        generate_qr(anwesha_id=anwesha_id)
-
-        # checking if the created id is not already present in the database
-        check_exist = User.objects.filter(anwesha_id = anwesha_id)
-        while check_exist:  # very unlikely to happen
+            # print(password)
+            password = hashpassword(password)
             anwesha_id = createId("ANW", 10)
+
+            generate_qr(anwesha_id=anwesha_id)
+
+            # checking if the created id is not already present in the database
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
+            while check_exist:  # very unlikely to happen
+                anwesha_id = createId("ANW", 10)
+                check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
-        # code for sending email
+            # code for sending email
 
-        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
-        new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-        shutil.move(anwesha_id+".png","static/qrcode/")
-        new_user.save()
-        return JsonResponse({'message': 'User created successfully!'})
+            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
+            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+            shutil.move(anwesha_id+".png","static/qrcode/")
+            new_user.save()
+            return JsonResponse({'message': 'User created successfully!'})
+        except:
+            return JsonResponse({'message': 'Error occured!'})
 
 
 class editProfile(APIView):
