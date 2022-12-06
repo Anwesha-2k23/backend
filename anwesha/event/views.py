@@ -12,7 +12,7 @@ def all_events(request):
         events = Events.objects.all()
         events = list(events.values())
         return JsonResponse(events, safe=False)
-    return JsonResponse({"message": "An Error occured"})
+    return JsonResponse({"message": "Invalid method" , "status": '405'})
 
 
 # CBV for fetching event by id
@@ -24,7 +24,7 @@ class Get_Event_By_Id(View):
             event.pop("_state")
             return JsonResponse(event, safe=False)
         except:
-            response = JsonResponse({"message": "An Error occured"})
+            response = JsonResponse({"message": "Invalid method" , "status": '405'})
             return response
 
 
@@ -35,5 +35,5 @@ class Get_Event_By_Tags(View):
             events = list(events.values())
             return JsonResponse(events, safe=False)
         except:
-            response = JsonResponse({"message": "An Error occured"})
+            response = JsonResponse({"message": "Invalid method" , "status": '405'})
             return response

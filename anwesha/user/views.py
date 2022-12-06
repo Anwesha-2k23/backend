@@ -46,7 +46,8 @@ class Login(APIView):
         response = Response()
         response.data = {
             "mssg": "welcome",
-            "full_name" : user.full_name
+            "full_name" : user.full_name,
+            "status" : "200"
         }
         return response
 
@@ -96,7 +97,7 @@ class LogOut(APIView):
         else:
             response = Response()
             response.delete_cookie('jwt')
-            response.data = {'message': 'Logout Successful'}
+            response.data = {'message': 'Logout Successful' , "status" : "200"}
             return response
 
 
@@ -126,9 +127,9 @@ class register(APIView):
             new_user.qr_code="static/qrcode/"+anwesha_id+".png"
             shutil.move(anwesha_id+".png","static/qrcode/")
             new_user.save()
-            return JsonResponse({'message': 'User created successfully!'})
+            return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
         except:
-            return JsonResponse({'message': 'Error occured!'})
+            return JsonResponse({'message': 'User not created' , "status" : "400"})
 
 
 class editProfile(APIView):

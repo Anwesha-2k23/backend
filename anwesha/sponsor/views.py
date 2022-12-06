@@ -10,13 +10,13 @@ def allsponsors(request):
         listed_sponsors = list(sponsors.values())
         return JsonResponse(listed_sponsors, safe=False)
     else:
-        response = JsonResponse({"message": "inavalid method"})
+        response = JsonResponse({"message": "inavalid method" , "status": "405"})
         return response
 
 
 class register(View):
     def get(self, request):
-        response = JsonResponse({"message": "inavalid method"})
+        response = JsonResponse({"message": "inavalid method" , "status": "405"})
         return response
 
     def post(self, request):
@@ -40,6 +40,6 @@ class register(View):
                 sponsor_linkdin_id=sponsor_linkdin_id,
             )
             new_sponsor.save()
-            return JsonResponse({"message": "Sponsor Successfully Added"})
+            return JsonResponse({"message": "Sponsor Successfully Added" , "status": "201"})
         except:
-            return JsonResponse({"message": "An Error Occured"})
+            return JsonResponse({"message": "Sponsor not added" , "status": "400"})

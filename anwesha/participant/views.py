@@ -22,9 +22,9 @@ class participant_register(View):
             )
             participant.save()
 
-            return JsonResponse({"message": "Participant registered successfully"})
+            return JsonResponse({"message": "Participant registered successfully" , "status": "201"})
         except:
-            return JsonResponse({"message": "An Error occured"})
+            return JsonResponse({"message": "Participant registration failed" , "status": "400"})
 
 
 class team_register(View):
@@ -46,9 +46,9 @@ class team_register(View):
                 team_id=team_id, event_id=event_id, leader_id=leader_id
             )
             new_team.save()
-            return JsonResponse({"message": "Team created successfully"})
+            return JsonResponse({"message": "Team created successfully" , "status": "201"})
         except:
-            return JsonResponse({"message": "An Error occured"})
+            return JsonResponse({"message": "Team creation failed" , "status": "400"})
 
 
 # FBV to get all events in which current user is registered
@@ -57,10 +57,10 @@ def myevents(request):
         try:
             anwesha_id = get_anwesha_id(request=request)
             if anwesha_id is None:
-                return JsonResponse({"message": "Unauthenticated"})
+                return JsonResponse({"message": "Unauthenticated" , "status": "401"})
             else:
                 my_events_list = Participant.objects.filter(anwesha_id=anwesha_id)
                 my_events_list = list(my_events_list.values())
                 return JsonResponse(my_events_list, safe=False)
         except:
-            return JsonResponse({"message": "An Error occured"})
+            return JsonResponse({"message": "Invalid method" , "status": "405"})
