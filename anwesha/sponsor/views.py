@@ -10,33 +10,36 @@ def allsponsors(request):
         listed_sponsors = list(sponsors.values())
         return JsonResponse(listed_sponsors, safe=False)
     else:
-        response = JsonResponse({"message": "inavalid method"})
+        response = JsonResponse({"message": "inavalid method" , "status": "405"})
         return response
 
 
 class register(View):
     def get(self, request):
-        response = JsonResponse({"message": "inavalid method"})
+        response = JsonResponse({"message": "inavalid method" , "status": "405"})
         return response
 
     def post(self, request):
-        # spons logo not uploaded in register api
-        sponsor_name = request.POST.get("sponsor_name ")
-        sponsor_phone_number = request.POST.get("sponsor_phone_number")
-        sponsor_email = request.POST.get("sponsor_email")
-        sponsor_link = request.POST.get("sponsor_link")
-        sponsor_instagram_id = request.POST.get("sponsor_instagram_id")
-        sponsor_facebook_id = request.POST.get("sponsor_facebook_id")
-        sponsor_linkdin_id = request.POST.get("sponsor_linkdin_id")
+        try:
+            # spons logo not uploaded in register api
+            sponsor_name = request.POST.get("sponsor_name ")
+            sponsor_phone_number = request.POST.get("sponsor_phone_number")
+            sponsor_email = request.POST.get("sponsor_email")
+            sponsor_link = request.POST.get("sponsor_link")
+            sponsor_instagram_id = request.POST.get("sponsor_instagram_id")
+            sponsor_facebook_id = request.POST.get("sponsor_facebook_id")
+            sponsor_linkdin_id = request.POST.get("sponsor_linkdin_id")
 
-        new_sponsor = Sponsors.objects.create(
-            sponsor_email=sponsor_email,
-            sponsor_name=sponsor_name,
-            sponsor_facebook_id=sponsor_facebook_id,
-            sponsor_instagram_id=sponsor_instagram_id,
-            sponsor_phone_number=sponsor_phone_number,
-            sponsor_link=sponsor_link,
-            sponsor_linkdin_id=sponsor_linkdin_id,
-        )
-        new_sponsor.save()
-        return JsonResponse({"message": "Sponsor Successfully Added"})
+            new_sponsor = Sponsors.objects.create(
+                sponsor_email=sponsor_email,
+                sponsor_name=sponsor_name,
+                sponsor_facebook_id=sponsor_facebook_id,
+                sponsor_instagram_id=sponsor_instagram_id,
+                sponsor_phone_number=sponsor_phone_number,
+                sponsor_link=sponsor_link,
+                sponsor_linkdin_id=sponsor_linkdin_id,
+            )
+            new_sponsor.save()
+            return JsonResponse({"message": "Sponsor Successfully Added" , "status": "201"})
+        except:
+            return JsonResponse({"message": "Sponsor not added" , "status": "400"})
