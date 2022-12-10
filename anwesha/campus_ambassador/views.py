@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from utility import hashpassword, createId, isemail
-from campus_ambassador.models import campus_ambassador
+from campus_ambassador.models import campus_ambassador_old
 from django.http import JsonResponse
 from rest_framework.views import APIView
 # Create your views here.
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 def all_campas_ambassodor(request):
     if request.method == 'GET':
-        events = campus_ambassador.objects.all()
+        events = campus_ambassador_old.objects.all()
         events = list(events.values())
         return JsonResponse(events, safe=False)
     return JsonResponse({'message': 'Invalid method', 'status': '405'}) 
@@ -40,10 +40,10 @@ class register(APIView):
             # anwesha_id=request.POST.get('anwesha_id')
             print("refferal code = ",phone_number)
             hpassword = hashpassword(password)
-            if campus_ambassador.objects.filter(email_id=email_id).exists():
+            if campus_ambassador_old.objects.filter(email_id=email_id).exists():
                 return JsonResponse({'message': 'Email already exists', 'status': '409'})
             else:
-                new_campus_ambassador = campus_ambassador.objects.create(
+                new_campus_ambassador_old = campus_ambassador_old.objects.create(
                     full_name=full_name,
                     email_id=email_id, 
                     password=hpassword, 
@@ -63,7 +63,7 @@ class register(APIView):
                     # date_of_birth = date_of_birth , 
                     # time_of_registration = time_of_registration
                     )
-                new_campus_ambassador.save()
+                new_campus_ambassador_old.save()
                 return JsonResponse({'message': 'Campus ambassador created successfully!' , 'status': '201'})
         except:
             return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'})
@@ -71,7 +71,7 @@ class register(APIView):
 class leaderBoardData(View):
     def get(self , request):
         try:
-            leaderBoard = campus_ambassador.objects.all().order_by('score')
+            leaderBoard = campus_ambassador_old.objects.all().order_by('score')
             leaderBoard = list(leaderBoard.values().reverse())
             return JsonResponse ({"leaderBoardData" : leaderBoard , "status" : "200"})
         except:
