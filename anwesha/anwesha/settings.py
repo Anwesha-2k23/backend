@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "map",
     "sponsor",
     "participant",
-    "campus_ambassador",
+    "CA",
     "rest_framework",
 ]
 
