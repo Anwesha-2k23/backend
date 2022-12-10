@@ -22,9 +22,11 @@ class register(APIView):
             email_id=request.data['email_id']
             full_name=request.data['full_name']
             college_name=request.data['college_name']
-            refferal_code=request.data['refferal_code']
+            try:
+                refferal_code=request.data['refferal_code']
+            except:
+                pass
             password=request.data['password']
-            print("refferal code = ",phone_number)
             hpassword = hashpassword(password)
             if(isemail(email_id) == False):
                 return JsonResponse({'message': 'Please enter valid email address', 'status': '409'})
