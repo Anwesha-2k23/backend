@@ -22,7 +22,8 @@ from user.urls import user_urls
 from event.urls import event_urls
 from participant.urls import participant_urls
 from sponsor.urls import sponsor_urls
-from campus_ambassador.urls import campus_ambassador_urls
+from campus_ambassador.urls import campus_ambassador_old_urls
+from CA.urls import campus_ambassador_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -36,5 +37,7 @@ urlpatterns = [
     path("event/", include(event_urls)),
     path("participant/", include(participant_urls)),
     path("sponsors/", include(sponsor_urls)),
-    path("campasambassador/", include(campus_ambassador_urls)),
+    path("campasambassadorold/", include(campus_ambassador_old_urls)), # old app
+    path("campasambassador/", include(campus_ambassador_urls)), # new CA
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
