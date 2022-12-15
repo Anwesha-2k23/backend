@@ -37,5 +37,6 @@ urlpatterns = [
     path("participant/", include(participant_urls)),
     path("sponsors/", include(sponsor_urls)),
     path("campasambassador/", include(campus_ambassador_urls)), # new CA
+    path("accounts/",include('allauth.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
