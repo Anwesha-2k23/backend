@@ -127,9 +127,9 @@ class register(APIView):
             new_user.qr_code="static/qrcode/"+anwesha_id+".png"
             shutil.move(anwesha_id+".png","static/qrcode/")
             new_user.save()
-            return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
+            return JsonResponse({'message': 'User created successfully!' , "status" : "201"},status=201)
         except:
-            return JsonResponse({'message': 'User not created' , "status" : "400"})
+            return JsonResponse({'message': 'User not created' , "status" : "400"},status=400)
 
 
 class editProfile(APIView):
@@ -152,7 +152,6 @@ class editProfile(APIView):
             "phone_number" : user.phone_number,
             "email_id" : user.email_id , 
             "college_name" : user.college_name ,
-            # "profile_photo" : user.profile_photo , 
             "age" : user.age , 
             "is_email_verified" : user.is_email_verified , 
             "user_type" : user.user_type ,
