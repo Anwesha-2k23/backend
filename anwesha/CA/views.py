@@ -11,8 +11,8 @@ def all_campas_ambassodor(request):
     if request.method == 'GET':
         events = campus_ambassador.objects.all()
         events = list(events.values('anwesha','email_id','full_name','college_name'))
-        return JsonResponse(events, safe=False)
-    return JsonResponse({'message': 'Invalid method', 'status': '405'}) 
+        return JsonResponse(events, safe=False , status = 200)
+    return JsonResponse({'message': 'Invalid method', 'status': '405'} , status=405) 
 
 
 class register(APIView):
@@ -29,9 +29,11 @@ class register(APIView):
             password=request.data['password']
             hpassword = hashpassword(password)
             if(isemail(email_id) == False):
-                return JsonResponse({'message': 'Please enter valid email address', 'status': '409'})
+                return JsonResponse({'message': 'Please enter valid email address', 'status': '409'} , status = 409)
             if campus_ambassador.objects.filter(email_id=email_id).exists():
-                return JsonResponse({'message': 'An Campus Ambassador With same Email already exists', 'status': '409'})
+                return JsonResponse({'message': 'An Campus Ambassador With same Email already exists', 'status': '409'},status = 409)
+            if campus_ambassador.objects.filter(phone_number=phone_number).exists():
+                return JsonResponse({'message': 'An Campus Ambassador With same Phone Number already exists', 'status': '409'},status = 409)
             else:
                 new_campus_ambassador = campus_ambassador.objects.create(
                     full_name=full_name,
@@ -42,15 +44,15 @@ class register(APIView):
                     refferal_code = refferal_code , 
                     )
                 new_campus_ambassador.save()
-                return JsonResponse({'message': 'Campus ambassador created successfully!' , 'status': '201'})
+                return JsonResponse({'message': 'Campus ambassador created successfully!' , 'status': '201'} ,status=201)
         except:
-            return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'})
+            return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
 
 class leaderBoardData(View):
     def get(self , request):
         try:
             leaderBoard = campus_ambassador.objects.all().order_by('score')
             leaderBoard = list(leaderBoard.values('score','full_name','email_id').reverse())
-            return JsonResponse ({"leaderBoardData" : leaderBoard , "status" : "200"})
+            return JsonResponse ({"leaderBoardData" : leaderBoard , "status" : "200"},status=200)
         except:
-            return JsonResponse({'message': 'Invalid method' , 'status': '405'})
+            return JsonResponse({'message': 'Invalid method' , 'status': '405'},status=405)
