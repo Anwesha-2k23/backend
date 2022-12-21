@@ -32,6 +32,8 @@ from user import views
 
 
 urlpatterns = [
+    path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
     path("admin/", admin.site.urls),
     path("user/", include(user_urls)),
     path("event/", include(event_urls)),

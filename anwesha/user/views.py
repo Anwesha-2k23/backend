@@ -96,40 +96,28 @@ class register(APIView):
             email_id = request.data['email_id']
             full_name = request.data['full_name']
 
-          
-            try:
-                password = hashpassword(password)
-                anwesha_id = createId("ANW", 5)
-                # checking if the created id is not already present in the database
+            # print(password)
+            password = hashpassword(password)
+            anwesha_id = createId("ANW", 7)
+
+            generate_qr(anwesha_id=anwesha_id)
+
+            # checking if the created id is not already present in the database
+            check_exist = User.objects.filter(anwesha_id = anwesha_id)
+            while check_exist:  # very unlikely to happen
+                anwesha_id = createId("ANW", 7)
                 check_exist = User.objects.filter(anwesha_id = anwesha_id)
                 while check_exist:  # very unlikely to happen
-                    anwesha_id = createId("ANW", 5)
-                check_exist = User.objects.filter(anwesha_id = anwesha_id)
-            except:
-                return JsonResponse({"message":"either password or anwesha id could not be created"})
-            print(password)
-            print(email_id)
-            print(full_name)
-            print(anwesha_id)
-            try:
-                generate_qr(anwesha_id=anwesha_id)
-            except:
-                return JsonResponse({"message" : "QR could not be generated"})
+                    anwesha_id = createId("ANW", 10)
+                    check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
-            # code for sending email
-            new_user = User.objects.create(
-                full_name=full_name,
-                email_id=email_id, 
-                password=password, 
-                anwesha_id=anwesha_id
-            )
-            new_user.save()
-            try:
+                # code for sending email
+
+                new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
                 new_user.qr_code="static/qrcode/"+anwesha_id+".png"
                 shutil.move(anwesha_id+".png","static/qrcode/")
-            except:
-                return JsonResponse({"message": "Qr could not be saved"})
-            return JsonResponse({'message': 'User created successfully!' , "status" : "201"},status=201)
+                new_user.save()
+                return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
         except:
             return JsonResponse({'message': 'User not created' , "status" : "400"},status=400)
 

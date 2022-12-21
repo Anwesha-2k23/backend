@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from utility import hashpassword, createId, isemail
-from CA.models import campus_ambassador
+from CA.models import Campus_ambassador
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from utility import generate_jwt_token
@@ -14,10 +14,10 @@ import jwt
 
 def all_campas_ambassodor(request):
     if request.method == 'GET':
-        events = campus_ambassador.objects.all()
-        events = list(events.values('anwesha','email_id','full_name','college_name' ,'validation'))
-        return JsonResponse(events, safe=False , status = 200)
-    return JsonResponse({'message': 'Invalid method', 'status': '405'} , status=405) 
+        events = Campus_ambassador.objects.all()
+        events = list(events.values('anwesha','email_id','full_name','college_name'))
+        return JsonResponse(events, safe=False)
+    return JsonResponse({'message': 'Invalid method', 'status': '405'}) 
 
 
 class register(APIView):
@@ -35,12 +35,12 @@ class register(APIView):
             hpassword = hashpassword(password)
             if(isemail(email_id) == False):
                 return JsonResponse({'message': 'Please enter valid email address', 'status': '409'} , status = 409)
-            if campus_ambassador.objects.filter(email_id=email_id).exists():
+            if Campus_ambassador.objects.filter(email_id=email_id).exists():
                 return JsonResponse({'message': 'An Campus Ambassador With same Email already exists', 'status': '409'},status = 409)
-            if campus_ambassador.objects.filter(phone_number=phone_number).exists():
+            if Campus_ambassador.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'An Campus Ambassador With same Phone Number already exists', 'status': '409'},status = 409)
             else:
-                new_campus_ambassador = campus_ambassador.objects.create(
+                new_campus_ambassador = Campus_ambassador.objects.create(
                     full_name=full_name,
                     email_id=email_id, 
                     password=hpassword, 
@@ -57,7 +57,7 @@ class register(APIView):
 class leaderBoardData(View):
     def get(self , request):
         try:
-            leaderBoard = campus_ambassador.objects.all().order_by('score')
+            leaderBoard = Campus_ambassador.objects.all().order_by('score')
             leaderBoard = list(leaderBoard.values('score','full_name','email_id').reverse())
             return JsonResponse ({"leaderBoardData" : leaderBoard , "status" : "200"},status=200)
         except:
@@ -68,7 +68,7 @@ class sendVerificationEmail(APIView):
         try:
             email = request.data["email_id"]
             print(email)
-            if campus_ambassador.objects.filter(email_id = email).exists():
+            if Campus_ambassador.objects.filter(email_id = email).exists():
                 try:
                     payload = {
                         "email":email ,
@@ -93,9 +93,9 @@ def verifyEmail(request , *arg , **kwarg):
         except:
             return JsonResponse({"message":"token expired"} , status=409)
         try:
-            ca_to_verify = campus_ambassador.objects.get(email_id = jwt_payload.email)
+            ca_to_verify = Campus_ambassador.objects.get(email_id = jwt_payload.email)
             ca_to_verify.validation = True
-            campus_ambassador.save()
+            Campus_ambassador.save()
         except:
             return JsonResponse({"message":"Invalid Token"} , status=401)
 
