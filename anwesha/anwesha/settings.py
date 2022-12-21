@@ -36,6 +36,8 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'jet.dashboard',
+    "jet",
     "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -48,7 +50,7 @@ INSTALLED_APPS = [
     "map",
     "sponsor",
     "participant",
-    "campus_ambassador",
+    "CA",
     "rest_framework",
 ]
 
@@ -179,3 +181,40 @@ DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
+
+# JET CONFIGURATION
+
+JET_THEMES = [
+    {
+        'theme': 'default', # theme folder name
+        'color': '#47bac1', # color of the theme's button in user menu
+        'title': 'Default' # theme title
+    },
+    {
+        'theme': 'green',
+        'color': '#44b78b',
+        'title': 'Green'
+    },
+    {
+        'theme': 'light-green',
+        'color': '#2faa60',
+        'title': 'Light Green'
+    },
+    {
+        'theme': 'light-violet',
+        'color': '#a464c4',
+        'title': 'Light Violet'
+    },
+    {
+        'theme': 'light-blue',
+        'color': '#5EADDE',
+        'title': 'Light Blue'
+    },
+    {
+        'theme': 'light-gray',
+        'color': '#222',
+        'title': 'Light Gray'
+    }
+]
+
+JET_SIDE_MENU_COMPACT = False

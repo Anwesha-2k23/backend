@@ -25,7 +25,7 @@ class User(models.Model):
     phone_number = models.CharField(max_length=13, default="")
     email_id = models.EmailField(unique=True)
     full_name = models.CharField(max_length=100)
-    college_name = models.CharField(max_length=150, blank=True, null=True)
+    collage_name = models.CharField(max_length=150, blank=True, null=True)
     profile_photo = models.ImageField(
         storage=ProfileImageStorage, blank=True, null=True
     )
@@ -43,3 +43,11 @@ class User(models.Model):
     instagram_id = models.CharField(max_length=255, blank=True, null=True)
     facebook_id = models.CharField(max_length=255, blank=True, null=True)
     time_of_registration = models.DateTimeField(auto_now_add=True)
+    is_locked = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.full_name
+
+    def meta(self):
+        verbose_name = "User"
+        verbose_name_plural = "Users"

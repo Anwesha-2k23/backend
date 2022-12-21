@@ -22,7 +22,7 @@ from user.urls import user_urls
 from event.urls import event_urls
 from participant.urls import participant_urls
 from sponsor.urls import sponsor_urls
-from campus_ambassador.urls import campus_ambassador_urls
+from CA.urls import campus_ambassador_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -31,6 +31,8 @@ from user import views
 
 
 urlpatterns = [
+    path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
     path("admin/", admin.site.urls),
     path("user/", include(user_urls)),
     path("event/", include(event_urls)),
