@@ -3,9 +3,8 @@ from user.models import User
 from datetime import datetime   
 # from anwesha.storage_backend import ProfileImageStorage
 from anwesha.settings import CONFIGURATION
-
+from time import timezone
 class Campus_ambassador(models.Model):
-
     class ambassador_intrests(models.TextChoices):
         INTREST1 = 'intrest1', 'Intrest 1'
         INTREST2 = 'intrest2', 'Intrest 2'
@@ -34,7 +33,7 @@ class Campus_ambassador(models.Model):
     facebook_id             = models.CharField(max_length=255,blank=True, null=True)
     linkdin_id              = models.CharField(max_length=255,blank=True, null=True)
     twitter_id              = models.CharField(max_length=255,blank=True, null=True)
-    date_of_birth           = models.DateTimeField(blank=True, null=True, default=datetime.now)
+    date_of_birth           = models.DateTimeField(blank=True, null=True, default=datetime.now(tz=timezone.utc))
     time_of_registration    = models.DateTimeField(auto_now_add=True)
     profile_photo           = models.ImageField(blank=True , null=True , upload_to='profile')
     # profile_photo           = models.ImageField(blank=True , null=True ,storage=ProfileImageStorage)

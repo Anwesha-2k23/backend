@@ -23,3 +23,8 @@
 #     location = settings.AWS_PUBLIC_MEDIA_LOCATION3
 #     file_overwrite = False
 #     default_acl = "public-read"
+
+# class MultiCityStorage(S3Boto3Storage):
+#     location = settings.AWS_PUBLIC_MEDIA_LOCATION4
+#     file_overwrite = False
+#     default_acl = "public-read"
