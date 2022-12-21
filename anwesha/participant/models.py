@@ -20,8 +20,8 @@ class Participant(models.Model):
 
 class Team(models.Model):
     team_id = models.CharField(unique=True, max_length=10, primary_key=True)
-    event_id = models.ForeignKey(Events, on_delete=models.CASCADE)
-    leader_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    event_id = models.ForeignKey(Events, on_delete=models.CASCADE )
+    leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
     team_name = models.CharField(max_length=100, blank=True, null=True)
 
 
