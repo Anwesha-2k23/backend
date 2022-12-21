@@ -111,23 +111,26 @@ class register(APIView):
 
             # print(password)
             password = hashpassword(password)
-            anwesha_id = createId("ANW", 10)
+            anwesha_id = createId("ANW", 7)
 
             generate_qr(anwesha_id=anwesha_id)
 
             # checking if the created id is not already present in the database
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
             while check_exist:  # very unlikely to happen
-                anwesha_id = createId("ANW", 10)
+                anwesha_id = createId("ANW", 7)
                 check_exist = User.objects.filter(anwesha_id = anwesha_id)
+                while check_exist:  # very unlikely to happen
+                    anwesha_id = createId("ANW", 10)
+                    check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
-            # code for sending email
+                # code for sending email
 
-            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
-            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-            shutil.move(anwesha_id+".png","static/qrcode/")
-            new_user.save()
-            return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
+                new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
+                new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+                shutil.move(anwesha_id+".png","static/qrcode/")
+                new_user.save()
+                return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
         except:
             return JsonResponse({'message': 'User not created' , "status" : "400"})
 
