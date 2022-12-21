@@ -13,33 +13,21 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
 
-# from .serializers import UserSerializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr
 
-# def alluser(request):
-#     if request.method == 'GET':
-#         users = User.objects.all()
-#         users = list(users.values())
-#         return JsonResponse(users, safe=False)
-#     else:
-#         response = JsonResponse({'message': 'Hello, World!'})
-#         return response
-
 class Login(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')
         if not token:
-            # print("no token")
             raise AuthenticationError("Unauthenticated")
 
         try:
             payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
-            # print("expired")
             raise AuthenticationError("Cookie Expired")
 
         user = User.objects.get(anwesha_id = payload["id"]) 
@@ -61,7 +49,6 @@ class Login(APIView):
             return response
 
         password = hashpassword(password)
-        # print(password)
         user = None
         if isemail(username):
             user = User.objects.filter(email_id = username, password = password)
@@ -109,24 +96,39 @@ class register(APIView):
             email_id = request.data['email_id']
             full_name = request.data['full_name']
 
-            # print(password)
-            password = hashpassword(password)
-            anwesha_id = createId("ANW", 10)
-
-            generate_qr(anwesha_id=anwesha_id)
-
-            # checking if the created id is not already present in the database
-            check_exist = User.objects.filter(anwesha_id = anwesha_id)
-            while check_exist:  # very unlikely to happen
-                anwesha_id = createId("ANW", 10)
+          
+            try:
+                password = hashpassword(password)
+                anwesha_id = createId("ANW", 5)
+                # checking if the created id is not already present in the database
                 check_exist = User.objects.filter(anwesha_id = anwesha_id)
+                while check_exist:  # very unlikely to happen
+                    anwesha_id = createId("ANW", 5)
+                check_exist = User.objects.filter(anwesha_id = anwesha_id)
+            except:
+                return JsonResponse({"message":"either password or anwesha id could not be created"})
+            print(password)
+            print(email_id)
+            print(full_name)
+            print(anwesha_id)
+            try:
+                generate_qr(anwesha_id=anwesha_id)
+            except:
+                return JsonResponse({"message" : "QR could not be generated"})
 
             # code for sending email
-
-            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
-            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-            shutil.move(anwesha_id+".png","static/qrcode/")
+            new_user = User.objects.create(
+                full_name=full_name,
+                email_id=email_id, 
+                password=password, 
+                anwesha_id=anwesha_id
+            )
             new_user.save()
+            try:
+                new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+                shutil.move(anwesha_id+".png","static/qrcode/")
+            except:
+                return JsonResponse({"message": "Qr could not be saved"})
             return JsonResponse({'message': 'User created successfully!' , "status" : "201"},status=201)
         except:
             return JsonResponse({'message': 'User not created' , "status" : "400"},status=400)

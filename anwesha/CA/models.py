@@ -1,7 +1,7 @@
 from django.db import models
 from user.models import User
 from datetime import datetime   
-
+from django.utils import timezone
 class campus_ambassador(models.Model):
 
     class ambassador_intrests(models.TextChoices):
@@ -33,6 +33,6 @@ class campus_ambassador(models.Model):
     facebook_id             = models.CharField(max_length=255,blank=True, null=True)
     linkdin_id              = models.CharField(max_length=255,blank=True, null=True)
     twitter_id              = models.CharField(max_length=255,blank=True, null=True)
-    date_of_birth           = models.DateTimeField(blank=True, null=True, default=datetime.now)
+    date_of_birth           = models.DateTimeField(blank=True, null=True, default=datetime.now(tz=timezone.utc))
     time_of_registration    = models.DateTimeField(auto_now_add=True)
 
