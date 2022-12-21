@@ -195,5 +195,5 @@ DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
 
-LOGIN_REDIRECT_URL = 'http://localhost:8000/accounts/google/login/callback/'
+LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
 LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'

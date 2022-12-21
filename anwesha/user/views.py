@@ -197,3 +197,12 @@ class forgetPassword(APIView):
 class forgetPassword2(APIView):
     def get(self,post):
         pass
+
+def oauth(request):
+    # print(request.user.username)
+    # print(request.user.__dict__)
+    print(dir(request.user.socialaccount_set.all))
+    # print(request.user.first_name)
+    print(request.user.email)
+
+    return JsonResponse({'user':request.user},safe=False)
