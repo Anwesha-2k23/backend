@@ -5,8 +5,8 @@ from hashlib import blake2b
 from re import T
 from secrets import choice
 from django.db import models
-from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
-
+# from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
+from anwesha.settings import CONFIGURATION
 
 class User(models.Model):
     class User_type_choice(models.TextChoices):
@@ -22,19 +22,15 @@ class User(models.Model):
 
     anwesha_id = models.CharField(max_length=10, primary_key=True, unique=True)
     password = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=13, default="")
+    phone_number = models.CharField(max_length=13, default="", unique=True, blank=True, null=True)
     email_id = models.EmailField(unique=True)
     full_name = models.CharField(max_length=100)
     collage_name = models.CharField(max_length=150, blank=True, null=True)
-    profile_photo = models.ImageField(
-        storage=ProfileImageStorage, blank=True, null=True
-    )
     age = models.SmallIntegerField(blank=True, null=True)
     is_email_verified = models.BooleanField(default=False)
     user_type = models.CharField(
         max_length=11, choices=User_type_choice.choices, blank=True, null=True
     )
-    qr_code = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
     gender = models.CharField(
         max_length=20, choices=Gender.choices, blank=True, null=True
     )
@@ -44,6 +40,15 @@ class User(models.Model):
     facebook_id = models.CharField(max_length=255, blank=True, null=True)
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
+    if CONFIGURATION == "local":
+        profile_photo = models.ImageField(blank=True, null=True, upload_to="profile")
+        qr_code = models.ImageField(blank=True, null=True, upload_to="qr")
+    # elif CONFIGURATION == "production":
+    #     profile_photo = models.ImageField(
+    #         storage=ProfileImageStorage, blank=True, null=True
+    #     )
+    #     qr_code = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
+
 
     def __str__(self):
         return self.full_name

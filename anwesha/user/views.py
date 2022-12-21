@@ -109,14 +109,14 @@ class register(APIView):
 
         # print(password)
         password = hashpassword(password)
-        anwesha_id = createId("ANW", 10)
+        anwesha_id = createId("ANW", 7)
 
         generate_qr(anwesha_id=anwesha_id)
 
         # checking if the created id is not already present in the database
         check_exist = User.objects.filter(anwesha_id = anwesha_id)
         while check_exist:  # very unlikely to happen
-            anwesha_id = createId("ANW", 10)
+            anwesha_id = createId("ANW", 7)
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
         # code for sending email
