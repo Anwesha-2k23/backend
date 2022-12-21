@@ -183,6 +183,7 @@ AWS_STATIC_LOCATION = "static"
 AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
 AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr"
 AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
+AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
 STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
 STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
