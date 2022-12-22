@@ -41,8 +41,8 @@ class User(models.Model):
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     if CONFIGURATION == "local":
-        profile_photo = models.ImageField(blank=True, null=True, upload_to="profile")
-        qr_code = models.ImageField(blank=True, null=True, upload_to="qr")
+        profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+        qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
     # elif CONFIGURATION == "production":
     #     profile_photo = models.ImageField(
     #         storage=ProfileImageStorage, blank=True, null=True
