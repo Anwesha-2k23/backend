@@ -95,6 +95,7 @@ class register(APIView):
             password = request.data['password']
             email_id = request.data['email_id']
             full_name = request.data['full_name']
+            phone_number = request.data['phone_number']
 
             # print(password)
             password = hashpassword(password)
@@ -107,17 +108,14 @@ class register(APIView):
             while check_exist:  # very unlikely to happen
                 anwesha_id = createId("ANW", 7)
                 check_exist = User.objects.filter(anwesha_id = anwesha_id)
-                while check_exist:  # very unlikely to happen
-                    anwesha_id = createId("ANW", 10)
-                    check_exist = User.objects.filter(anwesha_id = anwesha_id)
 
                 # code for sending email
 
-                new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, anwesha_id=anwesha_id)
-                new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-                shutil.move(anwesha_id+".png","static/qrcode/")
-                new_user.save()
-                return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
+            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number, anwesha_id=anwesha_id)
+            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+            shutil.move(anwesha_id+".png","static/qrcode/")
+            new_user.save()
+            return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
         except:
             return JsonResponse({'message': 'User not created' , "status" : "400"},status=400)
 
