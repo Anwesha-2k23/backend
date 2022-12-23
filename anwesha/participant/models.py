@@ -17,12 +17,18 @@ class Participant(models.Model):
     )
     team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True)
 
+    def __str__(self):
+        return self.anwesha_id
+
 
 class Team(models.Model):
     team_id = models.CharField(unique=True, max_length=10, primary_key=True)
-    event_id = models.ForeignKey(Events, on_delete=models.CASCADE)
-    leader_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    event_id = models.ForeignKey(Events, on_delete=models.CASCADE )
+    leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
     team_name = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.team_name
 
 
 class Payer(models.Model):
@@ -35,3 +41,6 @@ class Payer(models.Model):
     )
     reference_id = models.CharField(max_length=100)
     datetime = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.team_id

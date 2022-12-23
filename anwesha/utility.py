@@ -54,11 +54,11 @@ def get_anwesha_id(request):
 
 def generate_qr(anwesha_id):
     img = qrcode.make(anwesha_id)
-    blob = BytesIO()
-    img.save(blob, "PNG")
-    qr = File(blob, name=anwesha_id + ".png")
-    return qr
-    # img.save(anwesha_id+".png")
+    # blob = BytesIO()
+    # img.save(blob, "PNG")
+    # qr = File(blob, name=anwesha_id + ".png")
+    # return qr
+    img.save(anwesha_id+".png")
 
 def generate_jwt_token(anwesha_id):
     return anwesha_id
