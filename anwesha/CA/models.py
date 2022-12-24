@@ -15,7 +15,7 @@ class Campus_ambassador(models.Model):
         FEMALE = 'female' , 'Female'
         OTHERS = 'others' , 'Others'
         RATHER_NOT_SAY = 'rather_not_say' , 'Rather not say'
-    
+    ca_id                   = models.CharField(max_length=10 ,unique=True,primary_key=True)
     anwesha                 = models.ForeignKey(User, on_delete=models.CASCADE,blank=True,null=True)
     password                = models.CharField(max_length=100)
     phone_number            = models.CharField(max_length=13)
@@ -28,6 +28,7 @@ class Campus_ambassador(models.Model):
     intrests                = models.CharField(max_length=150 , choices=ambassador_intrests.choices , blank = True , null = True)
     gender                  = models.CharField(max_length=20 , choices =Gender.choices , default=Gender.RATHER_NOT_SAY)
     score                   = models.IntegerField(default = 0)
+    is_loggedin             = models.BooleanField(default=False)
     validation              = models.BooleanField(default=False)
     instagram_id            = models.CharField(max_length=255,blank=True, null=True)
     facebook_id             = models.CharField(max_length=255,blank=True, null=True)
