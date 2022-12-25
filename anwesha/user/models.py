@@ -29,7 +29,7 @@ class User(models.Model):
     age = models.SmallIntegerField(blank=True, null=True)
     is_email_verified = models.BooleanField(default=False)
     user_type = models.CharField(
-        max_length=11, choices=User_type_choice.choices, blank=True, null=True
+        max_length=11, choices=User_type_choice.choices, blank=True, null=True ,default=User_type_choice.STUDENT
     )
     gender = models.CharField(
         max_length=20, choices=Gender.choices, blank=True, null=True
@@ -40,6 +40,7 @@ class User(models.Model):
     facebook_id = models.CharField(max_length=255, blank=True, null=True)
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
+    is_loggedin = models.BooleanField(default=False)
     if CONFIGURATION == "local":
         profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
         qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")

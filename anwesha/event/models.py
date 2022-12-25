@@ -35,7 +35,7 @@ class Events(models.Model):
     description = models.TextField()
     end_time = models.DateTimeField(blank=True)
     prize = models.CharField(max_length=150)
-    registration_fee = models.DecimalField(max_digits=8, decimal_places=2)
+    registration_fee = models.DecimalField(max_digits=8, decimal_places=2 , default=0)
     video = models.URLField(blank=True)
     max_team_size = models.SmallIntegerField()
     registration_deadline = models.DateTimeField(blank=True)
