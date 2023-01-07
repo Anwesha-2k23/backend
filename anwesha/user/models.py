@@ -5,8 +5,9 @@ from hashlib import blake2b
 from re import T
 from secrets import choice
 from django.db import models
-# from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
+from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 from anwesha.settings import CONFIGURATION
+from utility import generate_qr, createId, hashpassword
 
 class User(models.Model):
     class User_type_choice(models.TextChoices):
@@ -41,14 +42,14 @@ class User(models.Model):
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
-    if CONFIGURATION == "local":
-        profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-        qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    # if CONFIGURATION == "local":
+    # profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+    # qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
     # elif CONFIGURATION == "production":
-    #     profile_photo = models.ImageField(
-    #         storage=ProfileImageStorage, blank=True, null=True
-    #     )
-    #     qr_code = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
+    profile_photo = models.ImageField(
+        storage=ProfileImageStorage, blank=True, null=True
+    )
+    qr_code = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
 
 
     def __str__(self):
@@ -57,3 +58,15 @@ class User(models.Model):
     def meta(self):
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+    def save(self, *args, **kwargs):
+        print(self.qr_code)
+        if not self.qr_code:
+            self.anwesha_id = createId("ANW", 7)
+            check_exist = User.objects.filter(anwesha_id = self.anwesha_id)
+            while check_exist:  # very unlikely to happen
+                    self.anwesha_id = createId("ANW", 7)
+                    check_exist = User.objects.filter(anwesha_id = self.anwesha_id)
+            self.password = hashpassword(self.password)
+            self.qr_code = generate_qr(self.anwesha_id)
+        super(User, self).save(*args, **kwargs)
