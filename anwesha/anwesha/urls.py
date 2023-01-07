@@ -23,6 +23,7 @@ from event.urls import event_urls
 from participant.urls import participant_urls
 from sponsor.urls import sponsor_urls
 from CA.urls import campus_ambassador_urls
+from map.urls import map_urls
 
 # from rest_framework.routers import DefaultRouter
 from user import views
@@ -31,11 +32,14 @@ from user import views
 
 
 urlpatterns = [
+    path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
     path("admin/", admin.site.urls),
     path("user/", include(user_urls)),
     path("event/", include(event_urls)),
     path("participant/", include(participant_urls)),
     path("sponsors/", include(sponsor_urls)),
     path("campasambassador/", include(campus_ambassador_urls)), # new CA
-
+    path("accounts/",include('allauth.urls')),
+    path("map/",include(map_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

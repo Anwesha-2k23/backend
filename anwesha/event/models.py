@@ -35,15 +35,20 @@ class Events(models.Model):
     description = models.TextField()
     end_time = models.DateTimeField(blank=True)
     prize = models.CharField(max_length=150)
-    registration_fee = models.DecimalField(max_digits=8, decimal_places=2)
+    registration_fee = models.DecimalField(max_digits=8, decimal_places=2 , default=0)
     video = models.URLField(blank=True)
     max_team_size = models.SmallIntegerField()
     registration_deadline = models.DateTimeField(blank=True)
     poster = models.URLField(blank=True)
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
-
+    min_team_size = models.SmallIntegerField()
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['start_time']
+        verbose_name = "Event"
+        verbose_name_plural = "Events"
 
 
 class Gallery(models.Model):
@@ -57,3 +62,7 @@ class Gallery(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Gallery"
+        verbose_name_plural = "Gallery"

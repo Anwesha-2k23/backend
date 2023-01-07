@@ -56,6 +56,9 @@ def generate_qr(anwesha_id):
     img = qrcode.make(anwesha_id)
     blob = BytesIO()
     img.save(blob, "PNG")
-    qr = File(blob, name=anwesha_id + ".png")
+    qr = File(blob, name = anwesha_id + "-qr.png")
     return qr
     # img.save(anwesha_id+".png")
+
+def generate_jwt_token(anwesha_id):
+    return anwesha_id
