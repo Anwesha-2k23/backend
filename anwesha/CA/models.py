@@ -15,7 +15,7 @@ class Campus_ambassador(models.Model):
         FEMALE = 'female' , 'Female'
         OTHERS = 'others' , 'Others'
         RATHER_NOT_SAY = 'rather_not_say' , 'Rather not say'
-    ca_id                   = models.CharField(max_length=10 ,unique=True,primary_key=True)
+    ca_id                   = models.CharField(max_length=10 ,unique=True,primary_key=True,default='x')
     anwesha                 = models.ForeignKey(User, on_delete=models.CASCADE,blank=True,null=True)
     password                = models.CharField(max_length=100)
     phone_number            = models.CharField(max_length=13)
