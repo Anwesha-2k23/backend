@@ -121,25 +121,27 @@ class register(APIView):
                 return JsonResponse({'message': 'An User  With same Phone Number already exists', 'status': '409'},status = 409)
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
-        try:    
-            password = hashpassword(password)
-            anwesha_id = createId("ANW", 7)
-            generate_qr(anwesha_id=anwesha_id)
-            # checking if the created id is not already present in the database
-            check_exist = User.objects.filter(anwesha_id = anwesha_id)
-            while check_exist:  # very unlikely to happen
-                anwesha_id = createId("ANW", 7)
-                check_exist = User.objects.filter(anwesha_id = anwesha_id)
-                # code for sending email
-        except:
-            return JsonResponse({"message":"server side error due to issue in anweshaid generation"} , status=500)
-        try:    
-            new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number, anwesha_id=anwesha_id)
-            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-            shutil.move(anwesha_id+".png","static/qrcode/")
-            new_user.save()
-        except:
-            return JsonResponse({'message': 'User was not able to be saved due to server side error' , "status" : "500"},status=500)
+        # try:    
+        #     password = hashpassword(password)
+        #     anwesha_id = createId("ANW", 7)
+        #     # checking if the created id is not already present in the database
+        #     check_exist = User.objects.filter(anwesha_id = anwesha_id)
+        #     while check_exist:  # very unlikely to happen
+        #         anwesha_id = createId("ANW", 7)
+        #         check_exist = User.objects.filter(anwesha_id = anwesha_id)
+        #         # code for sending email
+        #     generate_qr(anwesha_id=anwesha_id)
+        # except:
+        #     return JsonResponse({"message":"server side error due to issue in anweshaid generation"} , status=500)
+        # try:    
+        #     new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number, anwesha_id=anwesha_id)
+        #     shutil.move(anwesha_id+".png","static/qrcode/")
+        #     new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+        #     new_user.save()
+        # except:
+        #     return JsonResponse({'message': 'User was not able to be saved due to server side error' , "status" : "500"},status=500)
+        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number)
+        new_user.save()
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
