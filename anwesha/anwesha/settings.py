@@ -32,7 +32,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = 'local'
-S3_ENABLED = False
+S3_ENABLED = True
 
 # Application definition
 
@@ -168,7 +168,7 @@ AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 
 ## Storage Settings
 if S3_ENABLED:
-    AWS_STORAGE_BUCKET_NAME = "anwesha-storage"
+    AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
     AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=86400",
@@ -177,6 +177,7 @@ if S3_ENABLED:
     AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
     AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr"
     AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
+    AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
     STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
@@ -184,12 +185,12 @@ if S3_ENABLED:
     DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
     DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
 
-if CONFIGURATION == 'local':
-    STATIC_URL = 'static/'
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR , 'static')
-    ]
-    STATIC_ROOT = '/home/rupax/Github/anwesha_backend/'
+# if CONFIGURATION == 'local':
+#     STATIC_URL = 'static/'
+#     STATICFILES_DIRS = [
+#         os.path.join(BASE_DIR , 'static')
+#     ]
+#     STATIC_ROOT = '/home/rupax/Github/anwesha_backend/'
 
 # CSRF Settings
 CSRF_COOKIE_SECURE = True
@@ -237,3 +238,15 @@ JET_THEMES = [
 JET_SIDE_MENU_COMPACT = False
 LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
 LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'
+
+
+# Mail configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True  
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587  
+EMAIL_HOST_USER = env('SMTP_ID')  
+EMAIL_HOST_PASSWORD = env('SMTP_PASS') 
+
+# website host variable 
+WEBSITE_HOST = 'http://127.0.0.1:8000/'
