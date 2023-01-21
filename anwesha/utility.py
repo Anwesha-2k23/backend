@@ -4,7 +4,32 @@ import jwt
 import qrcode
 from django.core.files import File
 from io import BytesIO
+from django.core.mail import send_mail
+from anwesha.settings import EMAIL_HOST_USER ,COOKIE_ENCRYPTION_SECRET
+import datetime
 
+def varification_mail(self, email):
+    user = email
+    payload = {
+        'email':email,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+        "iat": datetime.datetime.utcnow()
+    }
+    token = jwt.encode(
+        payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+    link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
+    localhost_link = "http://127.0.0.1/campasambassador/verifyemail/"+token
+    subject = "No replay"
+    body = f'''
+    Hello,\n
+        Please click on the link below to verify your email address for anwesha login:
+         \n{link}
+        \n\nThanks,
+        \nTeam  Anwesha
+        \n\n for testing pourposes :- {localhost_link}
+    '''
+    res = send_mail(subject, body, EMAIL_HOST_USER, email)
+    return res
 
 def hashpassword(password):
     return hashlib.sha256(password.encode()).hexdigest()
