@@ -14,7 +14,7 @@ from datetime import datetime ,timedelta ,timezone
 import jwt
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 
-from anwesha.utility import varification_mail
+from utility import varification_mail
 
 
 def all_campas_ambassodor(request):
@@ -26,7 +26,7 @@ def all_campas_ambassodor(request):
 
 class register(APIView):
     def post(self, request):
-        try:
+        # try:
             phone_number=request.data['phone_number']
             email_id=request.data['email_id']
             full_name=request.data['full_name']
@@ -58,9 +58,9 @@ class register(APIView):
                 new_campus_ambassador.save()
                 varification_mail(email=email_id)
                 return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
-        except:
-            return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
-
+        # except:
+        #     return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
+        
 class Login(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')

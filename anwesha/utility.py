@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from anwesha.settings import EMAIL_HOST_USER ,COOKIE_ENCRYPTION_SECRET
 import datetime
 
-def varification_mail(self, email):
+def varification_mail(email):
     user = email
     payload = {
         'email':email,
@@ -18,7 +18,7 @@ def varification_mail(self, email):
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
     link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
-    localhost_link = "http://127.0.0.1/campasambassador/verifyemail/"+token
+    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
     subject = "No replay"
     body = f'''
     Hello,\n
@@ -28,7 +28,9 @@ def varification_mail(self, email):
         \nTeam  Anwesha
         \n\n for testing pourposes :- {localhost_link}
     '''
-    res = send_mail(subject, body, EMAIL_HOST_USER, email)
+    recipient_list = []
+    recipient_list.append(email)
+    res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
     return res
 
 def hashpassword(password):
