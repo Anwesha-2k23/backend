@@ -12,8 +12,9 @@ from time import mktime
 
 from datetime import datetime ,timedelta ,timezone
 import jwt
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 
-
+from utility import varification_mail
 
 
 def all_campas_ambassodor(request):
@@ -25,7 +26,7 @@ def all_campas_ambassodor(request):
 
 class register(APIView):
     def post(self, request):
-        try:
+        # try:
             phone_number=request.data['phone_number']
             email_id=request.data['email_id']
             full_name=request.data['full_name']
@@ -52,20 +53,21 @@ class register(APIView):
                     college_name = college_name , 
                     refferal_code = refferal_code , 
                     ca_id = ca_id
-                    )
-               
-                new_campus_ambassador.save()
-                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
-        except:
-            return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
+                )
 
+                new_campus_ambassador.save()
+                varification_mail(email=email_id)
+                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
+        # except:
+        #     return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
+        
 class Login(APIView):
     def get(self, request):
         token = request.COOKIES.get('jwt')
         if not token:
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
         try:
-            payload = jwt.decode(token, "secret", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
         try:
@@ -112,7 +114,7 @@ class Login(APIView):
                     "iat": datetime.utcnow()
                 }
 
-                token = jwt.encode(payload, "secret", algorithm = 'HS256')
+                token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
 
                 response.data = { "success" : True , "name" : this_ca.full_name}
                 response.set_cookie(key='jwt', value=token, httponly=True)
@@ -134,7 +136,7 @@ class LogOut(APIView):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
         else:
             try:
-                payload = jwt.decode(token, "secret", algorithms = 'HS256')
+                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
             except jwt.ExpiredSignatureError:
                 return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
             try:
@@ -165,7 +167,7 @@ class editProfile(APIView):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
 
         try:
-            payload = jwt.decode(token, "secret", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
 
@@ -195,7 +197,7 @@ class editProfile(APIView):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
 
         try:
-            payload = jwt.decode(token, "secret", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
 
@@ -304,7 +306,7 @@ class sendVerificationEmail(APIView):
                         "exp": datetime.utcnow() + timedelta(days=1),
                         "iat": datetime.utcnow()
                     } 
-                    token = jwt.encode( payload=payload, key="secret" , algorithm="HS256") # not working ?? 
+                    token = jwt.encode( payload=payload, key=COOKIE_ENCRYPTION_SECRET , algorithm="HS256") # not working ?? 
                     return JsonResponse({"token": token},status=201)
                 except:
                     return JsonResponse({"message":"Token cannot be generated"} , status=409)
@@ -318,7 +320,7 @@ def verifyEmail(request , *arg , **kwarg):
     if request.method == 'GET':
         token = kwarg['pk']
         try:
-            jwt_payload = jwt.decode(token,"secret",algorithms = 'HS256') # not working ?? 
+            jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256') # not working ?? 
         except:
             return JsonResponse({"message":"token expired"} , status=409)
         try:

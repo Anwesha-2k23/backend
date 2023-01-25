@@ -261,3 +261,5 @@ EMAIL_HOST_PASSWORD = env('SMTP_PASS')
 
 # website host variable 
 WEBSITE_HOST = 'http://127.0.0.1:8000/'
+
+COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
