@@ -113,34 +113,50 @@ class register(APIView):
             email_id = request.data['email_id']
             full_name = request.data['full_name']
             phone_number = request.data['phone_number']
+            # try:
+            #     # to take user type
+            #     # 0 -> alumini
+            #     # 1 -> IITP student
+            #     # 2 -> Student (non IITP students)
+            #     # 3 -> Non students
+            #     # 4 -> Guest
+            #     user_type = request.data['user_type']
+            # except:
+            #     user_type = 2  # this is for default user type
+
+            # """
+            # Assigning user type here
+            # """
+            # if user_type == 0:
+            #     user_type = User.User_type_choice.ALUMNI
+            # if user_type == 1:
+            #     user_type = User.User_type_choice.IITP_STUDENT
+            # if user_type ==  2:
+            #     user_type = User.User_type_choice.STUDENT
+            # if user_type ==  3:
+            #     user_type = User.User_type_choice.NON_STUDENT
+            # if user_type == 4:
+            #     user_type = User.User_type_choice.GUEST
+            
+            """
+             data validation
+            """
             if(isemail(email_id)== False):
                 return JsonResponse({"message":"enter valid email"},status=409)
             if User.objects.filter(email_id=email_id).exists():
                 return JsonResponse({'message': 'An User With same Email already exists', 'status': '409'},status = 409)
             if User.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'An User  With same Phone Number already exists', 'status': '409'},status = 409)
+
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
-        # try:    
-        #     password = hashpassword(password)
-        #     anwesha_id = createId("ANW", 7)
-        #     # checking if the created id is not already present in the database
-        #     check_exist = User.objects.filter(anwesha_id = anwesha_id)
-        #     while check_exist:  # very unlikely to happen
-        #         anwesha_id = createId("ANW", 7)
-        #         check_exist = User.objects.filter(anwesha_id = anwesha_id)
-        #         # code for sending email
-        #     generate_qr(anwesha_id=anwesha_id)
-        # except:
-        #     return JsonResponse({"message":"server side error due to issue in anweshaid generation"} , status=500)
-        # try:    
-        #     new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number, anwesha_id=anwesha_id)
-        #     shutil.move(anwesha_id+".png","static/qrcode/")
-        #     new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-        #     new_user.save()
-        # except:
-        #     return JsonResponse({'message': 'User was not able to be saved due to server side error' , "status" : "500"},status=500)
-        new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number)
+        new_user = User.objects.create(
+            full_name=full_name,
+            email_id=email_id, 
+            password=password, 
+            phone_number=phone_number,
+            # user_type=user_type,
+        )
         new_user.save()
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 

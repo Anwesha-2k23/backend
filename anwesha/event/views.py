@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
 import json
-from .models import Events, tag_dict
+from .models import Events, tag_dict, size, add_merch, order_merch
 
 # Create your views here.
 
@@ -37,3 +37,18 @@ class Get_Event_By_Tags(View):
         except:
             response = JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
             return response
+
+class add_merch(View):
+    def post(self, request):
+        # try:
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            prices = request.POST.get('prices')
+            size = request.POST.get('size')
+            image = request.FILES.get('image')
+            merch = add_merch.objects.create(title=title, description=description, prices=prices, size=size, image=image)
+            merch.save()
+            return JsonResponse({"message": "Merch is added successfully" , "status": '200'},status=200)
+        # except:
+        #     response = JsonResponse({"message": "Merch not added" , "status": '405'},status=405)
+        #     return response
