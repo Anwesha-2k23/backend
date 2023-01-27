@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "sponsor",
     "participant",
     "CA",
+    "multicity",
     "rest_framework",
     'django.contrib.sites',
     'allauth',
