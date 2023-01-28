@@ -7,14 +7,13 @@ from django.http import JsonResponse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from utility import generate_jwt_token
+from utility import generate_jwt_token , varification_mail , createId
 from time import mktime
 
 from datetime import datetime ,timedelta ,timezone
 import jwt
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 
-from utility import varification_mail
 
 
 def all_campas_ambassodor(request):

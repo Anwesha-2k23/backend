@@ -41,11 +41,12 @@ class Get_Event_By_Tags(View):
 class add_merch(View):
     def post(self, request):
         # try:
-            title = request.POST.get('title')
-            description = request.POST.get('description')
-            prices = request.POST.get('prices')
-            size = request.POST.get('size')
-            image = request.FILES.get('image')
+            title: request.data['title']
+            description: request.data['description']
+            prices: request.data['prices']
+            size: request.data['size']
+            image: request.data['image']
+            
             merch = add_merch.objects.create(title=title, description=description, prices=prices, size=size, image=image)
             merch.save()
             return JsonResponse({"message": "Merch is added successfully" , "status": '200'},status=200)
