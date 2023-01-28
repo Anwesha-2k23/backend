@@ -12,7 +12,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
-
+import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
@@ -121,25 +121,7 @@ class register(APIView):
                 return JsonResponse({'message': 'An User  With same Phone Number already exists', 'status': '409'},status = 409)
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
-        # try:    
-        #     password = hashpassword(password)
-        #     anwesha_id = createId("ANW", 7)
-        #     # checking if the created id is not already present in the database
-        #     check_exist = User.objects.filter(anwesha_id = anwesha_id)
-        #     while check_exist:  # very unlikely to happen
-        #         anwesha_id = createId("ANW", 7)
-        #         check_exist = User.objects.filter(anwesha_id = anwesha_id)
-        #         # code for sending email
-        #     generate_qr(anwesha_id=anwesha_id)
-        # except:
-        #     return JsonResponse({"message":"server side error due to issue in anweshaid generation"} , status=500)
-        # try:    
-        #     new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number, anwesha_id=anwesha_id)
-        #     shutil.move(anwesha_id+".png","static/qrcode/")
-        #     new_user.qr_code="static/qrcode/"+anwesha_id+".png"
-        #     new_user.save()
-        # except:
-        #     return JsonResponse({'message': 'User was not able to be saved due to server side error' , "status" : "500"},status=500)
+
         new_user = User.objects.create(full_name=full_name, email_id=email_id, password=password, phone_number=phone_number)
         new_user.save()
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
@@ -289,11 +271,74 @@ class forgetPassword2(APIView):
     def get(self,post):
         pass
 
-def oauth(request):
-    # print(request.user.username)
-    # print(request.user.__dict__)
-    print(dir(request.user.socialaccount_set.all))
-    # print(request.user.first_name)
-    print(request.user.email)
+class Oauth_Login(APIView):
+    def get(self,request):
+        username = request.user.username
+        first_name = request.user.first_name
+        email = request.user.email
+        last_name = request.user.last_name
+        full_name = first_name + last_name
 
-    return JsonResponse({'user':request.user},safe=False)
+        #registering user in custom user model
+        if User.objects.filter(email_id=email).exists():
+            user = User.objects.get(email_id=email) 
+            payload = {
+                        "id" : user.anwesha_id,
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                        "iat": datetime.datetime.utcnow()
+                    }
+            response = Response()
+            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            user.is_loggedin=True
+            user.save()
+            response.data={'user':'logged in','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            return response
+        else:
+            anwesha_id = createId("ANW", 7)
+            password = uuid.uuid1()
+            generate_qr(anwesha_id=anwesha_id)
+            # checking if the created id is not already present in the database
+            check_exist = User.objects.filter(anwesha_id = anwesha_id)
+            while check_exist:  # very unlikely to happen
+                anwesha_id = createId("ANW", 7)
+                check_exist = User.objects.filter(anwesha_id = anwesha_id)
+            new_user = User.objects.create(full_name=full_name, password = password, email_id=email, anwesha_id=anwesha_id)
+            new_user.qr_code="static/qrcode/"+anwesha_id+".png"
+            shutil.move(anwesha_id+".png","static/qrcode/")
+            new_user.is_loggedin=False
+            new_user.save()
+            user = User.objects.get(email_id=email) 
+            payload = {
+                        "id" : user.anwesha_id,
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                        "iat": datetime.datetime.utcnow()
+                    }
+            response = Response()
+            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            user.is_loggedin=True
+            user.save()
+            response.data={'user':'registered','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            return response
+            
+    # return JsonResponse({'status':'success' },safe=False)
+
+class Oauth_Logout(APIView):
+    def get(self,request):
+        token = request.COOKIES.get('jwt')
+            
+        if not token:
+            raise AuthenticationError("Unauthenticated")
+
+        try:
+            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationError("Cookie Expired")
+
+        user = User.objects.get(anwesha_id = payload['id']) 
+        user.is_loggedin=False
+        user.save()
+        response = Response()
+        response.delete_cookie('jwt')
+        return response
