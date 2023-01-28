@@ -1,11 +1,20 @@
 from django.db import models
+from anwesha.storage_backend import MultiCityStorage
+from utility import createId
 
 class Multicity_Events(models.Model):
-    event_id = models.CharField(max_length=4,unique=True,primary_key=True)
+    event_id = models.CharField(max_length=4, unique=True, primary_key=True, blank=True)
     event_name = models.CharField(max_length=100)
     event_description = models.TextField(default="description coming soon...")
-    event_poster = models.ImageField(blank=True , null=True , upload_to='multicity_poster')
-    event_date = models.DateTimeField(auto_now_add=True)
+    event_poster = models.ImageField(
+        storage=MultiCityStorage, blank=True, null=True
+    )
+    event_date = models.DateTimeField(auto_now_add=False)
+
+    def save(self, *args, **kwargs):
+        if not self.event_id:
+            self.event_id = createId("ev", 2)
+        super(Multicity_Events, self).save(*args, **kwargs)
 
 
 class Multicity_Participants(models.Model):
