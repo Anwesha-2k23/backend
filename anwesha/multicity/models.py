@@ -23,7 +23,7 @@ class Multicity_Participants(models.Model):
         COLLEGE = 'college' , 'College',
         OTHERS = 'other' , 'Other',
        
-    registration_id = models.CharField(max_length=10 ,unique=True,primary_key=True,default='x')
+    registration_id = models.CharField(max_length=10 ,unique=True,primary_key=True)
     event_id = models.ForeignKey(Multicity_Events, on_delete=models.CASCADE)
     payment_done = models.BooleanField(default=False)
     organisation_type = models.CharField(max_length=20 , choices =Organisation_Type.choices , default=Organisation_Type.COLLEGE)

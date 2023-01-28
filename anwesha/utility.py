@@ -19,7 +19,7 @@ def varification_mail(email):
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
     link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
-    subject = "No replay"
+    subject = "No reply"
     body = f'''
     Hello,\n
         Please click on the link below to verify your email address for anwesha login:
