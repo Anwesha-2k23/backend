@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
-CONFIGURATION = 'local'
+CONFIGURATION = "local"
 S3_ENABLED = True
 
 # Application definition
@@ -193,12 +193,14 @@ if S3_ENABLED:
 #     STATIC_ROOT = '/home/rupax/Github/anwesha_backend/'
 
 # CSRF Settings
-CSRF_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
-
+CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+# SESSION_COOKIE_SECURE=True
+# SESSION_COOKIE_SAMESITE = 'None'
 
 
 # JET CONFIGURATION
