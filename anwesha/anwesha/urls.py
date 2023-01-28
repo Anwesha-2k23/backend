@@ -24,8 +24,8 @@ from participant.urls import participant_urls
 from sponsor.urls import sponsor_urls
 from CA.urls import campus_ambassador_urls
 from map.urls import map_urls
+from multicity.urls import multicity_urls
 
-# from rest_framework.routers import DefaultRouter
 from user import views
 
 # from user.views import UserViewSet
@@ -42,4 +42,6 @@ urlpatterns = [
     path("campasambassador/", include(campus_ambassador_urls)), # new CA
     path("accounts/",include('allauth.urls')),
     path("map/",include(map_urls)),
+    path("multicity/",include(multicity_urls)),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
