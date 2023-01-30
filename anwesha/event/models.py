@@ -1,6 +1,7 @@
 from ctypes.wintypes import tagSIZE
 from django.db import models
 import datetime
+from user.models import User
 
 ###  Code for TAGS  ###
 # Add your Event Tags here
@@ -22,7 +23,14 @@ tag_dict = {
     "other": "6",
 }
 ### Code for TAGS ends here ###
-
+size = (
+    ("1", "S"),
+    ("2", "M"),
+    ("3", "L"),
+    ("4", "XL"),
+    ("5", "XXL"),
+    ("6", "XXXL"),
+)
 
 class Events(models.Model):
 
@@ -34,10 +42,10 @@ class Events(models.Model):
     start_time = models.DateTimeField(blank=True)
     description = models.TextField()
     end_time = models.DateTimeField(blank=True)
-    prize = models.CharField(max_length=150)
-    registration_fee = models.DecimalField(max_digits=8, decimal_places=2 , default=0)
+    prize = models.CharField(max_length=150, default=0)
+    registration_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     video = models.URLField(blank=True)
-    max_team_size = models.SmallIntegerField()
+    max_team_size = models.SmallIntegerField(default=1)
     registration_deadline = models.DateTimeField(blank=True)
     poster = models.URLField(blank=True)
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
@@ -66,3 +74,37 @@ class Gallery(models.Model):
     class Meta:
         verbose_name = "Gallery"
         verbose_name_plural = "Gallery"
+
+class add_merch(models.Model):
+    title= models.CharField(max_length=30)
+    description= models.TextField(blank=True)
+    prices= models.JSONField()
+    size= models.URLField(max_length=5, choices=size)
+    image= models.FileField(upload_to="static/merch/", default=None)
+    timestamp = models.DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Merchandise"
+        verbose_name_plural = "Merchandise"
+
+class order_merch(models.Model):
+    anwesha_id= models.ForeignKey(User, on_delete=models.CASCADE)
+    merch_id= models.ForeignKey(add_merch, on_delete=models.CASCADE)
+    name= models.CharField(max_length=30)
+    email= models.EmailField()
+    phone= models.CharField(max_length=10)
+    address= models.TextField()
+    size= models.URLField(max_length=5, choices=size)
+    quantity= models.IntegerField(default=0)
+    payment_status= models.BooleanField(default=False)
+    timestamp = models.DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Order"
+        verbose_name_plural = "Orders"

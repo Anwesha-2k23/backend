@@ -11,9 +11,11 @@ from utility import generate_qr, createId, hashpassword
 
 class User(models.Model):
     class User_type_choice(models.TextChoices):
+        IITP_STUDENT = "iitp_student" ,"IITP-Student"
         STUDENT = "student", "Student"
         NON_STUDENT = "non-student", "Non-Student"
         ALUMNI = "alumni", "Alumni"
+        GUEST = "guest", "Guest"
 
     class Gender(models.TextChoices):
         MALE = "male", "Male"
@@ -30,7 +32,7 @@ class User(models.Model):
     age = models.SmallIntegerField(blank=True, null=True)
     is_email_verified = models.BooleanField(default=False)
     user_type = models.CharField(
-        max_length=11, choices=User_type_choice.choices, blank=True, null=True ,default=User_type_choice.STUDENT
+        max_length=20, choices=User_type_choice.choices, blank=True, null=True ,default=User_type_choice.STUDENT
     )
     gender = models.CharField(
         max_length=20, choices=Gender.choices, blank=True, null=True
@@ -70,3 +72,8 @@ class User(models.Model):
             self.password = hashpassword(self.password)
             self.qr_code = generate_qr(self.anwesha_id)
         super(User, self).save(*args, **kwargs)
+
+    # def assign_user_type(self, *args, **kwargs):
+        
+
+    #     super(User, self).save(*args, **kwargs)

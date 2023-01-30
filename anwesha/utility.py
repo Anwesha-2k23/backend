@@ -89,3 +89,4 @@ def generate_qr(anwesha_id):
 
 def generate_jwt_token(anwesha_id):
     return anwesha_id
+
