@@ -56,7 +56,7 @@ class register(APIView):
 
                 new_campus_ambassador.save()
                 varification_mail(email=email_id)
-                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
+                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'CA_ID': ca_id} ,status=201)
         # except:
         #     return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
         
