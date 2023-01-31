@@ -76,35 +76,19 @@ class Gallery(models.Model):
         verbose_name_plural = "Gallery"
 
 class add_merch(models.Model):
-    title= models.CharField(max_length=30)
+    title= models.CharField(max_length=30,primary_key=True)
     description= models.TextField(blank=True)
     prices= models.JSONField()
-    size= models.URLField(max_length=5, choices=size)
-    image= models.FileField(upload_to="static/merch/", default=None)
-    timestamp = models.DateTimeField(default=datetime.datetime.now)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        verbose_name = "Merchandise"
-        verbose_name_plural = "Merchandise"
+    size= models.CharField(max_length=50, choices=size)
+    image= models.ImageField(upload_to="static/merch/", default=None)
 
 class order_merch(models.Model):
-    anwesha_id= models.ForeignKey(User, on_delete=models.CASCADE)
-    merch_id= models.ForeignKey(add_merch, on_delete=models.CASCADE)
+    merch_title= models.ForeignKey(add_merch, on_delete=models.CASCADE)
     name= models.CharField(max_length=30)
-    email= models.EmailField()
-    phone= models.CharField(max_length=10)
-    address= models.TextField()
-    size= models.URLField(max_length=5, choices=size)
+    email= models.EmailField(max_length=100)
+    phone_no= models.CharField(max_length=13)
+    address= models.TextField(max_length=200)
+    size= models.CharField(max_length=50, choices=size)
     quantity= models.IntegerField(default=0)
     payment_status= models.BooleanField(default=False)
     timestamp = models.DateTimeField(default=datetime.datetime.now)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Order"
-        verbose_name_plural = "Orders"
