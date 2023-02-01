@@ -1,11 +1,16 @@
 from django.db import models
 
 class Multicity_Events(models.Model):
-    event_id = models.CharField(max_length=4,unique=True,primary_key=True)
-    event_name = models.CharField(max_length=100)
+    event_id = models.CharField(max_length=4,unique=True)
+    event_name = models.CharField(max_length=100,primary_key=True)
     event_description = models.TextField(default="description coming soon...")
     event_poster = models.ImageField(blank=True , null=True , upload_to='multicity_poster')
     event_date = models.DateTimeField(auto_now_add=True)
+
+    class meta:
+        verbose_name = "Multicity Event"
+        verbose_name_plural = "Multicity Events"
+
 
 
 class Multicity_Participants(models.Model):
