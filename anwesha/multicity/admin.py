@@ -5,8 +5,9 @@ from .models import *
 class Events(admin.ModelAdmin):
     list_display = ("event_id","event_name","event_description","event_poster","event_date")
 admin.site.register(Multicity_Events, Events)
+
 @admin.register(Multicity_Participants)
-class EventRegistration(admin.ModelAdmin):
+class EventRegistration(admin.ModelAdmin)
 
     @admin.action(description='Lock Selected User')
     def lock_user(self, request, queryset):

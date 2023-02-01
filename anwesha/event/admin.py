@@ -40,14 +40,13 @@ class GalleryAdmin(admin.ModelAdmin):
 class add_merchAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'prices', 'size', 'image')
     search_fields = ('title',)
-    list_filter = ('size',)
-    list_per_page = 20
     empty_value_display = '-empty-'
 
 @admin.register(order_merch)
 class order_merchAdmin(admin.ModelAdmin):
-    list_display = ('anwesha_id', 'merch_id', 'name', 'email', 'phone', 'size', 'quantity', 'address', 'payment_status')
-    search_fields = ('title',)
-    list_filter = ('size',)
-    list_per_page = 20
+    def merch(self, obj):
+        return obj.merch_title.title
+
+    list_display = ('name', 'email', 'phone_no', 'address','size','quantity','payment_status','merch')
+    search_fields = ['name','email','phone_no','merch_title__title']
     empty_value_display = '-empty-'
