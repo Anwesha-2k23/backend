@@ -3,28 +3,33 @@ from django.shortcuts import render
 from .models import Participant, Team, Payer
 from user.models import User
 from event.models import Events
+from rest_framework.views import APIView
 from django.views import View
 from django.http import JsonResponse
 from utility import createId
 from utility import get_anwesha_id
 
 # Create your views here.
-class participant_register(View):
+class participant_register(APIView):
     def post(self, request):
         try:
-            event_id = request.POST.get("event_id")
-            anwesha_id = request.POST.get("anwesha_id")
+            event_id = request.data["event_id"]
+            anwesha_id = request.data["anwesha_id"]
+            team_id = request.data["team_id"]
             new_user = User.objects.get(anwesha_id=anwesha_id)
             new_event = Events.objects.get(id=event_id)
-
+            
+            
+            #payment integration code here
+            
+            
             participant = Participant.objects.create(
-                anwesha_id=new_user, event_id=new_event
-            )
+                anwesha_id=new_user, event_id=new_event, team_id=team_id)
             participant.save()
 
-            return JsonResponse({"message": "Participant registered successfully" , "status": "201"},status=201)
+            return JsonResponse({"message": "Participant registered successfully"},status=201)
         except:
-            return JsonResponse({"message": "Participant registration failed" , "status": "400"},status=400)
+            return JsonResponse({"message": "Participant registration failed"},status=400)
 
 
 class team_register(View):
@@ -46,9 +51,9 @@ class team_register(View):
                 team_id=team_id, event_id=event_id, leader_id=leader_id
             )
             new_team.save()
-            return JsonResponse({"message": "Team created successfully" , "status": "201"},status=201)
+            return JsonResponse({"message": "Team created successfully"},status=201)
         except:
-            return JsonResponse({"message": "Team creation failed" , "status": "400"},status=400)
+            return JsonResponse({"message": "Team creation failed"},status=400)
 
 
 # FBV to get all events in which current user is registered

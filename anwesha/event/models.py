@@ -50,8 +50,6 @@ class Events(models.Model):
     poster = models.URLField(blank=True)
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
     min_team_size = models.SmallIntegerField()
-    def __str__(self):
-        return self.name
     
     class Meta:
         ordering = ['start_time']

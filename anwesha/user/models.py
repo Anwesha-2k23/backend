@@ -55,7 +55,7 @@ class User(models.Model):
 
 
     def __str__(self):
-        return self.full_name
+        return self.anwesha_id
 
     def meta(self):
         verbose_name = "User"

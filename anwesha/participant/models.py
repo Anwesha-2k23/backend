@@ -10,12 +10,10 @@ from event.models import Events
 class Participant(models.Model):
 
     anwesha_id = models.ForeignKey(
-        User, on_delete=models.CASCADE, blank=True, null=True
-    )
+        User, on_delete=models.CASCADE, blank=True, null=True,to_field="anwesha_id")
     event_id = models.ForeignKey(
-        Events, on_delete=models.CASCADE, blank=True, null=True
-    )
-    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True)
+        Events, on_delete=models.CASCADE, blank=True, null=True,to_field="id")
+    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True,to_field="team_id")
 
     def __str__(self):
         return self.anwesha_id
@@ -28,7 +26,7 @@ class Team(models.Model):
     team_name = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return self.team_name
+        return self.team_id
 
 
 class Payer(models.Model):
