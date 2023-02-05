@@ -9,4 +9,6 @@ event_urls = [
     path(
         "tags/<str:event_tags>", Get_Event_By_Tags.as_view(), name="get_event_by_tags"
     ),
+    path("add_merch", add_merchandise.as_view(), name="add_merch"),
+    path("order_merch", order_merchandise.as_view(), name="order_merch"),
 ]
