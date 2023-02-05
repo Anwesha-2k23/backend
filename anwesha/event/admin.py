@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Events, Gallery
+from .models import Events, Gallery, add_merch, order_merch
 
 # Register your models here.
 
@@ -34,4 +34,19 @@ class GalleryAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('tags', 'type')
     list_per_page = 20
+    empty_value_display = '-empty-'
+
+@admin.register(add_merch)
+class add_merchAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description', 'prices', 'size', 'image')
+    search_fields = ('title',)
+    empty_value_display = '-empty-'
+
+@admin.register(order_merch)
+class order_merchAdmin(admin.ModelAdmin):
+    def merch(self, obj):
+        return obj.merch_title.title
+
+    list_display = ('name', 'email', 'phone_no', 'address','size','quantity','payment_status','merch')
+    search_fields = ['name','email','phone_no','merch_title__title']
     empty_value_display = '-empty-'

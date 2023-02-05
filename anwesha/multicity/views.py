@@ -28,6 +28,9 @@ class register(APIView):
             leader_phone_no = request.data['leader_phone_no']
             leader_organisation = request.data['leader_organisation']
 
+            if Multicity_Participants.objects.filter(leader_email = leader_email , event_id= event_id).exists():
+                return JsonResponse({'message': 'You have already registered for this event', 'status': '409'} , status = 409)
+
             try:
                member_one_name = request.data['member_one_name']
                member_one_email = request.data['member_one_email']
@@ -74,7 +77,7 @@ class register(APIView):
                     check_exist = Multicity_Participants.objects.filter(registration_id=registration_id)
             try:
                 new_registration = Multicity_Participants.objects.create(
-                    event_id = Multicity_Events.objects.get(event_id = event_id) ,organisation_type = organisation_type , solo_team = solo_team,
+                    event_id = Multicity_Events.objects.get(event_id = event_id) ,organisation_type = organisation_type , solo_team = solo_team,registration_id = registration_id,
                     leader_name = leader_name, leader_email = leader_email , leader_organisation = leader_organisation , leader_phone_no = leader_phone_no,
                     member_one_name = member_one_name ,member_one_email = member_one_email , member_one_organisation = member_one_organisation , member_one_phone_no = member_one_phone_no,
                     member_two_name = member_two_name ,member_two_email = member_two_email , member_two_organisation = member_two_organisation , member_two_phone_no = member_two_phone_no,
