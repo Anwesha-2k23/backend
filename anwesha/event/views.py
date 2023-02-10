@@ -126,12 +126,13 @@ class create_team(APIView):
             return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=401)
         
         try:
-            Team.objects.create(
+            team = Team.objects.create(
                 team_id = team_id,
                 event_id=event,
                 leader_id=leader_id,
                 team_name=team_name
             )
+            team.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
 
@@ -181,11 +182,12 @@ class team_event_registration(APIView):
             return JsonResponse({"messagge":"Memeber already exists"},status=403)
 
         try:
-            TeamParticipant.objects.create(
+            team_participant = TeamParticipant.objects.create(
                 anwesha_id = team_member,
                 event_id = event,
                 team_id = team
             )
+            team_participant.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
         return JsonResponse({"message":"Team member suceessffully added"},status=201)
@@ -220,10 +222,11 @@ class solo_registration(APIView):
         if SoloParicipants.objects.filter(event_id=event,anwesha_id=payload["id"]).exists():
             return JsonResponse({"messagge":"you have already registred for the events"},status=404)
         try:
-            SoloParicipants.objects.create(
+            this_person = SoloParicipants.objects.create(
                 anwesha_id = user,
                 event_id = event,
             )
+            this_person.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
         return JsonResponse({"message":"Event registration suceessfully completed"},status=201)
