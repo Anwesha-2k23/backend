@@ -16,6 +16,7 @@ import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr
 
@@ -26,7 +27,7 @@ class Login(APIView):
             return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
 
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
 
@@ -72,7 +73,7 @@ class Login(APIView):
                     "iat": datetime.datetime.utcnow()
                 }
 
-                token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+                token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
 
                 response.data = { "success" : True , "name" : this_user.full_name}
                 response.set_cookie(key='jwt', value=token, httponly=True)
@@ -95,7 +96,7 @@ class LogOut(APIView):
             raise AuthenticationError("Unauthenticated")
         else:
             try:
-                payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
             except jwt.ExpiredSignatureError:
                 raise AuthenticationError("Cookie Expired")
             user = User.objects.get(anwesha_id = payload["id"]) 
@@ -168,7 +169,7 @@ class editProfile(APIView):
             return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
 
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
 
@@ -193,7 +194,7 @@ class editProfile(APIView):
             raise AuthenticationError("Unauthenticated")
 
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             raise AuthenticationError("Cookie Expired")
 
@@ -265,7 +266,7 @@ class sendVerificationEmail(APIView):
                         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
                         "iat": datetime.datetime.utcnow()
                     } 
-                    token = jwt.encode( payload=payload, key="secret" , algorithm="HS256") # not working ?? 
+                    token = jwt.encode( payload=payload, key=COOKIE_ENCRYPTION_SECRET , algorithm="HS256") # not working ?? 
                     return JsonResponse({"token": token},status=201)
                 except:
                     return JsonResponse({"message":"Token cannot be generated"} , status=409)
@@ -279,7 +280,7 @@ def verifyEmail(request , *arg , **kwarg):
     if request.method == 'GET':
         token = kwarg['pk']
         try:
-            jwt_payload = jwt.decode(token,"secret",algorithms = 'HS256')
+            jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256')
         except:
             return JsonResponse({"message":"token expired"} , status=409)
         try:
@@ -322,7 +323,7 @@ class Oauth_Login(APIView):
                         "iat": datetime.datetime.utcnow()
                     }
             response = Response()
-            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+            token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
             response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
@@ -349,7 +350,7 @@ class Oauth_Login(APIView):
                         "iat": datetime.datetime.utcnow()
                     }
             response = Response()
-            token = jwt.encode(payload, "ufdhufhufgefef", algorithm = 'HS256')
+            token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
             response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
@@ -366,7 +367,7 @@ class Oauth_Logout(APIView):
             raise AuthenticationError("Unauthenticated")
 
         try:
-            payload = jwt.decode(token, "ufdhufhufgefef", algorithms = 'HS256')
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
             raise AuthenticationError("Cookie Expired")
 

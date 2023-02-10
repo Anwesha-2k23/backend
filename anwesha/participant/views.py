@@ -1,6 +1,6 @@
 from tabnanny import check
 from django.shortcuts import render
-from .models import Participant, Team, Payer
+from .models import TeamParticipant, Team, Payer
 from user.models import User
 from event.models import Events
 from django.views import View
@@ -17,10 +17,10 @@ class participant_register(View):
             new_user = User.objects.get(anwesha_id=anwesha_id)
             new_event = Events.objects.get(id=event_id)
 
-            participant = Participant.objects.create(
+            participant = TeamParticipant.objects.create(
                 anwesha_id=new_user, event_id=new_event
             )
-            participant.save()
+            TeamParticipant.save()
 
             return JsonResponse({"message": "Participant registered successfully" , "status": "201"},status=201)
         except:
@@ -59,7 +59,7 @@ def myevents(request):
             if anwesha_id is None:
                 return JsonResponse({"message": "Unauthenticated" , "status": "401"},status=401)
             else:
-                my_events_list = Participant.objects.filter(anwesha_id=anwesha_id)
+                my_events_list = TeamParticipant.objects.filter(anwesha_id=anwesha_id)
                 my_events_list = list(my_events_list.values())
                 return JsonResponse(my_events_list, safe=False)
         except:
