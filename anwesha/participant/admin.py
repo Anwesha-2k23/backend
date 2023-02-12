@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Participant, Team, Payer
+from .models import TeamParticipant, Team, Payer,SoloParicipants
 
 # Register your models here.
 # admin.site.register(Participant)
@@ -8,7 +8,7 @@ from .models import Participant, Team, Payer
 # admin.site.register(Payer)
 
 
-@admin.register(Participant)
+@admin.register(TeamParticipant)
 class ParticipantAdmin(admin.ModelAdmin):
     list_display = ('anwesha_id', 'event_id', 'team_id')
     search_fields = ('anwesha_id', 'event_id', 'team_id')
@@ -24,3 +24,8 @@ class PayerAdmin(admin.ModelAdmin):
     search_fields = ('team_id', 'payer_id', 'reference_id')
     list_filter = ('payment_status',)
     
+@admin.register(SoloParicipants)
+class SoloAdmin(admin.ModelAdmin):
+    list_display = ('anwesha_id', 'event_id', 'payment_done')
+    search_fields = ('anwesha_id', 'event_id')
+    list_filter = ('payment_done',)

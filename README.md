@@ -15,7 +15,18 @@
 
 ## Some instructions to follow
 
-- use Snake_case not CamelCase
+- use Snake_case  not CamelCase 
 - Use comments
 - whenever you use some new dependency always add that to requirement.txt
   - use `pip freeze > requirements.txt`
+## Host using Docker 🐳 
+
+- use docker build command to build the image ( ❗ please note that you should run this command in 📁 root directory where docker file is present ) )
+```
+docker build --tag <image_name>:latest .
+```
+- run the image either from docker dashboard or using cli
+```
+docker run --name <image_name> -d -p 8000:8000 <imagge_name>:latest
+
+```
