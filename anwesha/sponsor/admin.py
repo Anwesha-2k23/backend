@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Sponsors
-
+from utility import export_as_csv
 @admin.register(Sponsors)
 class SponsorsAdmin(admin.ModelAdmin):
 
@@ -11,7 +11,7 @@ class SponsorsAdmin(admin.ModelAdmin):
         'sponsor_phone_number',
         'sponsor_email',
     )
-    actions = []
+    actions = [export_as_csv]
     list_filter = ()
     fieldsets = (
         ('Basic Information', {

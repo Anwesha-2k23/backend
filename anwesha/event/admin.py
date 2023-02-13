@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Events, Gallery, add_merch, order_merch
-
+from utility import export_as_csv
 # Register your models here.
 
 # admin.site.register(Events)
@@ -27,6 +27,7 @@ class EventsAdmin(admin.ModelAdmin):
         }),
     )
     empty_value_display = '-empty-'
+    actions = [export_as_csv]
 
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
@@ -41,6 +42,7 @@ class add_merchAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'prices', 'size', 'image')
     search_fields = ('title',)
     empty_value_display = '-empty-'
+    actions = [export_as_csv]
 
 @admin.register(order_merch)
 class order_merchAdmin(admin.ModelAdmin):
@@ -50,3 +52,4 @@ class order_merchAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_no', 'address','size','quantity','payment_status','merch')
     search_fields = ['name','email','phone_no','merch_title__title']
     empty_value_display = '-empty-'
+    actions = [export_as_csv]

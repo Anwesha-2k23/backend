@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import User
-
+from utility import export_as_csv
 # Register your models here.
 
 
@@ -14,7 +14,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
     list_display = ('anwesha_id', 'full_name', 'email_id', 'collage_name')
-    actions = [lock_user]
+    actions = [lock_user,export_as_csv]
     list_filter = ('user_type', 'is_locked', 'collage_name')
     fieldsets = (
         ('Basic Information', {
