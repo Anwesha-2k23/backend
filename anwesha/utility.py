@@ -7,9 +7,10 @@ from io import BytesIO
 from django.core.mail import send_mail
 from anwesha.settings import EMAIL_HOST_USER ,COOKIE_ENCRYPTION_SECRET
 import datetime
+from django.template.loader import render_to_string 
+from django.utils.html import strip_tags
 
-def varification_mail(email):
-    user = email
+def verification_mail(email , user):
     payload = {
         'email':email,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
@@ -21,12 +22,11 @@ def varification_mail(email):
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
     subject = "No reply"
     body = f'''
-    Hello,\n
+    Hello {user},\n
         Please click on the link below to verify your email address for anwesha login:
          \n{link}
         \n\nThanks,
         \nTeam  Anwesha
-        \n\n for testing pourposes :- {localhost_link}
     '''
     recipient_list = []
     recipient_list.append(email)

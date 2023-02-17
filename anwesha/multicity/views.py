@@ -30,7 +30,6 @@ class register(APIView):
 
             if Multicity_Participants.objects.filter(leader_email = leader_email , event_id= event_id).exists():
                 return JsonResponse({'message': 'You have already registered for this event', 'status': '409'} , status = 409)
-            
             try:
                member_one_name = request.data['member_one_name']
                member_one_email = request.data['member_one_email']

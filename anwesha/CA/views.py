@@ -7,7 +7,7 @@ from django.http import JsonResponse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from utility import generate_jwt_token , varification_mail , createId
+from utility import generate_jwt_token , verification_mail , createId
 from time import mktime
 
 from datetime import datetime ,timedelta ,timezone
@@ -30,10 +30,7 @@ class register(APIView):
             email_id=request.data['email_id']
             full_name=request.data['full_name']
             college_name=request.data['college_name']
-            try:
-                refferal_code=request.data['refferal_code']
-            except:
-                refferal_code = None
+           
             password=request.data['password']
             hpassword = hashpassword(password)
             if(isemail(email_id) == False):
@@ -43,7 +40,18 @@ class register(APIView):
             if Campus_ambassador.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'An Campus Ambassador With same Phone Number already exists', 'status': '409'},status = 409)
             else:
-                ca_id = createId("CA",8)
+                ca_id = createId("CA",5)
+                check_exist = Campus_ambassador.objects.filter(ca_id = ca_id)
+                while check_exist:  # very unlikely to happen
+                        ca_id = createId("CA",5)
+                        check_exist = Campus_ambassador.objects.filter(ca_id = ca_id)
+                
+                refferal_code = createId(prefix="RF",length=4)
+                check_refferal_code = Campus_ambassador.objects.filter(refferal_code = refferal_code)
+                while check_refferal_code:  # very unlikely to happen
+                    refferal_code = createId(prefix="RF",length=4)
+                    check_refferal_code = Campus_ambassador.objects.filter(refferal_code = refferal_code)
+            
                 new_campus_ambassador = Campus_ambassador.objects.create(
                     full_name=full_name,
                     email_id=email_id, 
@@ -53,7 +61,6 @@ class register(APIView):
                     refferal_code = refferal_code , 
                     ca_id = ca_id
                 )
-
                 new_campus_ambassador.save()
                 #varification_mail(email=email_id)
                 return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
