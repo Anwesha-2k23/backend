@@ -120,3 +120,35 @@ def export_as_csv(self, request, queryset):
         row = writer.writerow([getattr(obj, field) for field in field_names])
 
     return response
+
+
+class EmailSending:
+    def __init__(self, user) -> None:
+        self.address = user.email_id
+        self.subject = None
+        self.body = None
+        self.user = user
+
+    def email_varification(self):
+        payload = {
+            'id': self.user.anwesha_id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            "iat": datetime.datetime.utcnow()
+        }
+        token = jwt.encode(
+            payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+        link = "https://backend.anwesha.live/user/verifyemail/"+token
+        localhost_link = "http://127.0.0.1:8000/user/verifyemail/"+token
+        subject = "No reply"
+        body = f'''
+        Hello {self.address},\n
+            Please click on the link below to verify your email address for anwesha login:
+             \n{link}
+            \n\nThanks,
+            \nTeam  Anwesha
+        '''
+        recipient_list = []
+        recipient_list.append(self.address)
+        res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
+        print(res)
+        return res

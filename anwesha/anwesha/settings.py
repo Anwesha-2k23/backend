@@ -254,7 +254,7 @@ LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
 
 
 # Mail configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True  
 EMAIL_HOST = 'smtp.gmail.com'  
 EMAIL_PORT = 587  

@@ -18,7 +18,7 @@ from rest_framework.response import Response
 import datetime
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
-from utility import hashpassword, createId, isemail, generate_qr
+from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 
 class Login(APIView):
     def get(self, request):
@@ -114,30 +114,6 @@ class register(APIView):
             email_id = request.data['email_id']
             full_name = request.data['full_name']
             phone_number = request.data['phone_number']
-            # try:
-            #     # to take user type
-            #     # 0 -> alumini
-            #     # 1 -> IITP student
-            #     # 2 -> Student (non IITP students)
-            #     # 3 -> Non students
-            #     # 4 -> Guest
-            #     user_type = request.data['user_type']
-            # except:
-            #     user_type = 2  # this is for default user type
-
-            # """
-            # Assigning user type here
-            # """
-            # if user_type == 0:
-            #     user_type = User.User_type_choice.ALUMNI
-            # if user_type == 1:
-            #     user_type = User.User_type_choice.IITP_STUDENT
-            # if user_type ==  2:
-            #     user_type = User.User_type_choice.STUDENT
-            # if user_type ==  3:
-            #     user_type = User.User_type_choice.NON_STUDENT
-            # if user_type == 4:
-            #     user_type = User.User_type_choice.GUEST
             
             """
              data validation
@@ -159,6 +135,8 @@ class register(APIView):
             # user_type=user_type,
         )
         new_user.save()
+        e = EmailSending(new_user)
+        e.email_varification()
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
@@ -284,7 +262,7 @@ def verifyEmail(request , *arg , **kwarg):
         except:
             return JsonResponse({"message":"token expired"} , status=409)
         try:
-            user_to_verify = User.objects.get(email_id = jwt_payload['email'])
+            user_to_verify = User.objects.get(anwesha_id = jwt_payload['id'])
             user_to_verify.is_email_verified = True
             user_to_verify.save()
         except:
