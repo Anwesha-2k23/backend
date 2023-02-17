@@ -9,6 +9,8 @@ from anwesha.settings import EMAIL_HOST_USER ,COOKIE_ENCRYPTION_SECRET
 import datetime
 from django.template.loader import render_to_string 
 from django.utils.html import strip_tags
+import csv
+from django.http import HttpResponse
 
 def verification_mail(email , user):
     payload = {
@@ -89,3 +91,32 @@ def generate_qr(anwesha_id):
 
 def generate_jwt_token(anwesha_id):
     return anwesha_id
+
+
+def export_as_csv(self, request, queryset):
+    restricted_fields = [
+        'password',
+        'is_loggedin',
+        'validation',
+        'profile_photo',
+        'intrests',
+        'is_email_verified',
+        'is_profile_completed',
+        'is_locked',     
+    ]
+    meta = self.model._meta
+    field_names = []
+    for field in meta.fields:
+        if field.name not in restricted_fields:
+            field_names.append(field.name)
+
+    print(field_names)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        row = writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response

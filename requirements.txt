@@ -2,6 +2,7 @@ asgiref==3.6.0
 bcrypt==4.0.1
 boto3==1.25.4
 botocore==1.28.4
+backports.zoneinfo;python_version<"3.9"
 cachetools==5.2.0
 certifi==2022.12.7
 cffi==1.15.1

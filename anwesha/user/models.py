@@ -8,7 +8,14 @@ from django.db import models
 from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 from anwesha.settings import CONFIGURATION
 from utility import generate_qr, createId, hashpassword
+from django.core.files.storage import FileSystemStorage
 
+if CONFIGURATION == "local":
+    QrStorageSettings = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    ProfilePhotoStorageSettings = models.ImageField(blank=True, null=True, upload_to="static/profile")
+elif CONFIGURATION == "production":
+    QrStorageSettings = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
+    ProfilePhotoStorageSettings = models.ImageField(storage=ProfileImageStorage, blank=True, null=True)
 class User(models.Model):
     class User_type_choice(models.TextChoices):
         IITP_STUDENT = "iitp_student" ,"IITP-Student"
@@ -44,18 +51,13 @@ class User(models.Model):
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
-    # if CONFIGURATION == "local":
-    # profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-    # qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
-    # elif CONFIGURATION == "production":
-    profile_photo = models.ImageField(
-        storage=ProfileImageStorage, blank=True, null=True
-    )
-    qr_code = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
+    profile = models.ImageField()
+    profile_photo = ProfilePhotoStorageSettings
+    qr_code = QrStorageSettings
 
 
     def __str__(self):
-        return self.full_name
+        return self.anwesha_id
 
     def meta(self):
         verbose_name = "User"

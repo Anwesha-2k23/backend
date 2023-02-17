@@ -7,7 +7,7 @@ from user.models import User
 from event.models import Events
 
 # Create your models here.
-class Participant(models.Model):
+class TeamParticipant(models.Model):
 
     anwesha_id = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=True, null=True
@@ -26,7 +26,7 @@ class Team(models.Model):
     event_id = models.ForeignKey(Events, on_delete=models.CASCADE )
     leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
     team_name = models.CharField(max_length=100, blank=True, null=True)
-
+    payment_done = models.BooleanField(default=False)
     def __str__(self):
         return self.team_name
 
@@ -44,3 +44,9 @@ class Payer(models.Model):
 
     def __str__(self):
         return self.team_id
+
+class SoloParicipants(models.Model):
+    anwesha_id = models.ForeignKey( User, on_delete=models.CASCADE, blank=True, null=True)
+    event_id = models.ForeignKey(Events, on_delete=models.CASCADE, blank=True, null=True)
+    payment_done = models.BooleanField(default=False)
+    

@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
-CONFIGURATION = "production"
+CONFIGURATION = "local"
 S3_ENABLED = True
 
 # Application definition
@@ -102,24 +102,12 @@ WSGI_APPLICATION = "anwesha.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-if CONFIGURATION == 'production':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-#elif CONFIGURATION == 'production':
-#   DATABASES = {
-#        "default": {
-#           "ENGINE": "django.db.backends.mysql",
-#            "NAME": env("DB_NAME"),
-#            "USER": env("DB_USER"),
-#            "PASSWORD": env("DB_PASSWORD"),
-#            "HOST": env("DB_HOST"),
-#            "PORT": env("DB_PORT"),
-#        } 
-#    }
+}
 
 
 AUTHENTICATION_BACKENDS = [
@@ -178,30 +166,24 @@ AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 
 
 ## Storage Settings
-if S3_ENABLED:
-    AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
-    AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=86400",
-    }
-    AWS_STATIC_LOCATION = "static"
-    AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
-    AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr"
-    AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
-    AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
-    STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
-    DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
-    DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
-    DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
+AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+AWS_STATIC_LOCATION = "static"
+AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
+AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr"
+AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
+AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
+STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
+DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
+DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
+DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
 
-# if CONFIGURATION == 'local':
-#     STATIC_URL = 'static/'
-#     STATICFILES_DIRS = [
-#         os.path.join(BASE_DIR , 'static')
-#     ]
-#     STATIC_ROOT = '/home/rupax/Github/anwesha_backend/'
+
 
 # CSRF Settings
 # CSRF_COOKIE_SECURE = True
@@ -209,7 +191,7 @@ CSRF_COOKIE_SECURE = False
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
 CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 # SESSION_COOKIE_SECURE=True
 # SESSION_COOKIE_SAMESITE = 'None'
 
@@ -250,7 +232,7 @@ JET_THEMES = [
 
 JET_SIDE_MENU_COMPACT = False
 LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
-LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
+LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'
 
 
 # Mail configuration
