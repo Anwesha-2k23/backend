@@ -23,9 +23,7 @@ def verification_mail(email , user):
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
     link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
-    subject = "No replay"
-    # html_content = render_to_string('mail_template.html', {'varname':'value'}) # render with dynamic value
-    # text_content = strip_tags(html_content) # Strip the html tag. So people can see the pure text at least.
+    subject = "No reply"
     body = f'''
     Hello {user},\n
         Please click on the link below to verify your email address for anwesha login:
@@ -124,6 +122,7 @@ def export_as_csv(self, request, queryset):
 
     return response
 
+
 def check_token(request):
     '''
     :TODO: Find a more efficient way to check token and return errors messages
@@ -157,4 +156,35 @@ def check_password(password1: str, password2: str):
     """
     result =  bcrypt.checkpw(password1.encode('utf-8'), password2.encode('utf-8'))
     return result
+
+class EmailSending:
+    def __init__(self, user) -> None:
+        self.address = user.email_id
+        self.subject = None
+        self.body = None
+        self.user = user
+
+    def email_varification(self):
+        payload = {
+            'id': self.user.anwesha_id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            "iat": datetime.datetime.utcnow()
+        }
+        token = jwt.encode(
+            payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+        link = "https://backend.anwesha.live/user/verifyemail/"+token
+        localhost_link = "http://127.0.0.1:8000/user/verifyemail/"+token
+        subject = "No reply"
+        body = f'''
+        Hello {self.address},\n
+            Please click on the link below to verify your email address for anwesha login:
+             \n{link}
+            \n\nThanks,
+            \nTeam  Anwesha
+        '''
+        recipient_list = []
+        recipient_list.append(self.address)
+        res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
+        print(res)
+        return res
 

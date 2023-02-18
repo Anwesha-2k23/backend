@@ -14,7 +14,7 @@ class register(APIView):
                 organisation_type = Multicity_Participants.Organisation_Type.SCHOOL
             elif organisation_type == 1:
                 organisation_type = Multicity_Participants.Organisation_Type.COLLEGE
-            else:
+            else:   
                 organisation_type = Multicity_Participants.Organisation_Type.OTHERS
 
             try:
@@ -25,12 +25,11 @@ class register(APIView):
             leader_email = request.data['leader_email']
             if(isemail(leader_email) == False):
                 return JsonResponse({'message': 'Please enter valid email address', 'status': '409'} , status = 409)
-            leader_phone_no = request.data['leader_phone_no']
+            leader_phone_no = request.data['leader_phone_no']          
             leader_organisation = request.data['leader_organisation']
 
             if Multicity_Participants.objects.filter(leader_email = leader_email , event_id= event_id).exists():
                 return JsonResponse({'message': 'You have already registered for this event', 'status': '409'} , status = 409)
-
             try:
                member_one_name = request.data['member_one_name']
                member_one_email = request.data['member_one_email']

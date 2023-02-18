@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
-CONFIGURATION = "local"
+CONFIGURATION = "production"
 S3_ENABLED = True
 
 # Application definition
@@ -102,24 +102,24 @@ WSGI_APPLICATION = "anwesha.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-if CONFIGURATION == 'local':
+if CONFIGURATION == 'production':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-elif CONFIGURATION == 'production':
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": env("DB_NAME"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        } 
-    }
+#elif CONFIGURATION == 'production':
+#   DATABASES = {
+#        "default": {
+#           "ENGINE": "django.db.backends.mysql",
+#            "NAME": env("DB_NAME"),
+#            "USER": env("DB_USER"),
+#            "PASSWORD": env("DB_PASSWORD"),
+#            "HOST": env("DB_HOST"),
+#            "PORT": env("DB_PORT"),
+#        } 
+#    }
 
 
 AUTHENTICATION_BACKENDS = [
@@ -209,7 +209,7 @@ CSRF_COOKIE_SECURE = False
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
 CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
 # CORS Settings
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 # SESSION_COOKIE_SECURE=True
 # SESSION_COOKIE_SAMESITE = 'None'
 
@@ -254,7 +254,7 @@ LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
 
 
 # Mail configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True  
 EMAIL_HOST = 'smtp.gmail.com'  
 EMAIL_PORT = 587  

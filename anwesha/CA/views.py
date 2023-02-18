@@ -25,7 +25,7 @@ def all_campas_ambassodor(request):
 
 class register(APIView):
     def post(self, request):
-        # try:
+         try:
             phone_number=request.data['phone_number']
             email_id=request.data['email_id']
             full_name=request.data['full_name']
@@ -62,10 +62,10 @@ class register(APIView):
                     ca_id = ca_id
                 )
                 new_campus_ambassador.save()
-                verification_mail(email=email_id ,user =full_name)
-                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'CA_ID': ca_id , 'refferal_code':refferal_code} ,status=201)
-        # except:
-            # return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
+                #varification_mail(email=email_id)
+                return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
+         except:
+             return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
         
 class Login(APIView):
     def get(self, request):
