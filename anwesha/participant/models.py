@@ -22,6 +22,7 @@ class TeamParticipant(models.Model):
 
 
 class Team(models.Model):
+    
     team_id = models.CharField(unique=True, max_length=10, primary_key=True)
     event_id = models.ForeignKey(Events, on_delete=models.CASCADE )
     leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
@@ -32,14 +33,20 @@ class Team(models.Model):
 
 
 class Payer(models.Model):
+    class Payment_Status(models.TextChoices):
+        PAID = "paid" ,"Paid"
+        UNPAID = "unpaid", "Unpaid"
+        PENDING = "pending", "Pending"
     team_id = models.ForeignKey("Team", on_delete=models.CASCADE, null=True)
     payer_id = models.ForeignKey(User, on_delete=models.CASCADE)
     payment_status = models.CharField(
         max_length=10,
-        choices=[("paid", "paid"), ("unpaid", "unpaid"), ("pending", "pending")],
-        default="unpaid",
+        choices=Payment_Status.choices,
+        default=Payment_Status.UNPAID,
     )
-    reference_id = models.CharField(max_length=100)
+    payment_id = models.CharField(max_length=100)
+    order_id = models.CharField(max_length=100)
+    signature = models.CharField(max_length=100)
     datetime = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
