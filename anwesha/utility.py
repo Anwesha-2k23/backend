@@ -10,7 +10,8 @@ import datetime
 from django.template.loader import render_to_string 
 from django.utils.html import strip_tags
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse ,JsonResponse
+import bcrypt
 
 def verification_mail(email , user):
     payload = {
@@ -122,3 +123,38 @@ def export_as_csv(self, request, queryset):
         row = writer.writerow([getattr(obj, field) for field in field_names])
 
     return response
+
+def check_token(request):
+    '''
+    :TODO: Find a more efficient way to check token and return errors messages
+    '''
+    token = request.COOKIES.get('jwt')
+
+    if not token:
+        return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+
+    try:
+        payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
+        return payload
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({"message":"Your token is expired please login again"},status=409) 
+    
+
+def hash_password(password: str):
+    """
+    Hash a password for storing.
+    :param password: The password to hash.
+    :return: A string of length 60, containing the algorithm used and the hashed password.
+    """
+    return str(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))[2:-1]
+
+def check_password(password1: str, password2: str):
+    """
+    Check a hashed password. Uses bcrypt, the salt is saved into the hash itself
+    :param password1: The password to check.
+    :param password2: The hash to check the password against.
+    :return: True if the password matched, False otherwise.
+    """
+    result =  bcrypt.checkpw(password1.encode('utf-8'), password2.encode('utf-8'))
+    return result
+

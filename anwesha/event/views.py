@@ -4,11 +4,12 @@ from django.views.generic import View
 import json
 from .models import Events, tag_dict, add_merch, order_merch
 from rest_framework.views import APIView
-from participant.models import Team,TeamParticipant,SoloParicipants
+from participant.models import Team,TeamParticipant,SoloParicipants,Payer
 from utility import createId
 from user.models import User
-from anwesha.settings import COOKIE_ENCRYPTION_SECRET
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET,RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET
 import jwt
+import razorpay
 # Create your views here.
 
 # FBV for fetching all events
@@ -232,3 +233,102 @@ class solo_registration(APIView):
         return JsonResponse({"message":"Event registration suceessfully completed"},status=201)
 
         
+class RazorpayCheck(APIView):
+    def post(self,request):
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+
+        try:
+            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message":"Your token is expired please login again"},status=409) 
+        client = razorpay.Client(
+            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
+        )
+        total_price = request.data['total_price']
+
+        payment = client.order.create({
+            "amount":total_price,
+            "currency": "INR",
+        })
+        return JsonResponse({"message":"Payment order created","payment_details":payment},status=200)
+
+class RazorpayCheckout(APIView):
+    def post(self,request):
+        """
+        payment type is a string 
+        valid payment types are
+        :solo-event: -> for payment of solo event 
+        :team-event: -> for payment of team events
+        """
+        try:
+            razorpay_payment_id = request.data['razorpay_payment_id']
+            razorpay_order_id = request.data['razorpay_order_id']
+            razorpay_signature = request.data['razorpay_signature']
+            payment_type:request.data['payment_type']
+            event_id = request.data['event_id']
+        except:
+            return JsonResponse({"message":"Incomplete or Invalid form data"},status=400)
+
+        # token verification step
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+        try:
+            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message":"Your token is expired please login again"},status=409)
+
+        if payment_type == "solo-event":
+            payer_id  = User.objects.get(anwesha_id = payer_id['id'])
+            team_id = None
+        elif payment_type == "team-event":
+            payer_id  = User.objects.get(anwesha_id = payer_id['id'])
+            
+            if Team.objects.filter(leader_id = payload['id'], event_id=event_id).exists():
+                team = Team.objects.get(leader_id = payload['id'], event_id=event_id)
+                team_id = team
+            else:
+                return JsonResponse({"message":"you are not allowed to perform this action , payment for a event is done only by the team leaders"},status=403)
+
+        else:
+            return JsonResponse({"message":"Incomplete or Invalid form data"},status=400)
+
+
+        client = razorpay.Client(
+            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
+        )
+        data = {}
+        data['razorpay_payment_id'] = razorpay_payment_id
+        data['razorpay_order_id'] = razorpay_order_id
+        data['razorpay_signature'] = razorpay_signature
+
+        check = client.utility.verify_payment_signature(data)
+
+        if check:
+            return JsonResponse({"message":"your payment signature is not valid" , "error":check},status=403)
+        
+        Payer.objects.create(
+            team_id = team,
+            payer_id = payer_id,
+            payment_status = Payer.Payment_Status.PAID,
+            payment_id = razorpay_payment_id,
+            order_id = razorpay_order_id,
+            signature = razorpay_signature
+        )
+        Payer.save()
+
+        if payment_type == "solo-event":
+            participant = SoloParicipants.objects.get(anwesha_id = payer_id)
+            participant.payment_done = True
+            participant.save()
+
+        if payment_type == "team-event":
+            team = Team.objects.get(team_id = team_id)
+            team.payment_done = True
+            team.save()
+        
+        return JsonResponse({"message":"success"},status=201)
+            
