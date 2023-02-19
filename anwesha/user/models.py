@@ -51,7 +51,6 @@ class User(models.Model):
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
-    profile = models.ImageField()
     profile_photo = ProfilePhotoStorageSettings
     qr_code = QrStorageSettings
 
