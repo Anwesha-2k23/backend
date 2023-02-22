@@ -9,7 +9,9 @@ from utility import createId
 from user.models import User
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET,RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET
 import jwt
+import datetime
 import razorpay
+from user.utility import Autherize
 # Create your views here.
 
 # FBV for fetching all events
@@ -75,146 +77,125 @@ class order_merchandise(APIView):
             response = JsonResponse({"message": "Merch not ordered" , "status": '405'},status=405)
             return response
 
-class create_team(APIView):
-    def post(sef,request):
-        token = request.COOKIES.get('jwt')
 
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please login again"},status=409) 
-
-        try:
+class TeamEventRegistration(APIView):
+    @Autherize()
+    def post(self,request, **kwargs):
+        user = kwargs['user']
+        try: # taking input params
             event_id = request.data['event_id']
             team_name = request.data['team_name']
+            team_members = request.data['team_members']
         except:
             return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
+
+        try:
+            event = Events.objects.get(id = event_id)
+        except:
+            return JsonResponse({"message":"event does not exists"},status=404)
+
+        if Team.objects.filter(event_id = event,leader_id=user).exists(): 
+            return JsonResponse({"message":"you are already registered in this event"},status=403)
+        
+        if Team.objects.filter(event_id = event,team_name=team_name).exists(): 
+            return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
+        
+        if len(team_members)+1 > event.max_team_size or len(team_members)+1 < event.min_team_size:
+            return JsonResponse({"message":"team size is not valid"},status=403)
 
         team_id = createId(prefix="TM",length=5)
-        check_exist = Team.objects.filter(team_id = team_id).exists()
-        while check_exist:
+        while Team.objects.filter(team_id = team_id).exists():
             team_id = createId(prefix="TM",length=5)
-            check_exist = Team.objects.filter(team_id = team_id).exists()
 
-
-        try:
-            event = Events.objects.get(id = event_id)
-        except:
-            return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
-
-        if Team.objects.filter(event_id = event,team_name=team_name).exists():
-            return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
-
-        if Team.objects.filter(leader_id = payload['id']):
-            return JsonResponse({"message":"you are already registered in this event"},status=403)
-
-        try:
-            leader_id = User.objects.get(anwesha_id = payload["id"])
-        except:
-            return JsonResponse({"message": "Anwesha ID does not exist"},status=400)
-
-        if not leader_id.is_email_verified:
-            return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=401)
+        # itrate over all team members and check id exists and not registered for this event
+        error_msg = []
+        for team_member in team_members:
+            if not User.objects.filter(anwesha_id = team_member).exists():
+                error_msg.append(team_member+" does not exists")
+            elif TeamParticipant.objects.filter(anwesha_id = team_member, event_id = event).exists():
+                error_msg.append(team_member+" is already registered in this event")
+        
+        if len(error_msg) > 0:
+            return JsonResponse({"message":error_msg},status=403)
+        
+        # create payment object
+        client = razorpay.Client(
+            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
+        )
+        event_fee = event.registration_fee
+        print(event_fee)
+        payment = client.order.create({
+            "amount": int(event_fee),
+            "currency": "INR",
+        })
         
         try:
-            team = Team.objects.create(
+            new_team = Team(
                 team_id = team_id,
-                event_id=event,
-                leader_id=leader_id,
-                team_name=team_name
-            )
-            team.save()
-        except:
-            return JsonResponse({"message":"internal server error"},status=500)
-
-        return JsonResponse({"message":"Team sucessfully created","team id":team_id},status=201)
-class team_event_registration(APIView):
-    def post(self,request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please login again"},status=409) 
-        try:
-            event_id = request.data['event_id']
-            team_id = request.data['team_id']
-            team_member_id = request.data['team_member']
-        except:
-            return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
-
-        if not User.objects.filter(anwesha_id = payload['id']).exists():
-            return JsonResponse({"message":"this user does not exist"},status=404)
-
-        try:
-            team = Team.objects.get(team_id=team_id)
-        except:
-            return JsonResponse({"message":"Wrong team id provided"},status=400)
-
-        if not str(team.leader_id) == payload['id']: 
-            return JsonResponse({"message":"you are not authenticated for this operation only team leaders are allowed to perform this operation"},status=403)
-
-
-
-        if not User.objects.filter(anwesha_id = team_member_id).exists():
-            return JsonResponse({"message": "provided anwesha id does not exists" },status=404) 
-
-        team_member = User.objects.get(anwesha_id = team_member_id)
-
-        try:
-            event = Events.objects.get(id = event_id)
-        except:
-            return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
-
-        if TeamParticipant.objects.filter(event_id=event_id, anwesha_id = team_member.anwesha_id).exists():
-            return JsonResponse({"messagge":"Memeber already exists"},status=403)
-
-        try:
-            team_participant = TeamParticipant.objects.create(
-                anwesha_id = team_member,
                 event_id = event,
-                team_id = team
+                leader_id = user,
+                team_name = team_name
             )
-            team_participant.save()
-        except:
-            return JsonResponse({"message":"internal server error"},status=500)
-        return JsonResponse({"message":"Team member suceessffully added"},status=201)
+            new_team.save()
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message":"internal server error [team creation]"},status=500)
+        
+        try:
+            new_payer = Payer.objects.create(
+                payer_id = user,
+                order_id = payment["id"],
+                datetime = datetime.datetime.now()
+            )
+            new_payer.save()
+        except Exception as e:
+            print (e)
+
+
+        for team_member in team_members:
+            try:
+                new_team_member = TeamParticipant(
+                    team_id = new_team,
+                    anwesha_id = User.objects.get(anwesha_id = team_member),
+                    event_id = event,
+                )
+                new_team_member.save()
+            except Exception as e:
+                print(e)
+                return JsonResponse({"message":"internal server error [teammate creation]"},status=500)
+
+        return JsonResponse({ 
+            "message":"Registered Partially", 
+            "payment_details":payment,
+            "team_id":team_id,
+            "error": error_msg
+            },status=201)
 
         
-class solo_registration(APIView):
-    def post(self,request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please login again"},status=409) 
+class SoloRegistration(APIView):
+    @Autherize()
+    def post(self,request, **kwargs):
+        
+        user = kwargs['user']
         try:
             event_id = request.data['event_id']
-        except:
-            return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
-
-        try:
-            user = User.objects.get(anwesha_id = payload['id'])
-        except:
-            return JsonResponse({"message":"this user does not exist"},status=404)
-
-        try:
             event = Events.objects.get(id = event_id)
         except:
             return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
 
-        if SoloParicipants.objects.filter(event_id=event,anwesha_id=payload["id"]).exists():
+        if SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id).exists():
             return JsonResponse({"messagge":"you have already registred for the events"},status=404)
+        
+        # implement order creation here
+        client = razorpay.Client(
+            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
+        )
+        event_fee = event.registration_fee
+        payment = client.order.create({
+            "amount": int(event_fee),
+            "currency": "INR",
+        })
+
         try:
             this_person = SoloParicipants.objects.create(
                 anwesha_id = user,
@@ -224,40 +205,22 @@ class solo_registration(APIView):
         except:
             return JsonResponse({"message":"internal server error"},status=500)
         
-        # implement order creation here
+        try:
+            new_payer = Payer.objects.create(
+                payer_id = user,
+                order_id = payment["id"],
+                datetime = datetime.datetime.now()
+            )
+            new_payer.save()
+        except Exception as e:
+            print (e)
         
-        client = razorpay.Client(
-            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
-        )
-        event_fee = event.registration_fee
-        payment = client.order.create({
-            "amount":event_fee,
-            "currency": "INR",
-        })
         return JsonResponse({"message":"Event registration suceessfully completed","payment_details":payment},status=201)
 
-        
-# class RazorpayCheck(APIView):
-#     def post(self,request):
-#         token = request.COOKIES.get('jwt')
-
-#         if not token:
-#             return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-#         try:
-#             payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-#         except jwt.ExpiredSignatureError:
-#             return JsonResponse({"message":"Your token is expired please login again"},status=409) 
-#         total_price = request.data['total_price']
-
-#         payment = client.order.create({
-#             "amount":total_price,
-#             "currency": "INR",
-#         })
-#         return JsonResponse({"message":"Payment order created","payment_details":payment},status=200)
 
 class RazorpayCheckout(APIView):
-    def post(self,request):
+    Autherize()
+    def post(self,request, **kwargs):
         """
         payment type is a string 
         valid payment types are
@@ -268,68 +231,44 @@ class RazorpayCheckout(APIView):
             razorpay_payment_id = request.data['razorpay_payment_id']
             razorpay_order_id = request.data['razorpay_order_id']
             razorpay_signature = request.data['razorpay_signature']
-            payment_type:request.data['payment_type']
             event_id = request.data['event_id']
         except:
             return JsonResponse({"message":"Incomplete or Invalid form data"},status=400)
 
-        # token verification step
-        token = request.COOKIES.get('jwt')
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+        user = kwargs['user']
         try:
-            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please login again"},status=409)
-
-        if payment_type == "solo-event":
-            payer_id  = User.objects.get(anwesha_id = payer_id['id'])
-            team_id = None
-        elif payment_type == "team-event":
-            payer_id  = User.objects.get(anwesha_id = payer_id['id'])
-            
-            if Team.objects.filter(leader_id = payload['id'], event_id=event_id).exists():
-                team = Team.objects.get(leader_id = payload['id'], event_id=event_id)
-                team_id = team
-            else:
-                return JsonResponse({"message":"you are not allowed to perform this action , payment for a event is done only by the team leaders"},status=403)
-
-        else:
-            return JsonResponse({"message":"Incomplete or Invalid form data"},status=400)
-
-
+            team = Team.objects.get(leader_id = user, event_id = event_id)
+        except:
+            return JsonResponse({"message":"you are not the leader of this team"},status=403)
+        
+        try:
+            payer = Payer.objects.get(team_id = team)
+        except:
+            return JsonResponse({"message":"you have not created any order for this team"},status=403)
+        
+        if razorpay_order_id != payer.order_id:
+            return JsonResponse({"message":"your order id is not valid"},status=403)
+        
         client = razorpay.Client(
             auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
         )
-        data = {}
-        data['razorpay_payment_id'] = razorpay_payment_id
-        data['razorpay_order_id'] = razorpay_order_id
-        data['razorpay_signature'] = razorpay_signature
-
+        data = {
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_signature': razorpay_signature
+        }
+        
         check = client.utility.verify_payment_signature(data)
-
+        print(check)
         if check:
             return JsonResponse({"message":"your payment signature is not valid" , "error":check},status=403)
         
-        Payer.objects.create(
-            team_id = team,
-            payer_id = payer_id,
-            payment_status = Payer.Payment_Status.PAID,
-            payment_id = razorpay_payment_id,
-            order_id = razorpay_order_id,
-            signature = razorpay_signature
-        )
-        Payer.save()
+        # update status in Payer table and Team table
+        payer.status = "PAID"
+        payer.save()
 
-        if payment_type == "solo-event":
-            participant = SoloParicipants.objects.get(anwesha_id = payer_id)
-            participant.payment_done = True
-            participant.save()
-
-        if payment_type == "team-event":
-            team = Team.objects.get(team_id = team_id)
-            team.payment_done = True
-            team.save()
+        team.payment_done = True
+        team.save()
         
         return JsonResponse({"message":"success"},status=201)
             

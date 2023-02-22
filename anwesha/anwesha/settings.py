@@ -206,7 +206,7 @@ if S3_ENABLED:
 # CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = False
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
-CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
+CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/', 'http://localhost:3000/']
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
 # SESSION_COOKIE_SECURE=True

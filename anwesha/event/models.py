@@ -131,20 +131,20 @@ class Payer(models.Model):
         PAID = "paid" ,"Paid"
         UNPAID = "unpaid", "Unpaid"
         PENDING = "pending", "Pending"
-    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, null=True)
+    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, null=True, blank=True)
     payer_id = models.ForeignKey(User, on_delete=models.CASCADE)
     payment_status = models.CharField(
         max_length=10,
         choices=Payment_Status.choices,
         default=Payment_Status.UNPAID,
     )
-    payment_id = models.CharField(max_length=100)
+    payment_id = models.CharField(max_length=100, blank=True, null=True)
     order_id = models.CharField(max_length=100)
     signature = models.CharField(max_length=100)
     datetime = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.team_id
+        return self.payer_id.full_name
 
 class SoloParicipants(models.Model):
     anwesha_id = models.ForeignKey( User, on_delete=models.CASCADE, blank=True, null=True)
