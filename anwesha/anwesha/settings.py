@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "event",
     "map",
     "sponsor",
-    "participant",
     "CA",
     "multicity",
     "rest_framework",
@@ -249,7 +248,7 @@ JET_THEMES = [
 ]
 
 JET_SIDE_MENU_COMPACT = False
-LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
+LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
 LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
 
 

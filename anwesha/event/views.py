@@ -4,7 +4,7 @@ from django.views.generic import View
 import json
 from .models import Events, tag_dict, add_merch, order_merch
 from rest_framework.views import APIView
-from participant.models import Team,TeamParticipant,SoloParicipants,Payer
+from .models import Team,TeamParticipant,SoloParicipants,Payer
 from utility import createId
 from user.models import User
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET,RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET
@@ -17,6 +17,16 @@ def all_events(request):
     if request.method == "GET":
         events = Events.objects.all()
         events = list(events.values())
+        for event in events:
+            k = event['organizer']
+            k = k.split(',')
+            m = []
+            for i in k:
+                m.append(i.split(":"))
+            event['organizer'] = m
+            event['is_solo'] = False
+            if event['max_team_size'] == 1 and event['min_team_size'] == 1: event['is_solo'] = True
+
         return JsonResponse(events, safe=False)
     return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
 
@@ -44,23 +54,6 @@ class Get_Event_By_Tags(View):
             response = JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
             return response
 
-class add_merchandise(APIView):
-    def post(self, request):
-        try:
-            title = request.data['title']
-            description = request.data['description']
-            prices = request.data['prices']
-            size = request.data['size']
-            image = request.data['image']
-            if add_merch.objects.filter(title=title).exists():
-                return JsonResponse({"message": "Merch already exists with this title" , "status": '409'},status=409)
-
-            new_merch = add_merch.objects.create(title=title, description=description, prices=prices, size=size, image=image)
-            new_merch.save()
-            return JsonResponse({"message": "Merch is added successfully" , "status": '200'},status=200)
-        except:
-            response = JsonResponse({"message": "Merch not added" , "status": '405'},status=405)
-            return response
 
 class order_merchandise(APIView):
     def post(self, request):
@@ -230,30 +223,38 @@ class solo_registration(APIView):
             this_person.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
-        return JsonResponse({"message":"Event registration suceessfully completed"},status=201)
-
         
-class RazorpayCheck(APIView):
-    def post(self,request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please login again"},status=409) 
+        # implement order creation here
+        
         client = razorpay.Client(
             auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
         )
-        total_price = request.data['total_price']
-
+        event_fee = event.registration_fee
         payment = client.order.create({
-            "amount":total_price,
+            "amount":event_fee,
             "currency": "INR",
         })
-        return JsonResponse({"message":"Payment order created","payment_details":payment},status=200)
+        return JsonResponse({"message":"Event registration suceessfully completed","payment_details":payment},status=201)
+
+        
+# class RazorpayCheck(APIView):
+#     def post(self,request):
+#         token = request.COOKIES.get('jwt')
+
+#         if not token:
+#             return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+
+#         try:
+#             payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
+#         except jwt.ExpiredSignatureError:
+#             return JsonResponse({"message":"Your token is expired please login again"},status=409) 
+#         total_price = request.data['total_price']
+
+#         payment = client.order.create({
+#             "amount":total_price,
+#             "currency": "INR",
+#         })
+#         return JsonResponse({"message":"Payment order created","payment_details":payment},status=200)
 
 class RazorpayCheckout(APIView):
     def post(self,request):

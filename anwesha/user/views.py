@@ -19,6 +19,7 @@ import datetime
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr, EmailSending
+import time
 
 class Login(APIView):
     def get(self, request):
@@ -55,6 +56,7 @@ class Login(APIView):
             password = request.data['password']
         except:
             response.data = { "status" : "Incorrrect input" }
+            response.status = 404
             return response
 
         password = hashpassword(password)
@@ -74,10 +76,11 @@ class Login(APIView):
                 }
 
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-
+                this_user.is_loggedin = True
                 response.data = { "success" : True , "name" : this_user.full_name}
                 response.set_cookie(key='jwt', value=token, httponly=True)
             else:
+                response.status = 400
                 response.data = {
                     "message" : "Please verify email to log in to your account",
                     "success" : False
@@ -85,6 +88,7 @@ class Login(APIView):
             # code for linking cookie
         else:
             response.data = { "successs": False, "message": "incorrect id or password" }
+            response.status = 400
 
         return response    
 
@@ -109,6 +113,7 @@ class LogOut(APIView):
 
 class register(APIView):
     def post(self, request):
+        stime = time.time()
         try:
             password = request.data['password']
             email_id = request.data['email_id']
@@ -127,6 +132,8 @@ class register(APIView):
 
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
+        itime = time.time()
+        print(f"time after validation {itime-stime}")
         new_user = User.objects.create(
             full_name=full_name,
             email_id=email_id, 
@@ -135,8 +142,13 @@ class register(APIView):
             # user_type=user_type,
         )
         new_user.save()
-        e = EmailSending(new_user)
-        e.email_varification()
+        itime = time.time()
+        print(f"time after saving {itime-stime}")
+        # e = EmailSending(new_user)
+        # e.email_varification()
+
+        # itime = time.time()
+        # print(f"time after sending email {itime-stime}")
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
