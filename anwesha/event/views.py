@@ -191,7 +191,7 @@ class SoloRegistration(APIView):
             auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
         )
         event_fee = event.registration_fee
-        payment = client.order.create({
+        payment = client.order.create(data = {
             "amount": int(event_fee),
             "currency": "INR",
         })
