@@ -226,7 +226,7 @@ class SoloRegistration(APIView):
 
 
 class RazorpayCheckout(APIView):
-    Autherize()
+    @Autherize()
     def post(self,request, **kwargs):
         """
         payment type is a string 
@@ -238,24 +238,10 @@ class RazorpayCheckout(APIView):
             razorpay_payment_id = request.data['razorpay_payment_id']
             razorpay_order_id = request.data['razorpay_order_id']
             razorpay_signature = request.data['razorpay_signature']
-            event_id = request.data['event_id']
         except:
             return JsonResponse({"message":"Incomplete or Invalid form data"},status=400)
 
         user = kwargs['user']
-        try:
-            team = Team.objects.get(leader_id = user, event_id = event_id)
-        except:
-            return JsonResponse({"message":"you are not the leader of this team"},status=403)
-        
-        try:
-            payer = Payer.objects.get(team_id = team)
-        except:
-            return JsonResponse({"message":"you have not created any order for this team"},status=403)
-        
-        if razorpay_order_id != payer.order_id:
-            return JsonResponse({"message":"your order id is not valid"},status=403)
-        
         client = razorpay.Client(
             auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
         )
@@ -265,17 +251,32 @@ class RazorpayCheckout(APIView):
             'razorpay_signature': razorpay_signature
         }
         
-        check = client.utility.verify_payment_signature(data)
-        print(check)
-        if check:
-            return JsonResponse({"message":"your payment signature is not valid" , "error":check},status=403)
-        
-        # update status in Payer table and Team table
-        payer.status = "PAID"
-        payer.save()
+        try:
+            client.utility.verify_payment_signature(data)
+        except:
+            return JsonResponse({"message":"Invalid signeture"},status=403)
 
-        team.payment_done = True
-        team.save()
+        try:
+            solo_participant = SoloParicipants.objects.get(order_id = razorpay_order_id)
+            solo_participant.payment_done = True
+            solo_participant.save()
+        except:
+            pass
+
+        try:
+            payer = Payer.objects.get(order_id = razorpay_order_id)
+            payer.payment_status = Payer.PAID
+            payer.payment_id = razorpay_payment_id
+            payer.signature = razorpay_signature
+            payer.datetime = datetime.datetime.now()
+            payer.save()
+            if payer.team_id:
+                payer.team_id.payment_done = True
+                payer.team_id.save()
+        except:
+            return JsonResponse({"message":"Signeture varrified", "error": "payment entry not found" },status=403)
         
-        return JsonResponse({"message":"success"},status=201)
+        return JsonResponse({"message":"Signeture varified" },status=200)
+        
+        
             
