@@ -176,6 +176,9 @@ class SoloRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         
+        client = razorpay.Client(
+            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
+        )
         user = kwargs['user']
         try:
             event_id = request.data['event_id']
@@ -183,13 +186,16 @@ class SoloRegistration(APIView):
         except:
             return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
 
-        if SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id).exists():
-            return JsonResponse({"messagge":"you have already registred for the events"},status=404)
+        try:
+            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
+            order_id = preRegister[0].order_id
+            order = client.order.fetch(order_id)
+            return JsonResponse({"messagge":"you have already registred for the events", "payment_details":order },status=404)
+        except Exception as e:
+            print(e)
+            pass
         
         # implement order creation here
-        client = razorpay.Client(
-            auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET)
-        )
         event_fee = event.registration_fee
         payment = client.order.create(data = {
             "amount": int(event_fee),
@@ -200,6 +206,7 @@ class SoloRegistration(APIView):
             this_person = SoloParicipants.objects.create(
                 anwesha_id = user,
                 event_id = event,
+                order_id = payment["id"],
             )
             this_person.save()
         except:

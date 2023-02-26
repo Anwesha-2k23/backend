@@ -150,4 +150,5 @@ class SoloParicipants(models.Model):
     anwesha_id = models.ForeignKey( User, on_delete=models.CASCADE, blank=True, null=True)
     event_id = models.ForeignKey(Events, on_delete=models.CASCADE, blank=True, null=True)
     payment_done = models.BooleanField(default=False)
+    order_id = models.CharField(max_length=100, blank=True, null=True)
     
