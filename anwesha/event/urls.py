@@ -13,5 +13,6 @@ event_urls = [
     # path("createteam",create_team.as_view() , name="create team"),
     path("registration/team",TeamEventRegistration.as_view(),name="team registration"),
     path("registration/solo" ,SoloRegistration.as_view(),name="Solo event registration"),
-    path("registration/verification" , RazorpayCheckout.as_view(), name = "Check payment")
+    path("registration/verification" , RazorpayCheckout.as_view(), name = "Check payment"),
+    path("myevents", MyEvents.as_view(), name="myevents")
 ]

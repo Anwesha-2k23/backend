@@ -32,6 +32,50 @@ def all_events(request):
         return JsonResponse(events, safe=False)
     return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
 
+class MyEvents(View):
+    @Autherize()
+    def get(self, request, **kwargs):
+        user = kwargs['user']
+        d2, d1 = [], []
+        solo_participations = SoloParicipants.objects.filter(anwesha_id=user)
+        for i in solo_participations:
+            d1.append({
+                'event_id': i.event_id.id,
+                'event_name': i.event_id.name,
+                'event_start_time': i.event_id.start_time,
+                'event_end_time': i.event_id.end_time,
+                'event_venue': i.event_id.venue,
+                'event_tags': i.event_id.tags,
+                'event_is_active': i.event_id.is_active,
+                'order_id': i.order_id,
+                'payment_done': i.payment_done
+            })
+        team_participations = TeamParticipant.objects.filter(anwesha_id=user)
+        for i in team_participations:
+            payer = Payer.objects.get(team_id=i.team_id)
+            team_members = TeamParticipant.objects.filter(team_id=i.team_id)
+            team_memberids = []
+            for j in team_members:
+                team_memberids.append(j.anwesha_id.id)
+
+            d2.append({
+                'event_id': i.event_id.id,
+                'event_name': i.event_id.name,
+                'event_start_time': i.event_id.start_time,
+                'event_end_time': i.event_id.end_time,
+                'event_venue': i.event_id.venue,
+                'event_tags': i.event_id.tags,
+                'event_is_active': i.event_id.is_active,
+                'order_id': payer.order_id,
+                'payment_done': payer.payment_done,
+                'team_name': i.team_id.team_name,
+                'team_id': i.team_id.id,
+                'team_lead': i.team_id.leader_id.name,
+                'team_members': team_members
+            })
+        return JsonResponse({'solo': d1, 'team': d2}, safe=False)
+        
+
 
 # CBV for fetching event by id
 class Get_Event_By_Id(View):
