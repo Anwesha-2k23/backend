@@ -234,7 +234,17 @@ class SoloRegistration(APIView):
             preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
             order_id = preRegister[0].order_id
             order = client.order.fetch(order_id)
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details":order },status=404)
+            if preRegister[0].payment_done == True:
+                return JsonResponse({"messagge":"you have already registred for the events", "payment_details":order },status=404)
+            
+            event_fee = event.registration_fee
+            payment = client.order.create(data = {
+                "amount": int(event_fee),
+                "currency": "INR",
+            })
+            preRegister[0].order_id = payment["id"]
+            preRegister[0].save()
+            return JsonResponse({"messagge":"you have already registred for the events", "payment_details":payment["id"] },status=404)
         except Exception as e:
             print(e)
             pass
