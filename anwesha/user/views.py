@@ -21,6 +21,7 @@ import jwt
 from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 import time
 from .utility import Autherize
+import threading
 
 class Login(APIView):
     def get(self, request):
@@ -144,13 +145,10 @@ class register(APIView):
             # user_type=user_type,
         )
         new_user.save()
-        itime = time.time()
-        print(f"time after saving {itime-stime}")
-        e = EmailSending(new_user)
-        e.email_varification()
 
-        itime = time.time()
-        print(f"time after sending email {itime-stime}")
+        e = EmailSending(new_user)
+        threading.Thread(target=e.email_varification).start()
+
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
@@ -278,9 +276,8 @@ class forgetPassword(APIView):
             response.data = { "successs": False, "message": "This email doesnt exist for any user" }
             return response
 
-class forgetPassword2(APIView):
-    def get(self,post):
-        pass
+    def get(self, request):
+        return Response({"message": "GET method not allowed"}, status=405)
 
 class Oauth_Login(APIView):
     def get(self,request):
