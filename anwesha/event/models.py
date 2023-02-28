@@ -2,6 +2,7 @@ from ctypes.wintypes import tagSIZE
 from django.db import models
 import datetime
 from user.models import User
+from utility import createId
 
 ###  Code for TAGS  ###
 # Add your Event Tags here
@@ -39,17 +40,21 @@ class Events(models.Model):
     name = models.CharField(max_length=100)
     organizer = models.CharField(max_length=100)
     venue = models.CharField(max_length=255)
-    start_time = models.DateTimeField(blank=True)
     description = models.TextField()
-    end_time = models.DateTimeField(blank=True)
+    start_time = models.DateTimeField(blank=True, null=True)
+    end_time = models.DateTimeField(blank=True, null=True)
     prize = models.CharField(max_length=150, default=0)
     registration_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    registration_deadline = models.DateTimeField(blank=True, null=True)
     video = models.URLField(blank=True)
-    max_team_size = models.SmallIntegerField(default=1)
-    registration_deadline = models.DateTimeField(blank=True)
     poster = models.URLField(blank=True)
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
-    min_team_size = models.SmallIntegerField()
+    max_team_size = models.SmallIntegerField(default=1)
+    min_team_size = models.SmallIntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+    is_online = models.BooleanField(default=False)
+    registration_link = models.URLField(blank=True)
+    
     def __str__(self):
         return self.name
     
@@ -57,6 +62,11 @@ class Events(models.Model):
         ordering = ['start_time']
         verbose_name = "Event"
         verbose_name_plural = "Events"
+
+    def save(self, *args, **kwargs):
+        if not self.id or self.id == "":
+            self.id = createId("EVT", 5)
+        super(Events, self).save(*args, **kwargs)
 
 
 class Gallery(models.Model):
@@ -92,3 +102,55 @@ class order_merch(models.Model):
     quantity= models.IntegerField(default=0)
     payment_status= models.BooleanField(default=False)
     timestamp = models.DateTimeField(default=datetime.datetime.now)
+
+class TeamParticipant(models.Model):
+
+    anwesha_id = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=True, null=True
+    )
+    event_id = models.ForeignKey(
+        Events, on_delete=models.CASCADE, blank=True, null=True
+    )
+    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.anwesha_id
+
+
+class Team(models.Model):
+    
+    team_id = models.CharField(unique=True, max_length=10, primary_key=True)
+    event_id = models.ForeignKey(Events, on_delete=models.CASCADE )
+    leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
+    team_name = models.CharField(max_length=100, blank=True, null=True)
+    payment_done = models.BooleanField(default=False)
+    def __str__(self):
+        return self.team_name
+
+
+class Payer(models.Model):
+    class Payment_Status(models.TextChoices):
+        PAID = "paid" ,"Paid"
+        UNPAID = "unpaid", "Unpaid"
+        PENDING = "pending", "Pending"
+    team_id = models.ForeignKey("Team", on_delete=models.CASCADE, null=True, blank=True)
+    payer_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    payment_status = models.CharField(
+        max_length=10,
+        choices=Payment_Status.choices,
+        default=Payment_Status.UNPAID,
+    )
+    payment_id = models.CharField(max_length=100, blank=True, null=True)
+    order_id = models.CharField(max_length=100)
+    signature = models.CharField(max_length=100)
+    datetime = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.payer_id.full_name
+
+class SoloParicipants(models.Model):
+    anwesha_id = models.ForeignKey( User, on_delete=models.CASCADE, blank=True, null=True)
+    event_id = models.ForeignKey(Events, on_delete=models.CASCADE, blank=True, null=True)
+    payment_done = models.BooleanField(default=False)
+    order_id = models.CharField(max_length=100, blank=True, null=True)
+    

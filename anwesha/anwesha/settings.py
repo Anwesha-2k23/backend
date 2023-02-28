@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "event",
     "map",
     "sponsor",
-    "participant",
     "CA",
     "multicity",
     "rest_framework",
@@ -75,6 +74,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     # "django.middleware.csrf.CsrfViewMiddleware",
+    'user.middle.DisableCSRFMiddleware',
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -207,12 +207,13 @@ if S3_ENABLED:
 # CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = False
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
-CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
+CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/', 'http://localhost:3000/']
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 # SESSION_COOKIE_SECURE=True
 # SESSION_COOKIE_SAMESITE = 'None'
+CORS_ALLOW_CREDENTIALS = True
 
 
 # JET CONFIGURATION
@@ -250,7 +251,7 @@ JET_THEMES = [
 ]
 
 JET_SIDE_MENU_COMPACT = False
-LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
+LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
 LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
 
 

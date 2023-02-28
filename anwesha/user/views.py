@@ -19,6 +19,8 @@ import datetime
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr, EmailSending
+import time
+from .utility import Autherize
 
 class Login(APIView):
     def get(self, request):
@@ -55,6 +57,7 @@ class Login(APIView):
             password = request.data['password']
         except:
             response.data = { "status" : "Incorrrect input" }
+            response.status = 404
             return response
 
         password = hashpassword(password)
@@ -74,10 +77,11 @@ class Login(APIView):
                 }
 
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-
+                this_user.is_loggedin = True
                 response.data = { "success" : True , "name" : this_user.full_name}
                 response.set_cookie(key='jwt', value=token, httponly=True)
             else:
+                response.status = 400
                 response.data = {
                     "message" : "Please verify email to log in to your account",
                     "success" : False
@@ -85,6 +89,7 @@ class Login(APIView):
             # code for linking cookie
         else:
             response.data = { "successs": False, "message": "incorrect id or password" }
+            response.status = 400
 
         return response    
 
@@ -109,6 +114,7 @@ class LogOut(APIView):
 
 class register(APIView):
     def post(self, request):
+        stime = time.time()
         try:
             password = request.data['password']
             email_id = request.data['email_id']
@@ -127,6 +133,8 @@ class register(APIView):
 
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
+        itime = time.time()
+        print(f"time after validation {itime-stime}")
         new_user = User.objects.create(
             full_name=full_name,
             email_id=email_id, 
@@ -135,23 +143,20 @@ class register(APIView):
             # user_type=user_type,
         )
         new_user.save()
-        e = EmailSending(new_user)
-        e.email_varification()
+        itime = time.time()
+        print(f"time after saving {itime-stime}")
+        # e = EmailSending(new_user)
+        # e.email_varification()
+
+        # itime = time.time()
+        # print(f"time after sending email {itime-stime}")
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
 class editProfile(APIView):
-    def get(self, request):
-        token = request.COOKIES.get('jwt')
-        if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
-
-        user = User.objects.get(anwesha_id = payload["id"]) 
+    @Autherize()
+    def get(self, request, **kwargs):
+        user = kwargs['user']
         response = Response()
         response.data = {
             "anwesha_id": user.anwesha_id ,
@@ -165,18 +170,10 @@ class editProfile(APIView):
             "is_profile_completed" : user.is_profile_completed ,
         }
         return response
-    def post(self, request):
-        token = request.COOKIES.get('jwt')
-        
-        if not token:
-            raise AuthenticationError("Unauthenticated")
-
-        try:
-            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationError("Cookie Expired")
-
-        user = User.objects.get(anwesha_id = payload['id']) 
+    
+    @Autherize()
+    def post(self, request, **kwargs):
+        user = kwargs['user']
         data  =request.data
         try:
             full_name = data['full_name']

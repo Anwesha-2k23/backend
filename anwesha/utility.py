@@ -1,4 +1,5 @@
 import hashlib
+from typing import Any
 import uuid
 import jwt
 import qrcode
@@ -12,6 +13,7 @@ from django.utils.html import strip_tags
 import csv
 from django.http import HttpResponse ,JsonResponse
 import bcrypt
+
 
 def verification_mail(email , user):
     payload = {
@@ -187,4 +189,3 @@ class EmailSending:
         res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
         print(res)
         return res
-
