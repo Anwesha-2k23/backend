@@ -52,7 +52,9 @@ class Events(models.Model):
     max_team_size = models.SmallIntegerField(default=1)
     min_team_size = models.SmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
-
+    is_online = models.BooleanField(default=False)
+    registration_link = models.URLField(blank=True)
+    
     def __str__(self):
         return self.name
     
