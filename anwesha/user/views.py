@@ -140,16 +140,17 @@ class register(APIView):
             email_id=email_id, 
             password=password, 
             phone_number=phone_number,
+            is_email_verified = True,
             # user_type=user_type,
         )
         new_user.save()
         itime = time.time()
         print(f"time after saving {itime-stime}")
-        # e = EmailSending(new_user)
-        # e.email_varification()
+        e = EmailSending(new_user)
+        e.email_varification()
 
-        # itime = time.time()
-        # print(f"time after sending email {itime-stime}")
+        itime = time.time()
+        print(f"time after sending email {itime-stime}")
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 
