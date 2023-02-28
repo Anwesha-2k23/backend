@@ -309,7 +309,7 @@ class RazorpayCheckout(APIView):
 
         try:
             payer = Payer.objects.get(order_id = razorpay_order_id)
-            payer.payment_status = Payer.PAID
+            payer.payment_status = Payer.Payment_Status.PAID
             payer.payment_id = razorpay_payment_id
             payer.signature = razorpay_signature
             payer.datetime = datetime.datetime.now()
