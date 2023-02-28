@@ -140,6 +140,7 @@ class register(APIView):
             email_id=email_id, 
             password=password, 
             phone_number=phone_number,
+            is_email_verified = True,
             # user_type=user_type,
         )
         new_user.save()
