@@ -25,7 +25,8 @@ class EventsAdmin(admin.ModelAdmin):
                 ( 'description'),
                 ('max_team_size', 'min_team_size'),
                 ('poster', 'video'),
-                ('is_active')
+                ('is_active', 'is_online'),
+                ('registration_link')
             ),
         }),
     )
