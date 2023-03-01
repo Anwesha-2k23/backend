@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Campus_ambassador
 from utility import export_as_csv
+from django.db.models import F
 
 @admin.register(Campus_ambassador)
 class CAadmin(admin.ModelAdmin):
@@ -12,21 +13,17 @@ class CAadmin(admin.ModelAdmin):
 
     @admin.action(description='score +5')
     def score5(self, request, queryset):
-        # increment score by 5
-        _s = queryset.score
-        queryset.update(score=_s+5)
+        queryset.update(score=F("score")+5)
         self.message_user(request, "Score incremented")
     
     @admin.action(description='score +10')
     def score10(self, request, queryset):
-        _s = queryset.score
-        queryset.update(score=_s+10)
+        queryset.update(score=F("score")+10)
         self.message_user(request, "Score incremented")
     
     @admin.action(description='score +15')
     def score15(self, request, queryset):
-        _s = queryset.score
-        queryset.update(score=_s+15)
+        queryset.update(score=F("score")+15)
         self.message_user(request, "Score incremented")
     
     list_display = ('ca_id', 'full_name', 'email_id', 'refferal_code','phone_number')
