@@ -33,4 +33,4 @@ class CAadmin(admin.ModelAdmin):
         })
     )
     empty_value_display = '-empty-'
-    search_fields = ['ca_id',  'email_id', 'full_name','phone_number', 'collage_name']
+    search_fields = ['ca_id',  'email_id', 'full_name','phone_number', 'college_name']
