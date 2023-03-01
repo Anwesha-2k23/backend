@@ -20,6 +20,7 @@ class CAadmin(admin.ModelAdmin):
                 'email_id', 
                 'phone_number',
                 'profile_photo',
+                'score',
                 ('age', 'gender'),
                 ('college_city' , 'college_name'),
             )
