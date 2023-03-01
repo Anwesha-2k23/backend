@@ -11,20 +11,20 @@ class CAadmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     @admin.action(description='score +5')
-    def lock_user(self, request, queryset):
+    def score_5(self, request, queryset):
         # increment score by 5
         _s = queryset.score
         queryset.update(score=_s+5)
         self.message_user(request, "Score incremented")
     
     @admin.action(description='score +10')
-    def lock_user(self, request, queryset):
+    def score_10(self, request, queryset):
         _s = queryset.score
         queryset.update(score=_s+10)
         self.message_user(request, "Score incremented")
     
     @admin.action(description='score +15')
-    def lock_user(self, request, queryset):
+    def score_15(self, request, queryset):
         _s = queryset.score
         queryset.update(score=_s+15)
         self.message_user(request, "Score incremented")
