@@ -9,6 +9,26 @@ class CAadmin(admin.ModelAdmin):
     def lock_user(self, request, queryset):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
+
+    @admin.action(description='score +5')
+    def lock_user(self, request, queryset):
+        # increment score by 5
+        _s = queryset.score
+        queryset.update(score=_s+5)
+        self.message_user(request, "Score incremented")
+    
+    @admin.action(description='score +10')
+    def lock_user(self, request, queryset):
+        _s = queryset.score
+        queryset.update(score=_s+10)
+        self.message_user(request, "Score incremented")
+    
+    @admin.action(description='score +15')
+    def lock_user(self, request, queryset):
+        _s = queryset.score
+        queryset.update(score=_s+15)
+        self.message_user(request, "Score incremented")
+    
     list_display = ('ca_id', 'full_name', 'email_id', 'refferal_code','phone_number')
     actions = [lock_user,export_as_csv]
     list_filter = ('college_name', 'college_city', 'intrests')
