@@ -27,7 +27,7 @@ def verification_mail(email , user):
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
     subject = "No reply"
     body = f'''
-    Hello {user},\n
+    Hello {user},\n\n
         Please click on the link below to verify your email address for anwesha login:
          \n{link}
         \n\nThanks,
