@@ -142,7 +142,7 @@ class register(APIView):
             email_id=email_id, 
             password=password, 
             phone_number=phone_number,
-            is_email_verified = True,
+            # is_email_verified = True,
             # user_type=user_type,
         )
         new_user.save()
@@ -259,17 +259,19 @@ class sendVerificationEmail(APIView):
 
 
 def verifyEmail(request , *arg , **kwarg):
+    #print("----------------------------------------------\n\n")
     if request.method == 'GET':
         token = kwarg['pk']
         try:
             jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256')
         except:
             return JsonResponse({"message":"token expired"} , status=409)
+        # print("id ---->" + jwt_payload['id'])
         try:
             user_to_verify = User.objects.get(anwesha_id = jwt_payload['id'])
             user_to_verify.is_email_verified = True
             user_to_verify.save()
-        except:
+        except Expectation as e :
             return JsonResponse({"message":"Invalid Token"} , status=401)
         return JsonResponse({"message" : "email verified succesfully" } , status=201)
 

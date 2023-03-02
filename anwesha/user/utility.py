@@ -48,13 +48,13 @@ def mail_content(type , *args ,**kwargs):
         anwesha_id = kwargs['anwesha_id'] 
         payload = {
             'email':email,
-            'anwesha_id':anwesha_id,
+            'id':anwesha_id,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             "iat": datetime.datetime.utcnow()
         }
         token = jwt.encode(
             payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
+        link = "https://backend.anwesha.live/user/verifyemail/"+token
         body = f'''Hello {user},\n\nThank you for being part of Anwesha 2023 \nYour Anwesha ID is :- {anwesha_id} \nPlease click on the link below to verify your email address for anwesha login:\n{link}\n\nThanks,\nTeam  Anwesha
         '''
     else:
