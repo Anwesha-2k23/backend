@@ -273,19 +273,50 @@ def verifyEmail(request , *arg , **kwarg):
             return JsonResponse({"message":"Invalid Token"} , status=401)
         return JsonResponse({"message" : "email verified succesfully" } , status=201)
 
-class forgetPassword(APIView):
-    def post(self,request):
-        email_id = request.data['email_id']
-        email_user = User.objects.get(email_id = email_id)
-        if email_user:
-            pass
-        else:
-            response = Response()
-            response.data = { "successs": False, "message": "This email doesnt exist for any user" }
-            return response
+class ForgetPassword(APIView):
+    def get():  # for clicking the sent link
+        pass
 
-    def get(self, request):
-        return Response({"message": "GET method not allowed"}, status=405)
+    def post(self, request):  # posting the email address // mail the link
+        if not request.data['email']:
+            return Response({"message": "Email is missing"}, status=400)
+        try:
+            user = User.objects.get(email_id=request.data['email'])
+            payload = {
+                'userid': user.anwesha_id,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                "iat": datetime.datetime.utcnow()
+            }
+
+            token = jwt.encode(
+                payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+            link = "http://anwesha.live/user/reset_password/"+token
+
+            ## send mail
+
+            return Response({"message": "Reset Link sent"}, status=200)
+        except:
+            return Response({"message": "Email not found"}, status=404)
+
+    def put(self, request):  # chanfing the password
+        token = request.data['token']
+        password = request.data['password']
+
+        try:
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, 'HS256')
+        except jwt.ExpiredSignatureError:
+            return Response({"message": "Cookie Expired"}, status=408)
+
+        try:
+            user = User.objects.get(userid=payload['userid'])
+        except:
+            return Response({"message": "Invalid cookie"}, status=404)
+
+        user.password = hashpassword(password)
+        user.save()
+
+        # send mail confirmation
+        return Response({"message": "Password updated"}, status=200)
 
 class Oauth_Login(APIView):
     def get(self,request):
