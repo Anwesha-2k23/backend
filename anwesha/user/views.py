@@ -20,7 +20,7 @@ from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 import time
-from .utility import Autherize
+from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
 
 class Login(APIView):
@@ -80,7 +80,7 @@ class Login(APIView):
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
                 this_user.is_loggedin = True
                 response.data = { "success" : True , "name" : this_user.full_name}
-                response.set_cookie(key='jwt', value=token, httponly=True)
+                response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
             else:
                 response.status = 400
                 response.data = {
@@ -88,11 +88,12 @@ class Login(APIView):
                     "success" : False
                 }
             # code for linking cookie
+            return response
         else:
-            response.data = { "successs": False, "message": "incorrect id or password" }
-            response.status = 400
+           #   response.data = { "successs": False, "message": "incorrect id or password" }
+           # response.status = 400
 
-        return response    
+            return JsonResponse({"message":"Incorrect Credentials"},status=401)    
 
 
 class LogOut(APIView):
@@ -146,9 +147,16 @@ class register(APIView):
         )
         new_user.save()
 
-        e = EmailSending(new_user)
-        threading.Thread(target=e.email_varification).start()
-
+        # e = EmailSending(new_user)
+        # threading.Thread(target=e.email_varification).start()
+        # t = time.time()
+        text = mail_content(type = 1,email_id = email_id , full_name = full_name , anwesha_id = new_user.anwesha_id)
+        send_email_using_microservice(
+            email_id=email_id,
+            subject="No reply",
+            text=text
+        )
+        # print(time.time() - t)
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
 

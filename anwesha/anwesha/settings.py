@@ -102,24 +102,24 @@ WSGI_APPLICATION = "anwesha.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-if CONFIGURATION == 'production':
+if CONFIGURATION == 'local':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-#elif CONFIGURATION == 'production':
-#   DATABASES = {
-#        "default": {
-#           "ENGINE": "django.db.backends.mysql",
-#            "NAME": env("DB_NAME"),
-#            "USER": env("DB_USER"),
-#            "PASSWORD": env("DB_PASSWORD"),
-#            "HOST": env("DB_HOST"),
-#            "PORT": env("DB_PORT"),
-#        } 
-#    }
+elif CONFIGURATION == 'production':
+   DATABASES = {
+        "default": {
+           "ENGINE": "django.db.backends.mysql",
+            "NAME": env("DB_NAME"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        } 
+    }
 
 
 AUTHENTICATION_BACKENDS = [
@@ -270,3 +270,4 @@ COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
 #razorpay api keys
 RAZORPAY_API_KEY_ID = env("RAZORPAY_API_KEY_ID")
 RAZORPAY_API_KEY_SECRET = env("RAZORPAY_API_KEY_SECRET")
+EMAIL_MICROSERVICE_ENDPOINT = "http://localhost:5000/send-mail"
