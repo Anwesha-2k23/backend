@@ -80,7 +80,7 @@ class Login(APIView):
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
                 this_user.is_loggedin = True
                 response.data = { "success" : True , "name" : this_user.full_name}
-                response.set_cookie(key='jwt', value=token, httponly=True)
+                response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
             else:
                 response.status = 400
                 response.data = {
@@ -88,11 +88,12 @@ class Login(APIView):
                     "success" : False
                 }
             # code for linking cookie
+            return response
         else:
-            response.data = { "successs": False, "message": "incorrect id or password" }
-            response.status = 400
+           #   response.data = { "successs": False, "message": "incorrect id or password" }
+           # response.status = 400
 
-        return response    
+            return JsonResponse({"message":"Incorrect Credentials"},status=401)    
 
 
 class LogOut(APIView):
