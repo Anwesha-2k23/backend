@@ -333,4 +333,17 @@ class RazorpayCheckout(APIView):
         return JsonResponse({"message":"Signeture varified" },status=200)
         
         
-            
+def webhook(request):
+    request_data = {
+        "method" : request.method,
+        "body" : request.body,
+        "headers" : request.headers,
+        "path" : request.path,
+        "get" : request.GET,
+    }
+    print(request_data)
+    with open("sus.txt", "a") as f:
+        f.write(str(request_data))
+        f.write("\n")
+        f.close()
+    return JsonResponse({"message":"webhook recieved"},status=200)
