@@ -17,7 +17,7 @@ from user.utility import Autherize
 # FBV for fetching all events
 def all_events(request):
     if request.method == "GET":
-        events = Events.objects.all()
+        events = Events.objects.all().order_by('order')
         events = list(events.values())
         for event in events:
             k = event['organizer']
