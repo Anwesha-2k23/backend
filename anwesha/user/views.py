@@ -259,19 +259,17 @@ class sendVerificationEmail(APIView):
 
 
 def verifyEmail(request , *arg , **kwarg):
-    #print("----------------------------------------------\n\n")
     if request.method == 'GET':
         token = kwarg['pk']
         try:
             jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256')
         except:
             return JsonResponse({"message":"token expired"} , status=409)
-        # print("id ---->" + jwt_payload['id'])
         try:
             user_to_verify = User.objects.get(anwesha_id = jwt_payload['id'])
             user_to_verify.is_email_verified = True
             user_to_verify.save()
-        except Expectation as e :
+        except:
             return JsonResponse({"message":"Invalid Token"} , status=401)
         return JsonResponse({"message" : "email verified succesfully" } , status=201)
 
@@ -293,9 +291,9 @@ class ForgetPassword(APIView):
             token = jwt.encode(
                 payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
             link = "http://anwesha.live/user/reset_password/"+token
-
+            text = f'''Hello {user.full_name}!\nThis is the link to change password click it to update your password:-\n{link}\nPS: please dont share it with anyone\nThanks\nTeam Anwesha'''
             ## send mail
-
+            send_email_using_microservice(email_id=request.data['email'],subject="Change password",text=text)
             return Response({"message": "Reset Link sent"}, status=200)
         except:
             return Response({"message": "Email not found"}, status=404)
