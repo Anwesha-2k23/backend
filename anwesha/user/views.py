@@ -81,18 +81,11 @@ class Login(APIView):
                 this_user.is_loggedin = True
                 response.data = { "success" : True , "name" : this_user.full_name}
                 response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
+                return response
             else:
-                response.status = 400
-                response.data = {
-                    "message" : "Please verify email to log in to your account",
-                    "success" : False
-                }
+                return JsonResponse({"message":"Please verify email to log in to your account"},status=400)
             # code for linking cookie
-            return response
         else:
-           #   response.data = { "successs": False, "message": "incorrect id or password" }
-           # response.status = 400
-
             return JsonResponse({"message":"Incorrect Credentials"},status=401)    
 
 
@@ -122,7 +115,8 @@ class register(APIView):
             email_id = request.data['email_id']
             full_name = request.data['full_name']
             phone_number = request.data['phone_number']
-            
+            college_name = request.data['college_name']
+            user_type = request.data['user_type']
             """
              data validation
             """
@@ -132,6 +126,22 @@ class register(APIView):
                 return JsonResponse({'message': 'An User With same Email already exists', 'status': '409'},status = 409)
             if User.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'An User  With same Phone Number already exists', 'status': '409'},status = 409)
+            
+            """
+            assiging user types
+            """
+            if(user_type == "iitp_student"):
+                user_type = User.User_type_choice.IITP_STUDENT
+            elif user_type == "student":
+                user_type = User.User_type_choice.STUDENT
+            elif user_type == "non-student":
+                user_type = User.User_type_choice.NON_STUDENT
+            elif user_type == "alumni":
+                user_type = User.User_type_choice.ALUMNI
+            elif user_type == "faculty":
+                user_type = User.User_type_choice.GUEST
+            else:
+                return JsonResponse({"message":"enter proper user type"},status=403)    
 
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
@@ -143,7 +153,8 @@ class register(APIView):
             password=password, 
             phone_number=phone_number,
             # is_email_verified = True,
-            # user_type=user_type,
+            user_type=user_type,
+            collage_name=college_name,
         )
         new_user.save()
 
@@ -175,6 +186,7 @@ class editProfile(APIView):
             "is_email_verified" : user.is_email_verified , 
             "gender" : user.gender ,
             "is_profile_completed" : user.is_profile_completed ,
+            "profile_pitcure":user.profile_photo,
         }
         return response
     
