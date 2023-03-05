@@ -54,6 +54,7 @@ class Events(models.Model):
     is_active = models.BooleanField(default=True)
     is_online = models.BooleanField(default=False)
     registration_link = models.URLField(blank=True)
+    order = models.IntegerField(default=0)
     
     def __str__(self):
         return self.name
