@@ -35,7 +35,7 @@ class User(models.Model):
     phone_number = models.CharField(max_length=13, default="", unique=True, blank=True, null=True)
     email_id = models.EmailField(unique=True)
     full_name = models.CharField(max_length=100)
-    collage_name = models.CharField(max_length=150, blank=True, null=True)
+    collage_name = models.CharField(max_length=150, blank=True, null=True,default="IIT Patna")
     age = models.SmallIntegerField(blank=True, null=True)
     is_email_verified = models.BooleanField(default=False)
     user_type = models.CharField(
