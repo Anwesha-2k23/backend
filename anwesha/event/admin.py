@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Events, Gallery, add_merch, order_merch
-from .models import TeamParticipant, Team, Payer,SoloParicipants
+from .models import TeamParticipant, Team, Payer,SoloParicipants, PayUTxn
 from utility import export_as_csv
 # Register your models here.
 
@@ -28,6 +28,7 @@ class EventsAdmin(admin.ModelAdmin):
                 ('is_active', 'is_online'),
                 ('registration_link'),
                 ('order'),
+                ('payment_link', 'payment_key'),
             ),
         }),
     )
@@ -109,3 +110,11 @@ class SoloAdmin(admin.ModelAdmin):
     search_fields = ('anwesha_id', 'event_id')
     list_filter = ('payment_done',)
     actions = [lock_user,export_as_csv]
+
+@admin.register(PayUTxn)
+class PayUTxnAdmin(admin.ModelAdmin):
+    list_display = ('txnid', 'amount', 'firstname', 'email', 'productinfo', 'status')
+    search_fields = ('txnid', 'firstname', 'email', 'phone')
+    list_filter = ('status', 'productinfo' )
+    empty_value_display = '-empty-'
+    actions = [export_as_csv]

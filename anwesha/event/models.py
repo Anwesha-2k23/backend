@@ -55,6 +55,8 @@ class Events(models.Model):
     is_online = models.BooleanField(default=False)
     registration_link = models.URLField(blank=True)
     order = models.IntegerField(default=0)
+    payment_link = models.URLField(blank=True)
+    payment_key = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
         return self.name
@@ -115,7 +117,7 @@ class TeamParticipant(models.Model):
     team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return self.anwesha_id
+        return self.anwesha_id.anwesha_id
 
 
 class Team(models.Model):
@@ -125,6 +127,7 @@ class Team(models.Model):
     leader_id = models.ForeignKey(User, on_delete=models.CASCADE )
     team_name = models.CharField(max_length=100, blank=True, null=True)
     payment_done = models.BooleanField(default=False)
+    txnid = models.CharField(max_length=100, blank=True, null=True)
     def __str__(self):
         return self.team_name
 
@@ -154,4 +157,25 @@ class SoloParicipants(models.Model):
     event_id = models.ForeignKey(Events, on_delete=models.CASCADE, blank=True, null=True)
     payment_done = models.BooleanField(default=False)
     order_id = models.CharField(max_length=100, blank=True, null=True)
-    
+
+
+class PayUTxn(models.Model):
+    mihpayid = models.CharField(max_length=100, blank=True, null=True)
+    mode = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
+    key = models.CharField(max_length=100, blank=True, null=True)
+    txnid = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.CharField(max_length=100, blank=True, null=True)
+    addedon = models.CharField(max_length=100, blank=True, null=True)
+    productinfo = models.CharField(max_length=100, blank=True, null=True)
+    firstname = models.CharField(max_length=100, blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
+    field1 = models.CharField(max_length=100, blank=True, null=True)
+    field2 = models.CharField(max_length=100, blank=True, null=True)
+    field3 = models.CharField(max_length=100, blank=True, null=True)
+    field4 = models.CharField(max_length=100, blank=True, null=True)
+    field5 = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.email

@@ -4,7 +4,7 @@ from django.views.generic import View
 import json
 from .models import Events, tag_dict, add_merch, order_merch
 from rest_framework.views import APIView
-from .models import Team,TeamParticipant,SoloParicipants,Payer
+from .models import Team,TeamParticipant,SoloParicipants,Payer, PayUTxn
 from utility import createId
 from user.models import User
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET,RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET
@@ -12,6 +12,7 @@ import jwt
 import datetime
 import razorpay
 from user.utility import Autherize
+from urllib.parse import unquote
 # Create your views here.
 
 # FBV for fetching all events
@@ -28,6 +29,10 @@ def all_events(request):
             event['organizer'] = m
             event['is_solo'] = False
             if event['max_team_size'] == 1 and event['min_team_size'] == 1: event['is_solo'] = True
+            
+            # remove some fields
+            del event['payment_link']
+            del event['payment_key']
 
         return JsonResponse(events, safe=False)
     return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
@@ -122,7 +127,7 @@ class order_merchandise(APIView):
             return response
 
 
-class TeamEventRegistration(APIView):
+class RzPayTeamEventRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         user = kwargs['user']
@@ -215,8 +220,8 @@ class TeamEventRegistration(APIView):
             "error": error_msg
             },status=201)
 
-        
-class SoloRegistration(APIView):
+  
+class RzPaySoloRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         
@@ -337,13 +342,175 @@ def webhook(request):
     request_data = {
         "method" : request.method,
         "body" : request.body,
-        "headers" : request.headers,
-        "path" : request.path,
         "get" : request.GET,
     }
     print(request_data)
     with open("sus.txt", "a") as f:
         f.write(str(request_data))
-        f.write("\n")
+        f.write(",\n")
         f.close()
+
+    print(request.body)
+    db = unquote(request.body.decode("utf-8")).split("&")
+    bdy = {}
+    for d in db:
+        _d = d.split("=")
+        bdy[_d[0]] = None
+        if len(_d) == 2:
+            bdy[_d[0]] = _d[1]
+    try:
+        payUclient = PayUTxn.objects.create(
+            txnid = bdy["txnid"],
+            mihpayid = bdy["mihpayid"],
+            mode = bdy["mode"],
+            key = bdy["key"],
+            amount = bdy["amount"],
+            addedon = bdy["addedon"],
+            productinfo = bdy["productinfo"],
+            firstname = bdy["firstname"],
+            email = bdy["email"],
+            phone = bdy["phone"],
+            status = bdy["status"],
+            field1 = bdy["field1"],
+            field2 = bdy["field2"],
+            field3 = bdy["field3"],
+            field4 = bdy["field4"],
+            field5 = bdy["field5"],
+        )
+        payUclient.save()
+    except Exception as e:
+        print(e)
+        pass
+
+    try:
+        if bdy["status"] != "success":
+            return JsonResponse({"message":"webhook Failed"},status=500)
+        event = Events.objects.get(payment_key = bdy["productinfo"])
+        user = User.objects.get(email_id = bdy["email"])
+        try:
+            soloreg = SoloRegistration.objects.get(event_id = event, anwesha_id = user)
+            soloreg.payment_done = True
+            soloreg.order_id = bdy["txnid"]
+            soloreg.save()
+            return JsonResponse({"message":"webhook recieved"},status=200)
+        except :
+            pass
+
+        try:
+            teamreg = Team.objects.get(event_id = event, leader_id = user)
+            teamreg.payment_done = True
+            teamreg.txnid = bdy["txnid"]
+            teamreg.save()
+            return JsonResponse({"message":"webhook recieved"},status=200)
+        except :
+            pass
+    except:
+        return JsonResponse({"message":"webhook Failed"},status=500)    
     return JsonResponse({"message":"webhook recieved"},status=200)
+
+class SoloRegistration(APIView):
+    @Autherize()
+    def post(self,request, **kwargs):
+        user = kwargs['user']
+        try:
+            event_id = request.data['event_id']
+            event = Events.objects.get(id = event_id)
+        except:
+            return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
+
+        try:
+            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
+            if preRegister[0].payment_done == True:
+                return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister.order_id },status=404)
+            
+            return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister.order_id, "payment_url": event.payment_link },status=404)
+        except Exception as e:
+            print(e)
+            pass
+        
+        # implement order creation here
+
+        try:
+            this_person = SoloParicipants.objects.create(
+                anwesha_id = user,
+                event_id = event,
+            )
+            this_person.save()
+        except:
+            return JsonResponse({"message":"internal server error"},status=500)
+        
+        return JsonResponse({"message":"Event registration suceessfully completed","payment_url": event.payment_link},status=201)
+
+
+class TeamEventRegistration(APIView):
+    @Autherize()
+    def post(self,request, **kwargs):
+        user = kwargs['user']
+        try: # taking input params
+            event_id = request.data['event_id']
+            team_name = request.data['team_name']
+            team_members = request.data['team_members']
+        except:
+            return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
+
+        try:
+            event = Events.objects.get(id = event_id)
+        except:
+            return JsonResponse({"message":"event does not exists"},status=404)
+
+        if Team.objects.filter(event_id = event,leader_id=user).exists(): 
+            return JsonResponse({"message":"you are already registered in this event"},status=403)
+        
+        if Team.objects.filter(event_id = event,team_name=team_name).exists(): 
+            return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
+        
+        if len(team_members)+1 > event.max_team_size or len(team_members)+1 < event.min_team_size:
+            return JsonResponse({"message":"team size is not valid"},status=403)
+
+        team_id = createId(prefix="TM",length=5)
+        while Team.objects.filter(team_id = team_id).exists():
+            team_id = createId(prefix="TM",length=5)
+
+        # itrate over all team members and check id exists and not registered for this event
+        error_msg = []
+        team_members.append(user.anwesha_id)
+        for team_member in team_members:
+            if not User.objects.filter(anwesha_id = team_member).exists():
+                error_msg.append(team_member+" does not exists")
+            elif TeamParticipant.objects.filter(anwesha_id = team_member, event_id = event).exists():
+                error_msg.append(team_member+" is already registered in this event")
+        
+        if len(error_msg) > 0:
+            return JsonResponse({"message":error_msg},status=403)
+        
+        # create payment object
+        try:
+            new_team = Team(
+                team_id = team_id,
+                event_id = event,
+                leader_id = user,
+                team_name = team_name
+            )
+            new_team.save()
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message":"internal server error [team creation]"},status=500)
+
+        for team_member in team_members:
+            try:
+                new_team_member = TeamParticipant(
+                    team_id = new_team,
+                    anwesha_id = User.objects.get(anwesha_id = team_member),
+                    event_id = event,
+                )
+                new_team_member.save()
+            except Exception as e:
+                print(e)
+                return JsonResponse({"message":"internal server error [teammate creation]"},status=500)
+
+        return JsonResponse({ 
+            "message":"Registered Partially", 
+            "payment_url": event.payment_link,
+            "team_id":team_id,
+            "error": error_msg
+            },status=201)
