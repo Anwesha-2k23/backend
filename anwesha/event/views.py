@@ -57,7 +57,6 @@ class MyEvents(View):
             })
         team_participations = TeamParticipant.objects.filter(anwesha_id=user)
         for i in team_participations:
-            payer = Payer.objects.get(team_id=i.team_id)
             team_members = TeamParticipant.objects.filter(team_id=i.team_id)
             team_memberids = []
             for j in team_members:
@@ -71,8 +70,8 @@ class MyEvents(View):
                 'event_venue': i.event_id.venue,
                 'event_tags': i.event_id.tags,
                 'event_is_active': i.event_id.is_active,
-                'order_id': payer.order_id,
-                'payment_done': payer.payment_done,
+                'order_id': i.txnid,
+                'payment_done': i.payment_done,
                 'team_name': i.team_id.team_name,
                 'team_id': i.team_id.id,
                 'team_lead': i.team_id.leader_id.name,
