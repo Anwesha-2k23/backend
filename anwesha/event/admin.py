@@ -45,7 +45,7 @@ class GalleryAdmin(admin.ModelAdmin):
 
 @admin.register(add_merch)
 class add_merchAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'prices', 'size', 'image')
+    list_display = ('title', 'description', 'prices', 'image')
     search_fields = ('title',)
     empty_value_display = '-empty-'
     actions = [export_as_csv]
@@ -55,7 +55,7 @@ class order_merchAdmin(admin.ModelAdmin):
     def merch(self, obj):
         return obj.merch_title.title
 
-    list_display = ('name', 'email', 'phone_no', 'address','size','quantity','payment_status','merch')
+    list_display = ('anwesha_id', 'merch_title', 'address','size','quantity','payment_status')
     search_fields = ['name','email','phone_no','merch_title__title']
     empty_value_display = '-empty-'
     actions = [export_as_csv]
