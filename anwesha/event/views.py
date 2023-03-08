@@ -105,26 +105,65 @@ class Get_Event_By_Tags(View):
             return response
 
 
-class order_merchandise(APIView):
+class Rzpay_order_merchandise(APIView):
     def post(self, request):
+        client = razorpay.Client(auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET))
         try:
             name = request.data['name']
-            email = request.data['email']
-            phone_no = request.data['phone_no']
             address = request.data['address']
             merch_title = request.data['merch_title']
             size = request.data['size']
             quantity = request.data['quantity']
-            if order_merch.objects.filter(email=email).exists():
-                return JsonResponse({"message": "You have already ordered this merchandise" , "status": '409'},status=409)
-
-            new_order = order_merch.objects.create(name=name, email=email, phone_no=phone_no, address=address, merch_title = add_merch.objects.get(title = merch_title), size=size, quantity=quantity)
-            new_order.save()
+            # if order_merch.objects.filter(email=email).exists():
+            #     return JsonResponse({"message": "You have already ordered this merchandise" , "status": '409'},status=409)
+            try:
+                merch = add_merch.objects.filter(title=merch_title)
+                merch = merch[0]
+                total_price = merch[0].prices[quantity]
+            except:
+                return JsonResponse({"message":"Merch not found"})
+            payment = client.order.create(data = {
+                "amount": int(total_price),
+                "currency": "INR",
+            })
+            new_merch_order = order_merch.objects.create(name=name, address=address, merch_title = merch[0].title, size=size, quantity=quantity)
+            new_merch_order.order_id = payment["id"]
+            new_merch_order.save()
             return JsonResponse({"message": "Merch is ordered successfully" , "status": '200'},status=200)
         except:
             response = JsonResponse({"message": "Merch not ordered" , "status": '405'},status=405)
             return response
 
+class OrderMerchandise(APIView):
+    @Autherize()
+    def post(self,request, **kwargs):
+        user = kwargs['user']
+        try:
+            address = request.data['address']
+            merch_title = request.data['merch_title']
+            size = request.data['size']
+            quantity = request.data['quantity']
+            merch = add_merch.objects.get(title = merch_title)
+        except:
+            return JsonResponse({"messagge":"Merch does not exist"},status=404)
+
+        try:
+            new_merch = order_merch.objects.filter(merch_title=merch_title,anwesha_id=user.anwesha_id,address=address,size=size,quantity=quantity)
+            if new_merch[0].payment_done == True:
+                return JsonResponse({"messagge":"You have already purchased this merch", "payment_details": new_merch[0].order_id },status=404)
+            
+            return JsonResponse({"messagge":"you have already purchased this merch", "payment_details": new_merch[0].order_id, "payment_url": merch.payment_link },status=404)
+        except Exception as e:
+            print(e)
+            pass
+        
+        # try:
+        new_merch = order_merch.objects.create(merch_title=merch, anwesha_id=user, address = request.data['address'], size = request.data['size'], quantity = request.data['quantity'])
+        new_merch.save()
+        # except:
+        #     return JsonResponse({"message":"internal server error"},status=500)
+        
+        return JsonResponse({"message":"Merchandise purchase successful","payment_url": merch.payment_link},status=201)
 
 class RzPayTeamEventRegistration(APIView):
     @Autherize()

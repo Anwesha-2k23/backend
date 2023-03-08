@@ -133,3 +133,5 @@ dmypy.json
 #secret files
 .credential
 dev.pem
+
+anwesha/sus.txt
