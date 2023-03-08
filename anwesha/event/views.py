@@ -382,13 +382,11 @@ def webhook(request):
         "body" : request.body,
         "get" : request.GET,
     }
-    print(request_data)
-    with open("sus.txt", "a") as f:
+    with open("sus1.txt", "a") as f:
         f.write(str(request_data))
         f.write(",\n")
         f.close()
 
-    print(request.body)
     db = unquote(request.body.decode("utf-8")).split("&")
     bdy = {}
     for d in db:
@@ -419,10 +417,17 @@ def webhook(request):
     except Exception as e:
         print(e)
         pass
+    
+    merch_payments = [
+        "24493298", "24498465", "24498465"
+    ]
+
+    if bdy["productinfo"].split("+")[-1] in merch_payments:
+        return JsonResponse({"message":"webhook recieved"},status=200)
 
     try:
         if bdy["status"] != "success":
-            return JsonResponse({"message":"webhook Failed"},status=500)
+            return JsonResponse({"message":"webhook Failed"},status=200)
         event = Events.objects.get(payment_key = bdy["productinfo"])
         user = User.objects.get(email_id = bdy["email"])
         try:
@@ -496,10 +501,10 @@ class TeamEventRegistration(APIView):
         except:
             return JsonResponse({"message":"event does not exists"},status=404)
 
-        if Team.objects.filter(event_id = event,leader_id=user).exists(): 
+        if len(Team.objects.filter(event_id = event,leader_id=user)) >= 1: 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
         
-        if Team.objects.filter(event_id = event,team_name=team_name).exists(): 
+        if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
         
         if len(team_members)+1 > event.max_team_size or len(team_members)+1 < event.min_team_size:
