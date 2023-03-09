@@ -478,6 +478,10 @@ class SoloRegistration(APIView):
                 anwesha_id = user,
                 event_id = event,
             )
+            if user.uer_type == User.User_type_choice.IITP_STUDENT:
+                this_person.payment_done = True
+                this_person.save()
+                return JsonResponse({"message":"Event registration suceessfully completed", "payment_url": None },status=201)
             this_person.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
@@ -501,8 +505,11 @@ class TeamEventRegistration(APIView):
         except:
             return JsonResponse({"message":"event does not exists"},status=404)
 
-        if len(Team.objects.filter(event_id = event,leader_id=user)) >= 1: 
+        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = True )) >= 1: 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
+        
+        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = False )) >= 1: 
+            return JsonResponse({"message":"you are already registered in this event, but payment not varified yet", "payment_url": event.payment_link },status=403)
         
         if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
@@ -550,6 +557,16 @@ class TeamEventRegistration(APIView):
             except Exception as e:
                 print(e)
                 return JsonResponse({"message":"internal server error [teammate creation]"},status=500)
+
+        if user.user_type == User.User_type_choice.IITP_STUDENT:
+            new_team.payment_done = True
+            new_team.save()
+            return JsonResponse(
+                {"message":"Registered Successfully", 
+                 "team_id":team_id,
+                "error": error_msg,
+                "payment_url": None}
+                ,status=201)
 
         return JsonResponse({ 
             "message":"Registered Partially", 
