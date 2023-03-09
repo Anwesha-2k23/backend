@@ -57,7 +57,6 @@ class MyEvents(View):
             })
         team_participations = TeamParticipant.objects.filter(anwesha_id=user)
         for i in team_participations:
-            payer = Payer.objects.get(team_id=i.team_id)
             team_members = TeamParticipant.objects.filter(team_id=i.team_id)
             team_memberids = []
             for j in team_members:
@@ -71,8 +70,8 @@ class MyEvents(View):
                 'event_venue': i.event_id.venue,
                 'event_tags': i.event_id.tags,
                 'event_is_active': i.event_id.is_active,
-                'order_id': payer.order_id,
-                'payment_done': payer.payment_done,
+                'order_id': i.txnid,
+                'payment_done': i.payment_done,
                 'team_name': i.team_id.team_name,
                 'team_id': i.team_id.id,
                 'team_lead': i.team_id.leader_id.name,
@@ -383,13 +382,11 @@ def webhook(request):
         "body" : request.body,
         "get" : request.GET,
     }
-    print(request_data)
-    with open("sus.txt", "a") as f:
+    with open("sus1.txt", "a") as f:
         f.write(str(request_data))
         f.write(",\n")
         f.close()
 
-    print(request.body)
     db = unquote(request.body.decode("utf-8")).split("&")
     bdy = {}
     for d in db:
@@ -420,10 +417,17 @@ def webhook(request):
     except Exception as e:
         print(e)
         pass
+    
+    merch_payments = [
+        "24493298", "24498465", "24498465"
+    ]
+
+    if bdy["productinfo"].split("+")[-1] in merch_payments:
+        return JsonResponse({"message":"webhook recieved"},status=200)
 
     try:
         if bdy["status"] != "success":
-            return JsonResponse({"message":"webhook Failed"},status=500)
+            return JsonResponse({"message":"webhook Failed"},status=200)
         event = Events.objects.get(payment_key = bdy["productinfo"])
         user = User.objects.get(email_id = bdy["email"])
         try:
@@ -497,10 +501,10 @@ class TeamEventRegistration(APIView):
         except:
             return JsonResponse({"message":"event does not exists"},status=404)
 
-        if Team.objects.filter(event_id = event,leader_id=user).exists(): 
+        if len(Team.objects.filter(event_id = event,leader_id=user)) >= 1: 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
         
-        if Team.objects.filter(event_id = event,team_name=team_name).exists(): 
+        if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
         
         if len(team_members)+1 > event.max_team_size or len(team_members)+1 < event.min_team_size:
