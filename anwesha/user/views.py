@@ -22,6 +22,7 @@ from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 import time
 from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
+from django.shortcuts import redirect
 
 class Login(APIView):
     def get(self, request):
@@ -73,7 +74,7 @@ class Login(APIView):
             if this_user.is_email_verified == True :
                 payload = {
                     "id" : this_user.anwesha_id,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1440),
                     "iat": datetime.datetime.utcnow()
                 }
 
@@ -152,7 +153,7 @@ class register(APIView):
             email_id=email_id, 
             password=password, 
             phone_number=phone_number,
-            # is_email_verified = True,
+            is_email_verified = True,
             user_type=user_type,
             collage_name=college_name,
         )
@@ -186,7 +187,6 @@ class editProfile(APIView):
             "is_email_verified" : user.is_email_verified , 
             "gender" : user.gender ,
             "is_profile_completed" : user.is_profile_completed ,
-            "profile_pitcure":user.profile_photo,
         }
         return response
     
@@ -257,7 +257,7 @@ class sendVerificationEmail(APIView):
                 try:
                     payload = {
                         "email":email ,
-                        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=10),
                         "iat": datetime.datetime.utcnow()
                     } 
                     token = jwt.encode( payload=payload, key=COOKIE_ENCRYPTION_SECRET , algorithm="HS256") # not working ?? 
@@ -283,8 +283,9 @@ def verifyEmail(request , *arg , **kwarg):
             user_to_verify.save()
         except:
             return JsonResponse({"message":"Invalid Token"} , status=401)
-        return JsonResponse({"message" : "email verified succesfully" } , status=201)
-
+        #return JsonResponse({"message" : "email verified succesfully" } , status=201)
+        return redirect('https://anwesha.live/userLogin')
+    
 class ForgetPassword(APIView):
     def get():  # for clicking the sent link
         pass
@@ -296,7 +297,7 @@ class ForgetPassword(APIView):
             user = User.objects.get(email_id=request.data['email'])
             payload = {
                 'userid': user.anwesha_id,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=7200),
                 "iat": datetime.datetime.utcnow()
             }
 
@@ -320,7 +321,7 @@ class ForgetPassword(APIView):
             return Response({"message": "Cookie Expired"}, status=408)
 
         try:
-            user = User.objects.get(userid=payload['userid'])
+            user = User.objects.get(anwesha_id=payload['userid'])
         except:
             return Response({"message": "Invalid cookie"}, status=404)
 
@@ -343,7 +344,7 @@ class Oauth_Login(APIView):
             user = User.objects.get(email_id=email) 
             payload = {
                         "id" : user.anwesha_id,
-                        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1440),
                         "iat": datetime.datetime.utcnow()
                     }
             response = Response()
