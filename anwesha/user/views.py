@@ -22,6 +22,7 @@ from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 import time
 from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
+from anwesha.settings import STATIC_URL, AWS_PUBLIC_MEDIA_LOCATION2
 
 class Login(APIView):
     def get(self, request):
@@ -86,7 +87,9 @@ class Login(APIView):
                 return JsonResponse({"message":"Please verify email to log in to your account"},status=400)
             # code for linking cookie
         else:
-            return JsonResponse({"message":"Incorrect Credentials"},status=401)    
+            return JsonResponse({"message":"Incorrect Credentials"},status=401)
+    def options(self, request):
+        return "200"    
 
 
 class LogOut(APIView):
@@ -186,7 +189,9 @@ class editProfile(APIView):
             "is_email_verified" : user.is_email_verified , 
             "gender" : user.gender ,
             "is_profile_completed" : user.is_profile_completed ,
-            "profile_pitcure":user.profile_photo,
+            "profile_pitcure":str(user.profile_photo),
+            "user_type": user.user_type,
+            "qr_code": STATIC_URL + AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
         }
         return response
     

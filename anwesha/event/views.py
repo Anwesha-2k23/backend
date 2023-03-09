@@ -60,7 +60,7 @@ class MyEvents(View):
             team_members = TeamParticipant.objects.filter(team_id=i.team_id)
             team_memberids = []
             for j in team_members:
-                team_memberids.append(j.anwesha_id.id)
+                team_memberids.append(j.anwesha_id.anwesha_id)
 
             d2.append({
                 'event_id': i.event_id.id,
@@ -70,12 +70,12 @@ class MyEvents(View):
                 'event_venue': i.event_id.venue,
                 'event_tags': i.event_id.tags,
                 'event_is_active': i.event_id.is_active,
-                'order_id': i.txnid,
-                'payment_done': i.payment_done,
+                'order_id': i.team_id.txnid,
+                'payment_done': i.team_id.payment_done,
                 'team_name': i.team_id.team_name,
-                'team_id': i.team_id.id,
-                'team_lead': i.team_id.leader_id.name,
-                'team_members': team_members
+                'team_id': i.team_id.team_id,
+                'team_lead': i.team_id.leader_id.full_name,
+                'team_members': team_memberids
             })
         return JsonResponse({'solo': d1, 'team': d2}, safe=False)
         
@@ -370,7 +370,8 @@ class RazorpayCheckout(APIView):
             if payer.team_id:
                 payer.team_id.payment_done = True
                 payer.team_id.save()
-        except:
+        except Exception as e:
+            print(e)
             return JsonResponse({"message":"Signeture varrified", "error": "payment entry not found" },status=403)
         
         return JsonResponse({"message":"Signeture varified" },status=200)
@@ -455,6 +456,7 @@ class SoloRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         user = kwargs['user']
+        print(user.user_type == User.User_type_choice.IITP_STUDENT)
         try:
             event_id = request.data['event_id']
             event = Events.objects.get(id = event_id)
@@ -464,9 +466,10 @@ class SoloRegistration(APIView):
         try:
             preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
             if preRegister[0].payment_done == True:
-                return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister.order_id },status=404)
+                print("flag")
+                return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id },status=200)
             
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister.order_id, "payment_url": event.payment_link },status=404)
+            return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id, "payment_url": event.payment_link },status=200)
         except Exception as e:
             print(e)
             pass
@@ -478,7 +481,7 @@ class SoloRegistration(APIView):
                 anwesha_id = user,
                 event_id = event,
             )
-            if user.uer_type == User.User_type_choice.IITP_STUDENT:
+            if user.user_type == User.User_type_choice.IITP_STUDENT:
                 this_person.payment_done = True
                 this_person.save()
                 return JsonResponse({"message":"Event registration suceessfully completed", "payment_url": None },status=201)
@@ -523,7 +526,6 @@ class TeamEventRegistration(APIView):
 
         # itrate over all team members and check id exists and not registered for this event
         error_msg = []
-        team_members.append(user.anwesha_id)
         for team_member in team_members:
             if not User.objects.filter(anwesha_id = team_member).exists():
                 error_msg.append(team_member+" does not exists")
