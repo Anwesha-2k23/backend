@@ -481,7 +481,7 @@ class SoloRegistration(APIView):
                 anwesha_id = user,
                 event_id = event,
             )
-            if user.user_type == User.User_type_choice.IITP_STUDENT:
+            if user.user_type == User.User_type_choice.IITP_STUDENT and event.tags != '5':  
                 this_person.payment_done = True
                 this_person.save()
                 return JsonResponse({"message":"Event registration suceessfully completed", "payment_url": None },status=201)
