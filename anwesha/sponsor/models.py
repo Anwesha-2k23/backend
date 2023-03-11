@@ -5,6 +5,8 @@ class Sponsors(models.Model):
 
     sponsor_name = models.CharField(max_length=50, unique=True)
     sponsor_phone_number = models.CharField(max_length=15, unique=True)
+    sponsor_description = models.CharField(max_length=1000, blank=True, null=True)
+    order = models.IntegerField(default=0)
     sponsor_email = models.EmailField(unique=True)
     sponsor_logo = models.ImageField(
         blank=True, null=True, upload_to="static/sponsor_logo"
