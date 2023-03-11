@@ -88,25 +88,25 @@ class Gallery(models.Model):
         verbose_name = "Gallery"
         verbose_name_plural = "Gallery"
 
-class add_merch(models.Model):
-    title= models.CharField(max_length=30,primary_key=True)
-    description= models.TextField(blank=True)
-    prices= models.JSONField()
-    # size= models.CharField(max_length=50)
-    image= models.ImageField(upload_to="static/merch/", default=None)
-    payment_link=models.CharField(max_length=200,null=True,blank=True)
+# class add_merch(models.Model):
+#     title= models.CharField(max_length=30,primary_key=True)
+#     description= models.TextField(blank=True)
+#     prices= models.JSONField()
+#     # size= models.CharField(max_length=50)
+#     image= models.ImageField(upload_to="static/merch/", default=None)
+#     payment_link=models.CharField(max_length=200,null=True,blank=True)
 
-class order_merch(models.Model):
-    merch_title= models.ForeignKey(add_merch, on_delete=models.CASCADE)
-    anwesha_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    address= models.TextField(max_length=200)
-    size= models.CharField(max_length=50, choices=size,null=True,blank=True)
-    transaction_id=models.CharField(max_length=100,null=True,blank=True)
-    payment_done = models.BooleanField(default=False)
-    order_id = models.CharField(max_length=100,null=True,blank=True)
-    quantity= models.IntegerField(default=0)
-    payment_status= models.BooleanField(default=False)
-    timestamp = models.DateTimeField(default=datetime.datetime.now)
+# class order_merch(models.Model):
+#     merch_title= models.ForeignKey(add_merch, on_delete=models.CASCADE)
+#     anwesha_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+#     address= models.TextField(max_length=200)
+#     size= models.CharField(max_length=50, choices=size,null=True,blank=True)
+#     transaction_id=models.CharField(max_length=100,null=True,blank=True)
+#     payment_done = models.BooleanField(default=False)
+#     order_id = models.CharField(max_length=100,null=True,blank=True)
+#     quantity= models.IntegerField(default=0)
+#     payment_status= models.BooleanField(default=False)
+#     timestamp = models.DateTimeField(default=datetime.datetime.now)
 
 class TeamParticipant(models.Model):
 

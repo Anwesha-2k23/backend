@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Events, Gallery, add_merch, order_merch
+from .models import Events, Gallery
 from .models import TeamParticipant, Team, Payer,SoloParicipants, PayUTxn
 from utility import export_as_csv
 # Register your models here.
@@ -43,22 +43,22 @@ class GalleryAdmin(admin.ModelAdmin):
     list_per_page = 20
     empty_value_display = '-empty-'
 
-@admin.register(add_merch)
-class add_merchAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'prices', 'image')
-    search_fields = ('title',)
-    empty_value_display = '-empty-'
-    actions = [export_as_csv]
+# @admin.register(add_merch)
+# class add_merchAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'description', 'prices', 'image')
+#     search_fields = ('title',)
+#     empty_value_display = '-empty-'
+#     actions = [export_as_csv]
 
-@admin.register(order_merch)
-class order_merchAdmin(admin.ModelAdmin):
-    def merch(self, obj):
-        return obj.merch_title.title
+# @admin.register(order_merch)
+# class order_merchAdmin(admin.ModelAdmin):
+#     def merch(self, obj):
+#         return obj.merch_title.title
 
-    list_display = ('anwesha_id', 'merch_title', 'address','size','quantity','payment_status')
-    search_fields = ['name','email','phone_no','merch_title__title']
-    empty_value_display = '-empty-'
-    actions = [export_as_csv]
+#     list_display = ('anwesha_id', 'merch_title', 'address','size','quantity','payment_status')
+#     search_fields = ['name','email','phone_no','merch_title__title']
+#     empty_value_display = '-empty-'
+#     actions = [export_as_csv]
 
 
 
