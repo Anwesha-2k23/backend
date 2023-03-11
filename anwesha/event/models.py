@@ -130,8 +130,8 @@ class Team(models.Model):
     team_name = models.CharField(max_length=100, blank=True, null=True)
     payment_done = models.BooleanField(default=False)
     txnid = models.CharField(max_length=100, blank=True, null=True)
-    def __str__(self):
-        return self.team_name
+    # def __str__(self):
+    #    return self.team_name
 
 
 class Payer(models.Model):
