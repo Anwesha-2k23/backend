@@ -412,6 +412,10 @@ def webhook(request):
         bdy[_d[0]] = None
         if len(_d) == 2:
             bdy[_d[0]] = _d[1]
+
+    if PayUTxn.objects.filter(txnid=bdy["txnid"]).exists():
+        return JsonResponse({"message":"repeated request"},status=200)
+    
     try:
         payUclient = PayUTxn.objects.create(
             txnid = bdy["txnid"],
@@ -437,7 +441,7 @@ def webhook(request):
         pass
     
     merch_payments = [
-        "24493298", "24498465", "24498465"
+        "24493298", "24498465", "24498352"
     ]
 
     if bdy["productinfo"].split("+")[-1] in merch_payments:
