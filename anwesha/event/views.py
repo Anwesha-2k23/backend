@@ -110,7 +110,7 @@ class Check_Event_Registration(View):
         try:
             event = Events.objects.get(id=event_id)
             if event.max_team_size == 1 and event.min_team_size == 1:
-                if SoloParicipants.objects.filter(event_id=event, anwesha_id=anwesha_id, payment_done = True).exists():
+                if SoloParicipants.objects.filter(event_id=event_id, anwesha_id=anwesha_id, payment_done = True).exists():
                     return JsonResponse({"message": "User is Registered" , "status": '200'},status=200)
                 else:
                     return JsonResponse({"message": "User is not Registered" , "status": '200'},status=200)
