@@ -17,9 +17,11 @@ class SponsorsAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': (
                 'sponsor_name',
+                'sponsor_description',
                 'sponsor_phone_number',
                 'sponsor_email',
                 'sponsor_logo',
+                'order',
             )
         }),
         ('Social Links', {

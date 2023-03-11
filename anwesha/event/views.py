@@ -105,6 +105,23 @@ class Get_Event_By_Tags(View):
             return response
 
 
+class Check_Event_Registration(View):
+    def get(self, request, event_id, anwesha_id):
+        try:
+            event = Events.objects.get(id=event_id)
+            if event.max_team_size == 1 and event.min_team_size == 1:
+                if SoloParicipants.objects.filter(event_id=event_id, anwesha_id=anwesha_id, payment_done = True).exists():
+                    return JsonResponse({"message": "User is Registered" , "status": '200'},status=200)
+                else:
+                    return JsonResponse({"message": "User is not Registered" , "status": '200'},status=200)
+            else:
+                if Team.objects.filter(event_id=event, leader_id=anwesha_id, payment_done = True).exists():
+                    return JsonResponse({"message": "Team is Registered" , "status": '200'},status=200)
+                else:
+                    return JsonResponse({"message": "Team is not Registered" , "status": '200'},status=200)
+        except:
+            return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
+
 class Rzpay_order_merchandise(APIView):
     def post(self, request):
         client = razorpay.Client(auth = (RAZORPAY_API_KEY_ID , RAZORPAY_API_KEY_SECRET))
@@ -395,6 +412,10 @@ def webhook(request):
         bdy[_d[0]] = None
         if len(_d) == 2:
             bdy[_d[0]] = _d[1]
+
+    if PayUTxn.objects.filter(txnid=bdy["txnid"]).exists():
+        return JsonResponse({"message":"repeated request"},status=200)
+    
     try:
         payUclient = PayUTxn.objects.create(
             txnid = bdy["txnid"],
@@ -420,7 +441,7 @@ def webhook(request):
         pass
     
     merch_payments = [
-        "24493298", "24498465", "24498465"
+        "24493298", "24498465", "24498352"
     ]
 
     if bdy["productinfo"].split("+")[-1] in merch_payments:
