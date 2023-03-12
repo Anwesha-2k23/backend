@@ -22,10 +22,15 @@ class Command(BaseCommand):
             user = User.objects.get(email_id=txn.email)
             self.printf(f"\t|- [+] User found {txn.email} -> {user.anwesha_id}", f)
         except User.DoesNotExist:
-            self.printf(f"\t|- [!] User not found {txn.email}", f)
-            txn.is_processed = True
-            txn.save()
-            return
+            try:
+                _phoneno = str(txn.phone)[:10]
+                user = User.objects.get(phone_number = txn.phone)
+                self.printf(f"\t|- [+] User found {txn.phone} -> {user.anwesha_id}", f)
+            except User.DoesNotExist:
+                self.printf(f"\t|- [!] User not found {txn.email}", f)
+                txn.is_processed = True
+                txn.save()
+                return
         
         try:
             event = Events.objects.get(payment_key=txn.productinfo)
@@ -37,7 +42,7 @@ class Command(BaseCommand):
             return
 
         try:
-            solo_participants = SoloParicipants.objects.get(anwesha_id=user, event_id=event )
+            solo_participants = SoloParicipants.objects.filter(anwesha_id=user, event_id=event )[0]
             _event_name = solo_participants.event_id.name
             self.printf(f"\t|- [+] Solo participant found in event -> {_event_name}", f)
             solo_participants.payment_done = True
@@ -51,7 +56,7 @@ class Command(BaseCommand):
             pass
 
         try:
-            team_participants = Team.objects.get(leader_id=user, event_id=event)
+            team_participants = Team.objects.filter(leader_id=user, event_id=event)[0]
             _event_name = team_participants.event_id.name
             self.printf(f"\t|- [+] Team participant found in event -> {_event_name}", f)
             team_participants.payment_done = True
