@@ -80,7 +80,6 @@ class Migration(migrations.Migration):
                 ('field3', models.CharField(blank=True, max_length=100, null=True)),
                 ('field4', models.CharField(blank=True, max_length=100, null=True)),
                 ('field5', models.CharField(blank=True, max_length=100, null=True)),
-                ('is_processed', models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(

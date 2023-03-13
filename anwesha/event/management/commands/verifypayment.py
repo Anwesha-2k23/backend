@@ -63,7 +63,7 @@ class Command(BaseCommand):
             return
         except Team.DoesNotExist:
             pass
-        self.printf(f"\t|- [!] No participant found for {txn.email}")
+        self.printf(f"\t|- [!] No participant found for {txn.email}", f)
         return
 
     def handle(self, *args, **options):
