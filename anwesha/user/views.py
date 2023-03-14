@@ -16,13 +16,13 @@ import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
-from anwesha.settings import COOKIE_ENCRYPTION_SECRET
+from anwesha.settings import AWS_S3_CUSTOM_DOMAIN, COOKIE_ENCRYPTION_SECRET
 import jwt
 from utility import hashpassword, createId, isemail, generate_qr, EmailSending
 import time
 from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
-from anwesha.settings import STATIC_URL, AWS_PUBLIC_MEDIA_LOCATION2
+from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
 
 class Login(APIView):
@@ -192,7 +192,7 @@ class editProfile(APIView):
             "is_profile_completed" : user.is_profile_completed ,
             "profile_pitcure":str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": STATIC_URL + AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
+            "qr_code": AWS_S3_CUSTOM_DOMAIN + AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
         }
         return response
     
