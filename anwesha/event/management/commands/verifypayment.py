@@ -42,30 +42,34 @@ class Command(BaseCommand):
             return
 
         try:
-            solo_participants = SoloParicipants.objects.filter(anwesha_id=user, event_id=event )[0]
-            _event_name = solo_participants.event_id.name
-            self.printf(f"\t|- [+] Solo participant found in event -> {_event_name}", f)
-            solo_participants.payment_done = True
-            solo_participants.order_id = txn.txnid
-            solo_participants.save()
-            txn.is_processed = True
-            txn.save()
-            self.printf(f"\t|- [+] Payment verified.", f)
-            return
+            solo_participants = SoloParicipants.objects.filter(anwesha_id=user, event_id=event )
+            if len(solo_participants) != 0:
+                solo_participants = solo_participants[0]
+                _event_name = solo_participants.event_id.name
+                self.printf(f"\t|- [+] Solo participant found in event -> {_event_name}", f)
+                solo_participants.payment_done = True
+                solo_participants.order_id = txn.txnid
+                solo_participants.save()
+                txn.is_processed = True
+                txn.save()
+                self.printf(f"\t|- [+] Payment verified.", f)
+                return
         except SoloParicipants.DoesNotExist:
             pass
 
         try:
-            team_participants = Team.objects.filter(leader_id=user, event_id=event)[0]
-            _event_name = team_participants.event_id.name
-            self.printf(f"\t|- [+] Team participant found in event -> {_event_name}", f)
-            team_participants.payment_done = True
-            team_participants.txnid = txn.txnid
-            team_participants.save()
-            txn.is_processed = True
-            txn.save()
-            self.printf(f"\t|- [+] Payment verified.", f)
-            return
+            team_participants = Team.objects.filter(leader_id=user, event_id=event)
+            if len(team_participants) != 0:
+                team_participants = team_participants[0]
+                _event_name = team_participants.event_id.name
+                self.printf(f"\t|- [+] Team participant found in event -> {_event_name}", f)
+                team_participants.payment_done = True
+                team_participants.txnid = txn.txnid
+                team_participants.save()
+                txn.is_processed = True
+                txn.save()
+                self.printf(f"\t|- [+] Payment verified.", f)
+                return
         except Team.DoesNotExist:
             pass
         self.printf(f"\t|- [!] No participant found for {txn.email}", f)

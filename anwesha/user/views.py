@@ -49,7 +49,7 @@ class Login(APIView):
                 }
                 return response
             else:
-                return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=401)
+                return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=403)
         except:
             return JsonResponse({"message":"invalid token"},status=409)
 
@@ -85,7 +85,7 @@ class Login(APIView):
                 response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
                 return response
             else:
-                return JsonResponse({"message":"Please verify email to log in to your account"},status=400)
+                return JsonResponse({"message":"Please verify email to log in to your account"},status=403)
             # code for linking cookie
         else:
             return JsonResponse({"message":"Incorrect Credentials"},status=401)
@@ -192,7 +192,7 @@ class editProfile(APIView):
             "is_profile_completed" : user.is_profile_completed ,
             "profile_pitcure":str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": AWS_S3_CUSTOM_DOMAIN + AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
+            "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
         }
         return response
     
