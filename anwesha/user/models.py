@@ -7,7 +7,7 @@ from secrets import choice
 from django.db import models
 from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 from anwesha.settings import CONFIGURATION
-from utility import generate_qr, createId, hashpassword
+from utility import generate_qr, createId, hashpassword, hash_id
 from django.core.files.storage import FileSystemStorage
 
 if CONFIGURATION == "local":
@@ -54,7 +54,8 @@ class User(models.Model):
     profile = models.ImageField()
     profile_photo = ProfilePhotoStorageSettings
     qr_code = QrStorageSettings
-
+    signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
+    secret = models.CharField(max_length=20,default="secret")
 
     def __str__(self):
         return self.anwesha_id
@@ -72,7 +73,9 @@ class User(models.Model):
                     self.anwesha_id = createId("ANW", 7)
                     check_exist = User.objects.filter(anwesha_id = self.anwesha_id)
             self.password = hashpassword(self.password)
-            self.qr_code = generate_qr(self.anwesha_id)
+            self.secret = createId("secret", 10)
+            self.signature = hash_id(self.anwesha_id,self.secret)
+            self.qr_code = generate_qr(self.signature)
         super(User, self).save(*args, **kwargs)
 
     # def assign_user_type(self, *args, **kwargs):
