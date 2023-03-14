@@ -16,5 +16,5 @@ event_urls = [
     path("registration/verification" , RazorpayCheckout.as_view(), name = "Check payment"),
     path("myevents", MyEvents.as_view(), name="myevents"),
     path("payment/webhook/very/sus/api", views.webhook, name="webhook"),
-    path("checkeventregistration/<str:event_id>/<str:anwesha_id>", Check_Event_Registration.as_view(), name="checkeventregistration"),
+    path("checkeventregistration/<str:event_id>/<str:signature>", Check_Event_Registration.as_view(), name="checkeventregistration"),
 ]

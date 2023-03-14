@@ -13,6 +13,8 @@ from django.utils.html import strip_tags
 import csv
 from django.http import HttpResponse ,JsonResponse
 import bcrypt
+import hmac
+import base64
 
 
 def verification_mail(email , user):
@@ -189,3 +191,11 @@ class EmailSending:
         res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
         print(res)
         return res
+
+def hash_id(anwesha_id,secret):
+    anwesha_id= anwesha_id.encode('utf-8')
+    secret = secret.encode('utf-8')
+    digest = hmac.new(secret, msg=anwesha_id, digestmod=hashlib.sha256).digest()
+    signature = base64.b64encode(digest).decode()
+    return signature
+    
