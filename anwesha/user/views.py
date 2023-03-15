@@ -45,6 +45,8 @@ class Login(APIView):
                 response.data = {
                     "mssg": "welcome",
                     "full_name" : user.full_name,
+                    "anwesha_id" : user.anwesha_id,
+                    "user_type" : user.user_type,
                     "status" : "200"
                 }
                 return response
@@ -81,7 +83,12 @@ class Login(APIView):
 
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
                 this_user.is_loggedin = True
-                response.data = { "success" : True , "name" : this_user.full_name}
+                response.data = { 
+                    "success" : True , 
+                    "name" : this_user.full_name ,
+                    "anwesha_id" : this_user.anwesha_id,
+                    "user_type" : this_user.user_type,
+                    }
                 response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
                 return response
             else:

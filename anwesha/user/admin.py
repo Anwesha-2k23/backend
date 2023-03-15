@@ -32,7 +32,12 @@ class UserAdmin(admin.ModelAdmin):
             'fields': ('instagram_id', 'facebook_id', 'collage_name', 'qr_code')
         }),
         ('Internal Flags', {
-            'fields': (('accomadation_selected', 'is_profile_completed'), ('is_email_verified', 'is_locked' ,'is_loggedin'), 'password')
+            'fields': (
+                ('accomadation_selected', 'is_profile_completed'), 
+                ('is_email_verified', 'is_locked' ,'is_loggedin'), 
+                'password',
+                ('secret', 'signature')
+                )
         })
     )
     empty_value_display = '-empty-'
