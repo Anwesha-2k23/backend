@@ -192,7 +192,7 @@ class editProfile(APIView):
             "is_profile_completed" : user.is_profile_completed ,
             "profile_pitcure":str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": AWS_S3_CUSTOM_DOMAIN + AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
+            "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
         }
         return response
     
