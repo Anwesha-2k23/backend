@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views  import LogOut,  Login, editProfile, register , ForgetPassword, verifyEmail , sendVerificationEmail,Oauth_Login, Oauth_Logout
+from .views  import LogOut,  Login, editProfile, register , ForgetPassword, verifyEmail , sendVerificationEmail,Oauth_Login, Oauth_Logout, RegenerateQR
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import views as auth_views
 
@@ -12,6 +12,7 @@ user_urls = [
     path('forgetpassword', ForgetPassword.as_view() ,  name='forget_password_user'), # an upredicated 
     path('verifyemail' , sendVerificationEmail.as_view(), name='send_verificaion_email'),
     path('verifyemail/<str:pk>' , verifyEmail , name='verifyEmail' ),
+    path('regenerateqr/', RegenerateQR.as_view(), name='regenerateqr')
     path('oauth-login/',Oauth_Login.as_view(),name='oauth-login'),
     path('oauth-logout/',Oauth_Logout.as_view(),name='oauth-logout'),
 ]
