@@ -35,6 +35,7 @@ class EventsAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
     actions = [export_as_csv]
 
+
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
     list_display = ('name', 'file', 'tags', 'tags')
@@ -75,6 +76,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     search_fields = ('anwesha_id', 'event_id', 'team_id')
     actions = [lock_user,export_as_csv]
 
+
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
 
@@ -84,8 +86,10 @@ class TeamAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     list_display = ('team_id', 'event_id', 'leader_id', 'team_name')
-    search_fields = ('team_id', 'event_id', 'leader_id', 'team_name')
+    search_fields = ('team_id', 'event_id__id', 'event_id__name', 'leader_id__anwesha_id', 'leader_id_email_id', 'team_name')
     actions = [lock_user,export_as_csv]
+
+
 @admin.register(Payer)
 class PayerAdmin(admin.ModelAdmin):
 
@@ -98,6 +102,8 @@ class PayerAdmin(admin.ModelAdmin):
     search_fields = ('team_id', 'payer_id', 'reference_id')
     list_filter = ('payment_status',)
     actions = [lock_user,export_as_csv]   
+
+
 @admin.register(SoloParicipants)
 class SoloAdmin(admin.ModelAdmin):
 
@@ -107,9 +113,10 @@ class SoloAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     list_display = ('anwesha_id', 'event_id', 'payment_done')
-    search_fields = ('anwesha_id', 'event_id')
-    list_filter = ('payment_done',)
+    search_fields = ('anwesha_id__anwesha_id','anwesha_id__email_id', 'anwesha_id__full_name','event_id__id', 'event_id__name')
+    list_filter = (('payment_done', admin.BooleanFieldListFilter),)
     actions = [lock_user,export_as_csv]
+
 
 @admin.register(PayUTxn)
 class PayUTxnAdmin(admin.ModelAdmin):
