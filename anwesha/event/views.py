@@ -49,7 +49,8 @@ class MyEvents(View):
                 'event_tags': i.event_id.tags,
                 'event_is_active': i.event_id.is_active,
                 'order_id': i.order_id,
-                'payment_done': i.payment_done
+                'payment_done': i.payment_done,
+                'payment_url' : i.event_id.payment_link
             })
         team_participations = TeamParticipant.objects.filter(anwesha_id=user)
         for i in team_participations:
@@ -71,7 +72,8 @@ class MyEvents(View):
                 'team_name': i.team_id.team_name,
                 'team_id': i.team_id.team_id,
                 'team_lead': i.team_id.leader_id.full_name,
-                'team_members': team_memberids
+                'team_members': team_memberids,
+                'payment_url' : i.event_id.payment_link
             })
         return JsonResponse({'solo': d1, 'team': d2}, safe=False)
         

@@ -34,8 +34,6 @@ class Migration(migrations.Migration):
                 ('is_locked', models.BooleanField(default=False)),
                 ('is_loggedin', models.BooleanField(default=False)),
                 ('profile', models.ImageField(upload_to='')),
-                ('signature', models.CharField(blank=True, default='signature', max_length=200, null=True)),
-                ('secret', models.CharField(default='secret', max_length=20)),
             ],
         ),
     ]
