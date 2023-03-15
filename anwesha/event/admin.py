@@ -1,17 +1,19 @@
 from django.contrib import admin
 from .models import Events, Gallery
-from .models import TeamParticipant, Team, Payer,SoloParicipants, PayUTxn
+from .models import TeamParticipant, Team, Payer, SoloParicipants, PayUTxn
 from utility import export_as_csv
 # Register your models here.
 
 # admin.site.register(Events)
 # admin.site.register(Gallery)
 
+
 @admin.register(Events)
 class EventsAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'organizer', 'start_time', 'tags')
     search_fields = ('name', 'organizer', 'venue',  'tags')
-    list_filter = ('tags','start_time', 'prize', 'registration_fee', 'max_team_size', 'registration_deadline')
+    list_filter = ('tags', 'start_time', 'prize', 'registration_fee',
+                   'max_team_size', 'registration_deadline')
     list_per_page = 20
     readonly_fields = ['id']
     fieldsets = (
@@ -22,7 +24,7 @@ class EventsAdmin(admin.ModelAdmin):
                 ('start_time', 'end_time'),
                 ('tags', 'prize'),
                 ('registration_fee', 'registration_deadline'),
-                ( 'description'),
+                ('description'),
                 ('max_team_size', 'min_team_size'),
                 ('poster', 'video'),
                 ('is_active', 'is_online'),
@@ -62,8 +64,6 @@ class GalleryAdmin(admin.ModelAdmin):
 #     actions = [export_as_csv]
 
 
-
-
 @admin.register(TeamParticipant)
 class ParticipantAdmin(admin.ModelAdmin):
 
@@ -73,8 +73,10 @@ class ParticipantAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     list_display = ('anwesha_id', 'event_id', 'team_id')
-    search_fields = ('anwesha_id', 'event_id', 'team_id')
-    actions = [lock_user,export_as_csv]
+    search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
+                     'anwesha_id__full_name', 'event_id__id', 'event_id__name',
+                     'team_id__team_id', 'team_id__team_name')
+    actions = [lock_user, export_as_csv]
 
 
 @admin.register(Team)
@@ -86,8 +88,9 @@ class TeamAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     list_display = ('team_id', 'event_id', 'leader_id', 'team_name')
-    search_fields = ('team_id', 'event_id__id', 'event_id__name', 'leader_id__anwesha_id', 'leader_id_email_id', 'team_name')
-    actions = [lock_user,export_as_csv]
+    search_fields = ('team_id', 'event_id__id', 'event_id__name',
+                     'leader_id__anwesha_id', 'leader_id_email_id', 'team_name')
+    actions = [lock_user, export_as_csv]
 
 
 @admin.register(Payer)
@@ -101,7 +104,7 @@ class PayerAdmin(admin.ModelAdmin):
     list_display = ('team_id', 'payer_id', 'payment_status',)
     search_fields = ('team_id', 'payer_id', 'reference_id')
     list_filter = ('payment_status',)
-    actions = [lock_user,export_as_csv]   
+    actions = [lock_user, export_as_csv]
 
 
 @admin.register(SoloParicipants)
@@ -113,15 +116,17 @@ class SoloAdmin(admin.ModelAdmin):
         self.message_user(request, "Selected User Locked")
 
     list_display = ('anwesha_id', 'event_id', 'payment_done')
-    search_fields = ('anwesha_id__anwesha_id','anwesha_id__email_id', 'anwesha_id__full_name','event_id__id', 'event_id__name')
+    search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
+                     'anwesha_id__full_name', 'event_id__id', 'event_id__name')
     list_filter = (('payment_done', admin.BooleanFieldListFilter),)
-    actions = [lock_user,export_as_csv]
+    actions = [lock_user, export_as_csv]
 
 
 @admin.register(PayUTxn)
 class PayUTxnAdmin(admin.ModelAdmin):
-    list_display = ('txnid', 'amount', 'firstname', 'email', 'productinfo', 'status')
+    list_display = ('txnid', 'amount', 'firstname',
+                    'email', 'productinfo', 'status')
     search_fields = ('txnid', 'firstname', 'email', 'phone')
-    list_filter = ('status', 'productinfo' )
+    list_filter = ('status', 'productinfo')
     empty_value_display = '-empty-'
     actions = [export_as_csv]
