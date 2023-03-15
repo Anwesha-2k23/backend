@@ -18,7 +18,7 @@ from rest_framework.response import Response
 import datetime
 from anwesha.settings import AWS_S3_CUSTOM_DOMAIN, COOKIE_ENCRYPTION_SECRET
 import jwt
-from utility import hashpassword, createId, isemail, generate_qr, EmailSending
+from utility import hashpassword, createId, isemail, generate_qr, EmailSending, hash_id
 import time
 from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
@@ -49,7 +49,7 @@ class Login(APIView):
                 }
                 return response
             else:
-                return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=401)
+                return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=403)
         except:
             return JsonResponse({"message":"invalid token"},status=409)
 
@@ -85,7 +85,7 @@ class Login(APIView):
                 response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
                 return response
             else:
-                return JsonResponse({"message":"Please verify email to log in to your account"},status=400)
+                return JsonResponse({"message":"Please verify email to log in to your account"},status=403)
             # code for linking cookie
         else:
             return JsonResponse({"message":"Incorrect Credentials"},status=401)
@@ -363,7 +363,8 @@ class Oauth_Login(APIView):
         else:
             anwesha_id = createId("ANW", 7)
             password = uuid.uuid1()
-            generate_qr(anwesha_id=anwesha_id)
+            anwesha_id_hash = hash_id(anwesha_id)
+            generate_qr(anwesha_id=anwesha_id_hash)
             # checking if the created id is not already present in the database
             check_exist = User.objects.filter(anwesha_id = anwesha_id)
             while check_exist:  # very unlikely to happen

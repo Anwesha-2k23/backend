@@ -179,6 +179,7 @@ class PayUTxn(models.Model):
     field4 = models.CharField(max_length=100, blank=True, null=True)
     field5 = models.CharField(max_length=100, blank=True, null=True)
     is_processed = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return self.email
