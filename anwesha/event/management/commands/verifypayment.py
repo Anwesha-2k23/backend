@@ -73,6 +73,17 @@ class Command(BaseCommand):
         except Team.DoesNotExist:
             pass
         self.printf(f"\t|- [!] No participant found for {txn.email}", f)
+        if event.max_team_size == 1 and event.min_team_size == 1:
+            self.printf(f"\t|- [!] Creating a registration ", f)
+            solo_participants = SoloParicipants()
+            solo_participants.anwesha_id = user
+            solo_participants.event_id = event
+            solo_participants.payment_done = True
+            solo_participants.order_id = txn.txnid
+            solo_participants.save()
+            self.printf(f"\t|- [+] Solo participant created", f)
+        else:
+            self.printf(f"\t|- [+] Team event! automated reigstration creation failed.", f)
         return
 
     def handle(self, *args, **options):
