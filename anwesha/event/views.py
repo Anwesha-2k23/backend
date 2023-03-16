@@ -118,7 +118,7 @@ class Check_Event_Registration(APIView):
             try:
                 event = Events.objects.get(id=event_id)
             except:
-                return JsonResponse({"message": "Invalid event id"},status=402)
+                return JsonResponse({"message": "Invalid event id"},status=403)
             if event.max_team_size == 1 and event.min_team_size == 1:
                 if SoloParicipants.objects.filter(event_id=event_id, anwesha_id=user.anwesha_id, payment_done = True).exists():
                     soloparticipant = SoloParicipants.objects.get(event_id=event_id, anwesha_id=user.anwesha_id, payment_done = True)
@@ -140,7 +140,6 @@ class UpdateEntryStatus(APIView):
             anwesha_id = request.data['anwesha_id']
             event_id = request.data['event_id']
             has_entered = request.data['has_entered']
-            event_type = request.data['event_type']
         except:
             return JsonResponse({"message": "Invalid data"},status=405)
         try:
@@ -149,15 +148,17 @@ class UpdateEntryStatus(APIView):
             return JsonResponse({"message": "Invalid event id"},status=402)
         try:
             if event.max_team_size == 1 and event.min_team_size == 1:
-                soloparticipants = SoloParicipants.objects.filter(event_id=event_id,anwesha_id=anwesha_id)
-                soloparticipants.update(has_entered=has_entered)
-                return JsonResponse({"message": "Updated successfully"},status=200)
+                soloparticipants = SoloParicipants.objects.get(event_id=event_id,anwesha_id=anwesha_id)
+                soloparticipants.has_entered = has_entered
+                soloparticipants.save()
+                return JsonResponse({"message": "Updated successfully","new_status":soloparticipants.has_entered},status=200)
             else:
-                teamparticipants = TeamParticipant.objects.filter(event_id=event_id,anwesha_id=anwesha_id)
-                teamparticipants.update(has_entered=has_entered)
-                return JsonResponse({"message": "Updated successfully"},status=200)
+                teamparticipants = TeamParticipant.objects.get(event_id=event_id,anwesha_id=anwesha_id)
+                teamparticipants.has_entered = has_entered
+                teamparticipants.save()
+                return JsonResponse({"message": "Updated successfully","new_status":teamparticipants.has_entered},status=200)
         except:
-            return JsonResponse({"message": "Update fail"},status=405)
+            return JsonResponse({"message": "Update fail"},status=400)
             
 
 # class Rzpay_order_merchandise(APIView):

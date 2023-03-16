@@ -89,6 +89,7 @@ class Login(APIView):
                     "name" : this_user.full_name ,
                     "anwesha_id" : this_user.anwesha_id,
                     "user_type" : this_user.user_type,
+                    "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
                     }
                 response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
                 return response
