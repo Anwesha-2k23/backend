@@ -17,4 +17,5 @@ event_urls = [
     path("myevents", MyEvents.as_view(), name="myevents"),
     path("payment/webhook/very/sus/api", views.webhook, name="webhook"),
     path("checkeventregistration/", Check_Event_Registration.as_view(), name="checkeventregistration"),
+    path('updateentrystatus/', UpdateEntryStatus.as_view(), name="updateentrystatus"),
 ]
