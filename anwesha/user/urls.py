@@ -12,7 +12,7 @@ user_urls = [
     path('forgetpassword', ForgetPassword.as_view() ,  name='forget_password_user'), # an upredicated 
     path('verifyemail' , sendVerificationEmail.as_view(), name='send_verificaion_email'),
     path('verifyemail/<str:pk>' , verifyEmail , name='verifyEmail' ),
-    path('regenerateqr/', RegenerateQR.as_view(), name='regenerateqr')
+    path('regenerateqr/', RegenerateQR.as_view(), name='regenerateqr'),
     path('oauth-login/',Oauth_Login.as_view(),name='oauth-login'),
     path('oauth-logout/',Oauth_Logout.as_view(),name='oauth-logout'),
 ]
