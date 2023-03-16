@@ -346,11 +346,8 @@ class ForgetPassword(APIView):
     
 class RegenerateQR(APIView):
     @Autherize
-    def get(self, request):
-        try:
-            user = kwargs['user']
-        except:
-            return Response({"message": "User not found"}, status=404)
+    def get(self, request, **kwargs):
+        user = kwargs['user']
         user.secret = createId("secret",10)
         user.signature = hash_id(user.anwesha_id, user.secret)
         user.qr_code = generate_qr(user.signature)
