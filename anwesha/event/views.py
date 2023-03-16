@@ -126,11 +126,16 @@ class Check_Event_Registration(APIView):
                 else:
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is not Registered"},status=401)
             else:
-                if Team.objects.filter(event_id=event_id,leader_id=user.anwesha_id, payment_done = True).exists():
-                    teamparticipant = TeamParticipant.objects.get(event_id=event_id,leader_id=user.anwesha_id, payment_done = True)
+                try:
+                    team_id = TeamParticipant.objects.get(event_id=event,anwesha_id=user, payment_done = True).team_id
+                except:
+                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is not Registered "},status=401)
+                
+                if Team.objects.filter(event_id=event,team_id = team_id, payment_done = True).exists():
+                    teamparticipant = Team.objects.get(event_id=event,team_id = team_id, payment_done = True)
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is Registered","has_entered": teamparticipant.has_entered},status=200)
                 else:
-                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is not Registered"},status=401)
+                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is not Registered or Payment is remaining"},status=401)
         except:
             return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
         
@@ -147,13 +152,18 @@ class UpdateEntryStatus(APIView):
         except:
             return JsonResponse({"message": "Invalid event id"},status=402)
         try:
+            this_user = User.objects.get(anwesha_id=anwesha_id)
             if event.max_team_size == 1 and event.min_team_size == 1:
                 soloparticipants = SoloParicipants.objects.get(event_id=event_id,anwesha_id=anwesha_id)
                 soloparticipants.has_entered = has_entered
                 soloparticipants.save()
                 return JsonResponse({"message": "Updated successfully","new_status":soloparticipants.has_entered},status=200)
             else:
-                teamparticipants = TeamParticipant.objects.get(event_id=event_id,anwesha_id=anwesha_id)
+                try:
+                    teamparticipants = TeamParticipant.objects.filter(event_id=event,anwesha_id=this_user)[0]
+                except:
+                    return JsonResponse({"message": "Person not registered for event"},status=404)
+                
                 teamparticipants.has_entered = has_entered
                 teamparticipants.save()
                 return JsonResponse({"message": "Updated successfully","new_status":teamparticipants.has_entered},status=200)
