@@ -353,7 +353,7 @@ class RegenerateQR(APIView):
         user.qr_code = generate_qr(user.signature)
         user.save()
         return JsonResponse({
-            "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ str(user.qr_code)
+            "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
         },safe=False)
 
 class Oauth_Login(APIView):
