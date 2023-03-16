@@ -127,7 +127,7 @@ class Check_Event_Registration(APIView):
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is not Registered"},status=401)
             else:
                 try:
-                    team_id = TeamParticipant.objects.get(event_id=event,anwesha_id=user, payment_done = True).team_id
+                    team_id = TeamParticipant.objects.get(event_id=event,anwesha_id=user).team_id
                 except:
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is not Registered "},status=401)
                 
