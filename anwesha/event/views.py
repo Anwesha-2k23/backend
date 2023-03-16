@@ -115,7 +115,10 @@ class Check_Event_Registration(APIView):
                 user = User.objects.get(signature=signature)
             except:
                 return JsonResponse({"message": "Invalid signature"},status=400)
-            event = Events.objects.get(id=event_id)
+            try:
+                event = Events.objects.get(id=event_id)
+            except:
+                return JsonResponse({"message": "Invalid event id"},status=402)
             if event.max_team_size == 1 and event.min_team_size == 1:
                 if SoloParicipants.objects.filter(event_id=event_id, anwesha_id=user.anwesha_id, payment_done = True).exists():
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is Registered","entry_status":False},status=200)
