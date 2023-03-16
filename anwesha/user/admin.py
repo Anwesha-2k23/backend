@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import User
-from utility import export_as_csv ,resend_varification_mail 
+from utility import export_as_csv 
 from .utility import mail_content , send_email_using_microservice
 # Register your models here.
 
