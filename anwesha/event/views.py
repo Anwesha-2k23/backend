@@ -122,13 +122,13 @@ class Check_Event_Registration(APIView):
             if event.max_team_size == 1 and event.min_team_size == 1:
                 if SoloParicipants.objects.filter(event_id=event_id, anwesha_id=user.anwesha_id, payment_done = True).exists():
                     soloparticipant = SoloParicipants.objects.get(event_id=event_id, anwesha_id=user.anwesha_id, payment_done = True)
-                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is Registered","has_entered":False},status=200)
+                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is Registered","has_entered":soloparticipant.has_entered},status=200)
                 else:
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "User is not Registered"},status=401)
             else:
                 if Team.objects.filter(event_id=event_id,leader_id=user.anwesha_id, payment_done = True).exists():
                     teamparticipant = TeamParticipant.objects.get(event_id=event_id,leader_id=user.anwesha_id, payment_done = True)
-                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is Registered","has_entered": False},status=200)
+                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is Registered","has_entered": teamparticipant.has_entered},status=200)
                 else:
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is not Registered"},status=401)
         except:
