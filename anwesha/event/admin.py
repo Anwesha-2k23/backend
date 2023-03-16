@@ -78,7 +78,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     def eventname(self, obj):
         return obj.event_id.name
 
-    list_display = ('anwesha_id', 'fullname', 'event_id', 'eventname', 'team_id')
+    list_display = ('anwesha_id', 'fullname', 'event_id', 'eventname', 'team_id','has_entered')
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name',
                      'team_id__team_id', 'team_id__team_name')
@@ -134,7 +134,7 @@ class SoloAdmin(admin.ModelAdmin):
     def eventname(self, obj):
         return obj.event_id.name
 
-    list_display = ('anwesha_id','fullname', 'event_id','eventname', 'payment_done')
+    list_display = ('anwesha_id','fullname', 'event_id','eventname', 'payment_done','has_entered')
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name')
     list_filter = (('payment_done', admin.BooleanFieldListFilter),)
