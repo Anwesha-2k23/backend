@@ -72,7 +72,13 @@ class ParticipantAdmin(admin.ModelAdmin):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    list_display = ('anwesha_id', 'event_id', 'team_id')
+    def fullname(self, obj):
+        return obj.anwesha_id.full_name
+    
+    def eventname(self, obj):
+        return obj.event_id.name
+
+    list_display = ('anwesha_id', 'fullname', 'event_id', 'eventname', 'team_id')
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name',
                      'team_id__team_id', 'team_id__team_name')
@@ -82,14 +88,20 @@ class ParticipantAdmin(admin.ModelAdmin):
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
 
+    def fullname(self, obj):
+        return obj.leader_id.full_name
+    
+    def eventname(self, obj):
+        return obj.event_id.name
+
     @admin.action(description='Lock Selected User')
     def lock_user(self, request, queryset):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    list_display = ('team_id', 'event_id', 'leader_id', 'team_name')
+    list_display = ('team_id', 'event_id','eventname', 'leader_id', 'fullname', 'team_name')
     search_fields = ('team_id', 'event_id__id', 'event_id__name',
-                     'leader_id__anwesha_id', 'leader_id_email_id', 'team_name')
+                     'leader_id__anwesha_id', 'leader_id__email_id', 'team_name')
     actions = [lock_user, export_as_csv]
 
 
@@ -115,7 +127,14 @@ class SoloAdmin(admin.ModelAdmin):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    list_display = ('anwesha_id', 'event_id', 'payment_done')
+    
+    def fullname(self, obj):
+        return obj.anwesha_id.full_name
+    
+    def eventname(self, obj):
+        return obj.event_id.name
+
+    list_display = ('anwesha_id','fullname', 'event_id','eventname', 'payment_done')
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name')
     list_filter = (('payment_done', admin.BooleanFieldListFilter),)
