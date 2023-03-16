@@ -33,7 +33,14 @@ def all_events(request):
             del event['payment_key']
 
         return JsonResponse(events, safe=False)
+    
+    elif request.method == 'POST':
+        events = Events.objects.all()
+        events = list(events.values())
+
+        return JsonResponse(events, safe=False)
     return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
+
 
 class MyEvents(View):
     @Autherize()
