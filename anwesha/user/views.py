@@ -343,6 +343,20 @@ class ForgetPassword(APIView):
 
         # send mail confirmation
         return Response({"message": "Password updated"}, status=200)
+    
+class RegenerateQR(APIView):
+    @Autherize
+    def get(self, request, **kwargs):
+        user = kwargs['user']
+        user.secret = createId("secret",10)
+        user.signature = hash_id(user.anwesha_id, user.secret)
+        user.qr_code = generate_qr(user.signature)
+        user.save()
+        response = Response()
+        response.data = {
+            "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 +  str(user.qr_code)
+        }
+        return response
 
 class Oauth_Login(APIView):
     def get(self,request):
