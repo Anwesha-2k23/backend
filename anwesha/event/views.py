@@ -141,9 +141,11 @@ class Check_Event_Registration(APIView):
                 team_participant = team_participant[0]
 
                 try:
-                    team_object = Team.objects.filter(event_id=event,team_id = team_participant.team_id, payment_done = True)
-                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is Registered","has_entered": team_object.has_entered},status=200)
-                except:
+                    team_object = Team.objects.filter(event_id=event,team_id = team_participant, payment_done = True)
+                    return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is Registered","has_entered": team_participant.has_entered},status=200)
+                except Exception as e:
+                    print("Error")
+                    print( e)
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is not Registered or Payment is remaining"},status=401)
         except:
             return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
