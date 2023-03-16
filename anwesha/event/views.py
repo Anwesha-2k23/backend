@@ -9,12 +9,14 @@ import datetime
 import razorpay
 from user.utility import Autherize
 from urllib.parse import unquote
+from django.db.models import Q
 # Create your views here.
 
 # FBV for fetching all events
 def all_events(request):
     if request.method == "GET":
-        events = Events.objects.all().order_by('order')
+        # events = Events.objects.all().order_by('order')
+        events = Events.objects.filter(~Q(tags = 6)).order_by('order')
         events = list(events.values())
         for event in events:
             k = event['organizer']
