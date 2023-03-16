@@ -133,6 +133,32 @@ class Check_Event_Registration(APIView):
                     return JsonResponse({"anwesha_id":user.anwesha_id,"username":user.full_name,"message": "Team is not Registered"},status=401)
         except:
             return JsonResponse({"message": "Invalid method" , "status": '405'},status=405)
+        
+    class UpdateEntryStatus(APIView):
+        def post(self,request):
+            try:
+                anwesha_id = request.data['anwesha_id']
+                event_id = request.data['event_id']
+                has_entered = request.data['has_entered']
+                event_type = request.data['event_type']
+            except:
+                return JsonResponse({"message": "Invalid data"},status=405)
+            try:
+                event = Events.objects.get(id=event_id)
+            except:
+                return JsonResponse({"message": "Invalid event id"},status=402)
+            try:
+                if event.max_team_size == 1 and event.min_team_size == 1:
+                    soloparticipants = SoloParicipants.objects.filter(event_id=event_id,anwesha_id=anwesha_id)
+                    soloparticipants.update(has_entered=has_entered)
+                    return JsonResponse({"message": "Updated successfully"},status=200)
+                else:
+                    teamparticipants = TeamParticipant.objects.filter(event_id=event_id,anwesha_id=anwesha_id)
+                    teamparticipants.update(has_entered=has_entered)
+                    return JsonResponse({"message": "Updated successfully"},status=200)
+            except:
+                return JsonResponse({"message": "Update fail"},status=405)
+            
 
 # class Rzpay_order_merchandise(APIView):
 #     def post(self, request):
