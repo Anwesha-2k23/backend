@@ -117,6 +117,7 @@ class TeamParticipant(models.Model):
         Events, on_delete=models.CASCADE, blank=True, null=True
     )
     team_id = models.ForeignKey("Team", on_delete=models.CASCADE, blank=True, null=True)
+    has_entered = models.BooleanField(default=False,null=True,blank=True)
 
     def __str__(self):
         return self.anwesha_id.anwesha_id
@@ -159,6 +160,7 @@ class SoloParicipants(models.Model):
     event_id = models.ForeignKey(Events, on_delete=models.CASCADE, blank=True, null=True)
     payment_done = models.BooleanField(default=False)
     order_id = models.CharField(max_length=100, blank=True, null=True)
+    has_entered = models.BooleanField(default=False,null=True,blank=True)
 
 
 class PayUTxn(models.Model):

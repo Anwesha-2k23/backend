@@ -48,7 +48,7 @@ class Login(APIView):
                     "anwesha_id" : user.anwesha_id,
                     "user_type" : user.user_type,
                     "status" : "200",
-                    "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code
+                    "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
                 }
                 return response
             else:
