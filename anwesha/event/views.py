@@ -526,7 +526,7 @@ class TeamEventRegistration(APIView):
             team_members = request.data['team_members']
         except:
             return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
-
+        
         try:
             event = Events.objects.get(id = event_id)
         except:
@@ -541,7 +541,7 @@ class TeamEventRegistration(APIView):
         if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
         
-        if len(team_members)+1 > event.max_team_size or len(team_members)+1 < event.min_team_size:
+        if len(team_members) > event.max_team_size or len(team_members) < event.min_team_size:
             return JsonResponse({"message":"team size is not valid"},status=403)
 
         team_id = createId(prefix="TM",length=5)
