@@ -10,6 +10,7 @@ import razorpay
 from user.utility import Autherize
 from urllib.parse import unquote
 from django.db.models import Q
+from django.core.management import call_command
 # Create your views here.
 
 # FBV for fetching all events
@@ -510,29 +511,32 @@ def webhook(request):
         return JsonResponse({"message":"webhook recieved"},status=200)
 
     try:
-        if bdy["status"] != "success":
-            return JsonResponse({"message":"webhook Failed"},status=200)
-        event = Events.objects.get(payment_key = bdy["productinfo"])
-        user = User.objects.get(email_id = bdy["email"])
-        try:
-            soloreg = SoloRegistration.objects.get(event_id = event, anwesha_id = user)
-            soloreg.payment_done = True
-            soloreg.order_id = bdy["txnid"]
-            soloreg.save()
-            return JsonResponse({"message":"webhook recieved"},status=200)
-        except :
-            pass
-
-        try:
-            teamreg = Team.objects.get(event_id = event, leader_id = user)
-            teamreg.payment_done = True
-            teamreg.txnid = bdy["txnid"]
-            teamreg.save()
-            return JsonResponse({"message":"webhook recieved"},status=200)
-        except :
-            pass
+        call_command('verifypayment')
     except:
-        return JsonResponse({"message":"webhook Failed"},status=500)    
+        try:
+            if bdy["status"] != "success":
+                return JsonResponse({"message":"webhook Failed"},status=200)
+            event = Events.objects.get(payment_key = bdy["productinfo"])
+            user = User.objects.get(email_id = bdy["email"])
+            try:
+                soloreg = SoloRegistration.objects.get(event_id = event, anwesha_id = user)
+                soloreg.payment_done = True
+                soloreg.order_id = bdy["txnid"]
+                soloreg.save()
+                return JsonResponse({"message":"webhook recieved"},status=200)
+            except :
+                pass
+
+            try:
+                teamreg = Team.objects.get(event_id = event, leader_id = user)
+                teamreg.payment_done = True
+                teamreg.txnid = bdy["txnid"]
+                teamreg.save()
+                return JsonResponse({"message":"webhook recieved"},status=200)
+            except :
+                pass
+        except:
+            return JsonResponse({"message":"webhook Failed"},status=500)    
     return JsonResponse({"message":"webhook recieved"},status=200)
 
 class SoloRegistration(APIView):

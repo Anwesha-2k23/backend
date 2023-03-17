@@ -84,6 +84,8 @@ class Command(BaseCommand):
             self.printf(f"\t|- [+] Solo participant created", f)
         else:
             self.printf(f"\t|- [+] Team event! automated reigstration creation failed.", f)
+        txn.is_processed = True
+        txn.save()
         return
 
     def handle(self, *args, **options):
