@@ -1,58 +1,66 @@
 from django.contrib import admin
 from .models import User
-from utility import export_as_csv 
-from .utility import mail_content , send_email_using_microservice
-# Register your models here.
+from utility import export_as_csv
+from .utility import mail_content, send_email_using_microservice
 
+# Register your models here.
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    """
+    Custom admin class for User model.
+    """
 
     @admin.action(description='Lock Selected User')
     def lock_user(self, request, queryset):
+        """
+        Admin action to lock selected users.
+        """
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    @admin.action(description='resend verification mail')
-    def resend_mail(self,request,queryset):
+    @admin.action(description='Resend Verification Mail')
+    def resend_mail(self, request, queryset):
+        """
+        Admin action to resend verification mail to selected users.
+        """
         for obj in queryset:
             anwesha_id = obj.anwesha_id
             email = obj.email_id
             fullname = obj.full_name
-            body  = mail_content(type=1,email_id = email,anwesha_id=anwesha_id,full_name=fullname)
+            body = mail_content(type=1, email_id=email, anwesha_id=anwesha_id, full_name=fullname)
             send_email_using_microservice(
                 email_id=email,
                 subject="No reply",
                 text=body
             )
-            self.message_user(request,f"email send again at {email}")
-
+        self.message_user(request, "Email sent again")
 
     list_display = ('anwesha_id', 'full_name', 'email_id', 'collage_name')
-    actions = [lock_user,export_as_csv,resend_mail]
+    actions = [lock_user, export_as_csv, resend_mail]
     list_filter = ('user_type', 'is_locked', 'collage_name')
     fieldsets = (
         ('Basic Information', {
             'fields': (
-                'anwesha_id', 
-                'full_name', 
-                'email_id', 
+                'anwesha_id',
+                'full_name',
+                'email_id',
                 'phone_number',
                 'profile_photo',
                 ('age', 'gender'),
                 'user_type'
-                )
+            )
         }),
         ('Social Links', {
             'fields': ('instagram_id', 'facebook_id', 'collage_name', 'qr_code')
         }),
         ('Internal Flags', {
             'fields': (
-                ('accomadation_selected', 'is_profile_completed'), 
-                ('is_email_verified', 'is_locked' ,'is_loggedin'), 
+                ('accomadation_selected', 'is_profile_completed'),
+                ('is_email_verified', 'is_locked', 'is_loggedin'),
                 'password',
                 ('secret', 'signature')
-                )
+            )
         })
     )
     empty_value_display = '-empty-'
