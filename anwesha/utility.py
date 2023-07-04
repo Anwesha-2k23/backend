@@ -6,27 +6,37 @@ import qrcode
 from django.core.files import File
 from io import BytesIO
 from django.core.mail import send_mail
-from anwesha.settings import EMAIL_HOST_USER ,COOKIE_ENCRYPTION_SECRET
+from anwesha.settings import EMAIL_HOST_USER, COOKIE_ENCRYPTION_SECRET
 import datetime
-from django.template.loader import render_to_string 
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import csv
-from django.http import HttpResponse ,JsonResponse
+from django.http import HttpResponse, JsonResponse
 import bcrypt
 import hmac
 import base64
 
 
-def verification_mail(email , user):
+def verification_mail(email, user):
+    """
+    Sends a verification email to the given email address.
+
+    Args:
+        email (str): Email address to send the email to.
+        user (str): User's name.
+
+    Returns:
+        int: Number of successfully sent emails.
+    """
     payload = {
-        'email':email,
+        'email': email,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
         "iat": datetime.datetime.utcnow()
     }
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-    link = "https://backend.anwesha.live/campasambassador/verifyemail/"+token
-    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
+    link = "https://backend.anwesha.live/campasambassador/verifyemail/" + token
+    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/" + token
     subject = "No reply"
     body = f'''
     Hello {user},\n\n
@@ -35,36 +45,61 @@ def verification_mail(email , user):
         \n\nThanks,
         \nTeam  Anwesha
     '''
-    recipient_list = []
-    recipient_list.append(email)
+    recipient_list = [email]
     res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
     return res
 
+
 def hashpassword(password):
+    """
+    Hashes the given password using SHA256 algorithm.
+
+    Args:
+        password (str): Password to hash.
+
+    Returns:
+        str: Hashed password.
+    """
     return hashlib.sha256(password.encode()).hexdigest()
 
 
 def createId(prefix, length):
     """
-    Utility function to create a random id of given length
-    prefix : prefix of the id ( ex : "TEAM", "ANW" )
-    length : length of the id excluding the prefix
-    """
+    Utility function to create a random ID of given length.
 
+    Args:
+        prefix (str): Prefix of the ID (e.g., "TEAM", "ANW").
+        length (int): Length of the ID excluding the prefix.
+
+    Returns:
+        str: Randomly generated ID.
+    """
     id = str(uuid.uuid4()).replace("-", "")
     return prefix + id[:length]
 
 
 def checkPhoneNumber(phone_number: str):
     """
-    Utility function to check if the given phone number is valid or not
+    Checks if the given phone number is valid or not.
+
+    Args:
+        phone_number (str): Phone number to check.
+
+    Returns:
+        None
     """
     pass
 
 
 def isemail(email_id: str):
     """
-    Utility function to check if the given email id is valid or not
+    Checks if the given email ID is valid or not.
+
+    Args:
+        email_id (str): Email ID to check.
+
+    Returns:
+        bool: True if the email ID is valid, False otherwise.
     """
     if "@" in email_id:
         return True
@@ -73,7 +108,13 @@ def isemail(email_id: str):
 
 def get_anwesha_id(request):
     """
-    Utility function to get the anwesha_id of the user from the cookie
+    Retrieves the anwesha_id of the user from the cookie.
+
+    Args:
+        request: Django request object.
+
+    Returns:
+        str: Anwesha ID of the user.
     """
     token = request.COOKIES.get("jwt")
     if not token:
@@ -87,18 +128,47 @@ def get_anwesha_id(request):
 
 
 def generate_qr(anwesha_id):
+    """
+    Generates a QR code for the given Anwesha ID.
+
+    Args:
+        anwesha_id (str): Anwesha ID.
+
+    Returns:
+        File: QR code image file.
+    """
     img = qrcode.make(anwesha_id)
     blob = BytesIO()
     img.save(blob, "PNG")
-    qr = File(blob, name = anwesha_id + "-qr.png")
+    qr = File(blob, name=anwesha_id + "-qr.png")
     return qr
-    # img.save(anwesha_id+".png")
+
 
 def generate_jwt_token(anwesha_id):
+    """
+    Generates a JWT token for the given Anwesha ID.
+
+    Args:
+        anwesha_id (str): Anwesha ID.
+
+    Returns:
+        str: JWT token.
+    """
     return anwesha_id
 
 
 def export_as_csv(self, request, queryset):
+    """
+    Exports the queryset as a CSV file.
+
+    Args:
+        self: Django model admin object.
+        request: Django request object.
+        queryset: Queryset to export.
+
+    Returns:
+        HttpResponse: HTTP response with the CSV file.
+    """
     restricted_fields = [
         'password',
         'is_loggedin',
@@ -107,7 +177,7 @@ def export_as_csv(self, request, queryset):
         'intrests',
         'is_email_verified',
         'is_profile_completed',
-        'is_locked',     
+        'is_locked',
     ]
     meta = self.model._meta
     field_names = []
@@ -115,7 +185,6 @@ def export_as_csv(self, request, queryset):
         if field.name not in restricted_fields:
             field_names.append(field.name)
 
-    print(field_names)
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
     writer = csv.writer(response)
@@ -128,38 +197,54 @@ def export_as_csv(self, request, queryset):
 
 
 def check_token(request):
-    '''
-    :TODO: Find a more efficient way to check token and return errors messages
-    '''
+    """
+    Checks the token from the request's cookie.
+
+    Args:
+        request: Django request object.
+
+    Returns:
+        JsonResponse: JSON response with the token payload or an error message.
+    """
     token = request.COOKIES.get('jwt')
 
     if not token:
-        return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+        return JsonResponse({"message": "you are unauthenticated, Please Log in First"}, status=401)
 
     try:
-        payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
+        payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
         return payload
     except jwt.ExpiredSignatureError:
-        return JsonResponse({"message":"Your token is expired please login again"},status=409) 
-    
+        return JsonResponse({"message": "Your token is expired, please login again"}, status=409)
+
 
 def hash_password(password: str):
     """
-    Hash a password for storing.
-    :param password: The password to hash.
-    :return: A string of length 60, containing the algorithm used and the hashed password.
+    Hashes a password for storing.
+
+    Args:
+        password (str): The password to hash.
+
+    Returns:
+        str: A string of length 60, containing the algorithm used and the hashed password.
     """
     return str(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))[2:-1]
 
+
 def check_password(password1: str, password2: str):
     """
-    Check a hashed password. Uses bcrypt, the salt is saved into the hash itself
-    :param password1: The password to check.
-    :param password2: The hash to check the password against.
-    :return: True if the password matched, False otherwise.
+    Checks a hashed password using bcrypt.
+
+    Args:
+        password1 (str): The password to check.
+        password2 (str): The hash to check the password against.
+
+    Returns:
+        bool: True if the password matches, False otherwise.
     """
-    result =  bcrypt.checkpw(password1.encode('utf-8'), password2.encode('utf-8'))
+    result = bcrypt.checkpw(password1.encode('utf-8'), password2.encode('utf-8'))
     return result
+
 
 class EmailSending:
     def __init__(self, user) -> None:
@@ -169,6 +254,12 @@ class EmailSending:
         self.user = user
 
     def email_varification(self):
+        """
+        Sends an email verification email.
+
+        Returns:
+        int: Number of successfully sent emails.
+        """
         payload = {
             'id': self.user.anwesha_id,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
@@ -176,8 +267,8 @@ class EmailSending:
         }
         token = jwt.encode(
             payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://backend.anwesha.live/user/verifyemail/"+token
-        localhost_link = "http://127.0.0.1:8000/user/verifyemail/"+token
+        link = "https://backend.anwesha.live/user/verifyemail/" + token
+        localhost_link = "http://127.0.0.1:8000/user/verifyemail/" + token
         subject = "No reply"
         body = f'''
         Hello {self.address},\n
@@ -186,16 +277,25 @@ class EmailSending:
             \n\nThanks,
             \nTeam  Anwesha
         '''
-        recipient_list = []
-        recipient_list.append(self.address)
+        recipient_list = [self.address]
         res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
         print(res)
         return res
 
-def hash_id(anwesha_id,secret):
-    anwesha_id= anwesha_id.encode('utf-8')
+
+def hash_id(anwesha_id, secret):
+    """
+    Hashes the given Anwesha ID using HMAC-SHA256.
+
+    Args:
+        anwesha_id (str): Anwesha ID to hash.
+        secret (str): Secret key.
+
+    Returns:
+        str: Hashed ID.
+    """
+    anwesha_id = anwesha_id.encode('utf-8')
     secret = secret.encode('utf-8')
     digest = hmac.new(secret, msg=anwesha_id, digestmod=hashlib.sha256).digest()
     signature = base64.b64encode(digest).decode()
     return signature
-    
