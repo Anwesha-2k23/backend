@@ -10,44 +10,17 @@ from anwesha.settings import CONFIGURATION
 from utility import generate_qr, createId, hashpassword, hash_id
 from django.core.files.storage import FileSystemStorage
 
-# Determine storage settings based on the configuration
-if CONFIGURATION == "local":
-    QrStorageSettings = models.ImageField(blank=True, null=True, upload_to="static/qr")
-    ProfilePhotoStorageSettings = models.ImageField(blank=True, null=True, upload_to="static/profile")
-elif CONFIGURATION == "production":
-    QrStorageSettings = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
-    ProfilePhotoStorageSettings = models.ImageField(storage=ProfileImageStorage, blank=True, null=True)
+'''
+:NOTE:
+While hosting images in S3 `QrStorageSettings` and `ProfilePhotoStorageSettings` needs to be changed accodingly
+
+use following :CODE:
+
+QrStorageSettings = models.ImageField(storage=PublicQrStorage, blank=True, null=True)
+ProfilePhotoStorageSettings = models.ImageField(storage=ProfileImageStorage, blank=True, null=True)
+'''
 
 class User(models.Model):
-    """
-    Model representing a User.
-
-    Attributes:
-        User_type_choice (Enum): Enum class for user types.
-        Gender (Enum): Enum class for gender options.
-        anwesha_id (str): Anwesha ID of the user.
-        password (str): Hashed password of the user.
-        phone_number (str): Phone number of the user.
-        email_id (str): Email ID of the user.
-        full_name (str): Full name of the user.
-        collage_name (str): Name of the college of the user.
-        age (int): Age of the user.
-        is_email_verified (bool): Indicates if the user's email is verified or not.
-        user_type (str): Type of the user (choices from User_type_choice).
-        gender (str): Gender of the user (choices from Gender).
-        accomadation_selected (bool): Indicates if the user has selected accommodation.
-        is_profile_completed (bool): Indicates if the user has completed their profile.
-        instagram_id (str): Instagram ID of the user.
-        facebook_id (str): Facebook ID of the user.
-        time_of_registration (datetime): Timestamp of user registration.
-        is_locked (bool): Indicates if the user is locked.
-        is_loggedin (bool): Indicates if the user is logged in.
-        profile (ImageField): Image field for the user's profile.
-        profile_photo (ImageField): Image field for the user's profile photo (storage settings based on configuration).
-        qr_code (ImageField): Image field for the user's QR code (storage settings based on configuration).
-        signature (str): Signature of the user.
-        secret (str): Secret of the user.
-    """
 
     class User_type_choice(models.TextChoices):
         IITP_STUDENT = "iitp_student", "IITP-Student"
@@ -84,8 +57,8 @@ class User(models.Model):
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
     profile = models.ImageField()
-    profile_photo = ProfilePhotoStorageSettings
-    qr_code = QrStorageSettings
+    profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+    qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
     signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
     secret = models.CharField(max_length=20, default="secret")
 

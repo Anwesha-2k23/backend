@@ -204,9 +204,6 @@ class Register(APIView):
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)
 
-        itime = time.time()
-        print(f"Time after validation: {itime - stime}")
-
         # Create a new user object
         new_user = User.objects.create(
             full_name=full_name,
@@ -421,11 +418,8 @@ class RegenerateQR(APIView):
 
 
 
-
-
-
 """
-!!! OAuth login is not stable yet hence not in use
+:WARNING: OAuth login is not stable yet hence not in use
 """
 class Oauth_Login(APIView):
     def get(self,request):
