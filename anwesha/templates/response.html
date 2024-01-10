@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AtomPay</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <h2>Response Data:</h2>
+    <p>Status Code: {{ resultcode }}</p>
+    <p>Merchant Transaction Id: {{ merchantid }}</p>
+    <p>Transaction Date: {{ transactiondate }}</p>
+    <p>Bank Transaction Id: {{ banktransactionid }}</p>
+    <p>Transaction Status: <b>{{ signature_validation }}</b></p>
+
+    <br><br><br>
+    <h2>Final Response:</h2>
+    <p>{{ finalresp }}</p>
+</body>
+
+</html>

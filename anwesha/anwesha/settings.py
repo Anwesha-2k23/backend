@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "sponsor",
     "participant",
     "CA",
+    "atompay",
     "multicity",
     "rest_framework",
 #    'django.contrib.sites',
@@ -79,13 +80,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 ROOT_URLCONF = "anwesha.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -210,6 +210,15 @@ CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'access-control-allow-origin',
+    'content-type',  # Add other headers your application uses
+    # Include other headers as needed
+]
 # SESSION_COOKIE_SECURE=True
 # SESSION_COOKIE_SAMESITE = 'None'
 

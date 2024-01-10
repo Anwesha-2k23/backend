@@ -25,6 +25,7 @@ from sponsor.urls import sponsor_urls
 from CA.urls import campus_ambassador_urls
 from map.urls import map_urls
 from multicity.urls import multicity_urls
+from atompay import views as view
 
 from user import views
 
@@ -43,5 +44,7 @@ urlpatterns = [
     path("accounts/",include('allauth.urls')),
     path("map/",include(map_urls)),
     path("multicity/",include(multicity_urls)),
+    path('atompay/', view.payview),
+    path('response/', view.resp),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

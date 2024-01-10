@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
-CONFIGURATION = "local"
+CONFIGURATION = "production"
 S3_ENABLED = True
 
 # Application definition
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "map",
     "sponsor",
     "participant",
+    "atompay",
     "CA",
     "multicity",
     "rest_framework",

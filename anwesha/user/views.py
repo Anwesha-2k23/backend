@@ -109,6 +109,7 @@ class LogOut(APIView):
 
 class register(APIView):
     def post(self, request):
+        print("registering user")
         try:
             password = request.data['password']
             email_id = request.data['email_id']
@@ -151,6 +152,7 @@ class register(APIView):
 
         except:
             return JsonResponse({"message":"required form data not recived"},status=401)
+        print("creating user",full_name,email_id,password,phone_number)
         new_user = User.objects.create(
             full_name=full_name,
             email_id=email_id, 
@@ -158,6 +160,7 @@ class register(APIView):
             phone_number=phone_number,
             # user_type=user_type,
         )
+        print(new_user)
         new_user.save()
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 
