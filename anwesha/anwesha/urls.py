@@ -47,6 +47,6 @@ urlpatterns = [
     path("multicity/",include(multicity_urls)),
     path('atompay/', view.payview),
     path('response/', view.resp),
-    path('sleek/', sleek_view.register),
+    path('slick/', sleek_view.register),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
