@@ -115,47 +115,6 @@ def register( request):
         # print(time.time() - t)
         return JsonResponse({'message': Anwesha_id , "status" : "201"})      
 
-def login( request):
-        response = Response()
-        try:
-            username = request.data['username']
-            password = request.data['password']
-        except:
-            response.data = { "status" : "Incorrrect input" }
-            return response
-
-        password = hashpassword(password)
-        user = None
-        if isemail(username):
-            user = User.objects.filter(email_id = username, password = password)
-        else:
-            user = User.objects.filter(anwesha_id = username , password=password)
-        this_user = user.first()
-        
-        if user:
-            if this_user.is_email_verified == True :
-                payload = {
-                    "id" : this_user.anwesha_id,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-                    "iat": datetime.datetime.utcnow()
-                }
-
-                token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-
-                response.data = { "success" : True , "name" : this_user.full_name}
-                response.set_cookie(key='jwt', value=token, httponly=True)
-            else:
-                response.data = {
-                    "message" : "Please verify email to log in to your account",
-                    "success" : False
-                }
-            # code for linking cookie
-        else:
-            response.data = { "successs": False, "message": "incorrect id or password" }
-
-        return response    
-
-
 class LogOut(APIView):
     def post(self, request):
         token = request.COOKIES.get('jwt')
