@@ -26,7 +26,7 @@ from CA.urls import campus_ambassador_urls
 from map.urls import map_urls
 from multicity.urls import multicity_urls
 from atompay import views as view
-from Sleek import views as view
+from Sleek import views as sleek_view
 
 from user import views
 
@@ -47,6 +47,6 @@ urlpatterns = [
     path("multicity/",include(multicity_urls)),
     path('atompay/', view.payview),
     path('response/', view.resp),
-    path('sleek/', view.register),
+    path('sleek/', sleek_view.register),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
