@@ -26,6 +26,7 @@ from CA.urls import campus_ambassador_urls
 from map.urls import map_urls
 from multicity.urls import multicity_urls
 from atompay import views as view
+from Sleek import views as view
 
 from user import views
 
