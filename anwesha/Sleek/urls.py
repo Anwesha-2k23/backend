@@ -5,9 +5,8 @@ from django.contrib.auth import views as auth_views
 
 user_urls = [
     # path('alluser', alluser, name='alluser'),
-    path('Register', Login.as_view(), name='register'),
-    path('login', Login.as_view(), name='login'),
-    path('logout', LogOut.as_view() , name='logout'),
+    path('Register', register, name='register'),
+    path('logout', LogOut, name='logout'),
 
     
 ]
