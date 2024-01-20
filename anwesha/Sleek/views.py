@@ -22,19 +22,19 @@ from utility import hashpassword, createId, isemail, generate_qr
 
 
 def register( request):
-        token = request.COOKIES.get('jwt')
+        if request.method == 'POST':
+
+         data = request.body
+         payload = json.loads(data)
+
+          #CREATE TOKEN HERE 
+         print(token)
+
         if not token:
-            return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
-
-        try:
-            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
-
+         return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
         try:
             user = User.objects.get(anwesha_id = payload["id"])
             if(user.is_email_verified == True):
-
                 user.is_loggedin = True                
                 response  = []; 
                 response.append('Welcome Your AnweshaID is' + user.anwesha_id)
@@ -44,7 +44,7 @@ def register( request):
         except: 
             print("Registring")
             stime = time.time()
-        try:    
+          
             password = request.data['password']
             email_id = request.data['email_id']
             full_name = request.data['full_name']
@@ -78,13 +78,10 @@ def register( request):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message":"enter proper user type"},status=403)    
-
-        except:
-            return JsonResponse({"message":"required form data not recived"},status=401)
-        itime = time.time()
-        print(f"time after validation {itime-stime}")
-        print(full_name,email_id,password,college_name,user_type)
-        new_user = User.objects.create(
+            itime = time.time()
+            print(f"time after validation {itime-stime}")
+            print(full_name,email_id,password,college_name,user_type)
+            new_user = User.objects.create(
             full_name=full_name,
             email_id=email_id,
             password=password,
@@ -92,43 +89,23 @@ def register( request):
             is_email_verified = True,
             user_type=user_type,
             collage_name=college_name,
-        )
-        print("New user created successfully")
-        print(new_user)
-        new_user.save()
-        Anwesha_id =[]
+             )
+            print("New user created successfully")
+            print(new_user)
+            new_user.save()
+            Anwesha_id =[]
 
-        Anwesha_id.append('Successfully Registered , Your AnsweshaID is' + new_user.anwesha_id); 
+            Anwesha_id.append('Successfully Registered , Your AnsweshaID is' + new_user.anwesha_id); 
 
-        # e = EmailSending(new_user)
-        # threading.Thread(target=e.email_varification).start()
-        # t = time.time()
-        # text = mail_content(type = 1,email_id = email_id , full_name = full_name , anwesha_id = new_user.anwesha_id)
-        #send_email_using_microservice(
+            # e = EmailSending(new_user)
+            # threading.Thread(target=e.email_varification).start()
+            # t = time.time()
+            # text = mail_content(type = 1,email_id = email_id , full_name = full_name , anwesha_id = new_user.anwesha_id)
+            #send_email_using_microservice(
             #email_id=email_id,
             #subject="No reply",
             #text=text
-        #)
-        # print(time.time() - t)
-        return JsonResponse({'message': Anwesha_id , "status" : "201"})      
-
-def post( request):
-        token = request.COOKIES.get('jwt')
-        if not token:
-            raise AuthenticationError("Unauthenticated")
-        else:
-            try:
-                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
-            except jwt.ExpiredSignatureError:
-                raise AuthenticationError("Cookie Expired")
-            user = User.objects.get(anwesha_id = payload["id"]) 
-            user.is_loggedin = False
-            user.save()
-            response = Response()
-            response.delete_cookie('jwt')
-            response.data = {'message': 'Logout Successful' , "status" : "200"}
-            return response
-
-
-
+            #)
+            # print(time.time() - t)
+            return JsonResponse({'message': Anwesha_id , "status" : "201"})      
 
