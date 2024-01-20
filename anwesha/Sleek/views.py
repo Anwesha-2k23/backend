@@ -34,14 +34,11 @@ def register( request):
         try:
             user = User.objects.get(anwesha_id = payload["id"])
             if(user.is_email_verified == True):
-                user.is_loggedin = True
-                response = Response()
-                response.data = {
-                    "mssg": "welcome",
-                    "full_name" : user.full_name,
-                    "status" : "200"
-                }
-                return response
+
+                user.is_loggedin = True                
+                response  = []; 
+                response.append('Welcome Your AnweshaID is' + user.anwesha_id)
+                return JsonResponse({"message":respose , 'status':200 })
             else:
                 return JsonResponse({"message":"Your Email is not verified please verify email to continue further"},status=401)
         except: 
@@ -115,8 +112,7 @@ def register( request):
         # print(time.time() - t)
         return JsonResponse({'message': Anwesha_id , "status" : "201"})      
 
-class LogOut(APIView):
-    def post(self, request):
+def post( request):
         token = request.COOKIES.get('jwt')
         if not token:
             raise AuthenticationError("Unauthenticated")
