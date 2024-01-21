@@ -7,19 +7,19 @@ from utility import isemail
 def register(request):
     """
     Register a new user.
-    
+
     Endpoint: `{host}/slick/register`
 
     Args:
         request: The HTTP request object.
+        header: Bearer token: "AnweshaIitpxSlick"
         ```json
         {
             "email_id": "johndoe@email.com",
             "full_name": "John Doe",
             "phone_number": "9876543210",
             "college_name": "IIT Patna",
-            "user_type": "iitp_student",
-            "token": "AnweshaIitpxSlick"
+            "user_type": "iitp_student"
         }
         ```
 
@@ -28,6 +28,13 @@ def register(request):
         ```json
         {
             "Anwesha_id": "ANWXXXXXX"
+        }
+        ```
+        
+        On token error
+        ```json
+        {
+            "message": "you are unauthenticated , Please Log in First"
         }
         ```
 
@@ -39,12 +46,13 @@ def register(request):
         payload = json.loads(data)
 
         # verify token
-        token = payload.get("token")
+        token = request.META.get("HTTP_AUTHORIZATION")
+        print(token)
         if token == None:
             return JsonResponse(
                 {"message": "you are unauthenticated , Please Log in First"}, status=401
             )
-        elif token != "AnweshaIitpxSlick":
+        elif token != "Bearer AnweshaIitpxSlick":
             return JsonResponse(
                 {"message": "you are unauthenticated , Please Log in First"}, status=401
             )
@@ -63,6 +71,8 @@ def register(request):
         if User.objects.filter(email_id=email_id).exists():
             # return anwesha id of the user
             existing_user = User.objects.get(email_id=email_id)
+            existing_user.is_email_verified = True
+            existing_user.save()
             return JsonResponse(
                 {
                     "Anwesha_id": existing_user.anwesha_id,
@@ -71,6 +81,8 @@ def register(request):
             )
         if User.objects.filter(phone_number=phone_number).exists():
             existing_user = User.objects.get(phone_number=phone_number)
+            existing_user.is_email_verified = True
+            existing_user.save()
             return JsonResponse(
                 {
                     "Anwesha_id": existing_user.anwesha_id,

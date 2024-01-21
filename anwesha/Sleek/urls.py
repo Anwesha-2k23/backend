@@ -1,12 +1,6 @@
-from django.urls import path, include
-from .views  import LogOut,  Login, editProfile, register , forgetPassword, verifyEmail , sendVerificationEmail,Oauth_Login, Oauth_Logout
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import views as auth_views
+from django.urls import path
+from .views  import register
 
-user_urls = [
-    # path('alluser', alluser, name='alluser'),
-    path('Register', register, name='register'),
-    path('logout', LogOut, name='logout'),
-
-    
+sleek_urls = [
+    path('register', register, name='register'),    
 ]
