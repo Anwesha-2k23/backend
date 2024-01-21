@@ -145,7 +145,7 @@ class SoloAdmin(admin.ModelAdmin):
 class PayUTxnAdmin(admin.ModelAdmin):
     list_display = ('txnid', 'amount', 'firstname',
                     'email', 'productinfo', 'status')
-    search_fields = ('txnid', 'firstname', 'email', 'phone')
+    search_fields = ('txnid','mihpayid', 'firstname', 'email', 'phone')
     list_filter = ('status', 'productinfo')
     empty_value_display = '-empty-'
     actions = [export_as_csv]

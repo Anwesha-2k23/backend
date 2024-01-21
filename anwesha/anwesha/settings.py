@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = env("CONFIGURATION")
 S3_ENABLED = True
@@ -51,8 +51,10 @@ INSTALLED_APPS = [
     "map",
     "sponsor",
     "CA",
+    "atompay",
     "multicity",
     "rest_framework",
+    "Sleek",
 #    'django.contrib.sites',
     'allauth',
     'allauth.account',
@@ -85,7 +87,7 @@ ROOT_URLCONF = "anwesha.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

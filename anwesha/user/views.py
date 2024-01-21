@@ -91,7 +91,7 @@ class Login(APIView):
                     "user_type" : this_user.user_type,
                     "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
                     }
-                response.set_cookie(key='jwt', value=token, httponly=True,samesite=None)
+                response.set_cookie(key='jwt', value=token, httponly=False,samesite='None',secure=True)
                 return response
             else:
                 return JsonResponse({"message":"Please verify email to log in to your account"},status=403)
@@ -116,7 +116,7 @@ class LogOut(APIView):
             user.is_loggedin = False
             user.save()
             response = Response()
-            response.delete_cookie('jwt')
+            response.delete_cookie(key='jwt',samesite='None')
             response.data = {'message': 'Logout Successful' , "status" : "200"}
             return response
 
@@ -160,26 +160,29 @@ class register(APIView):
             return JsonResponse({"message":"required form data not recived"},status=401)
         itime = time.time()
         print(f"time after validation {itime-stime}")
+        print(full_name,email_id,password,college_name,user_type)
         new_user = User.objects.create(
             full_name=full_name,
-            email_id=email_id, 
-            password=password, 
+            email_id=email_id,
+            password=password,
             phone_number=phone_number,
             is_email_verified = True,
             user_type=user_type,
             collage_name=college_name,
         )
+        print("New user created successfully")
+        print(new_user)
         new_user.save()
 
         # e = EmailSending(new_user)
         # threading.Thread(target=e.email_varification).start()
         # t = time.time()
-        text = mail_content(type = 1,email_id = email_id , full_name = full_name , anwesha_id = new_user.anwesha_id)
-        send_email_using_microservice(
-            email_id=email_id,
-            subject="No reply",
-            text=text
-        )
+        # text = mail_content(type = 1,email_id = email_id , full_name = full_name , anwesha_id = new_user.anwesha_id)
+        #send_email_using_microservice(
+            #email_id=email_id,
+            #subject="No reply",
+            #text=text
+        #)
         # print(time.time() - t)
         return JsonResponse({'message': 'User created successfully!' , "status" : "201"})
 

@@ -51,7 +51,7 @@ class User(models.Model):
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
-    profile = models.ImageField()
+    #profile = models.ImageField()
     profile_photo = ProfilePhotoStorageSettings
     qr_code = QrStorageSettings
     signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
@@ -69,7 +69,7 @@ class User(models.Model):
         if not self.qr_code:
             self.anwesha_id = createId("ANW", 7)
             check_exist = User.objects.filter(anwesha_id = self.anwesha_id)
-            while check_exist:  # very unlikely to happen
+            while len(check_exist) > 0:  # very unlikely to happen
                     self.anwesha_id = createId("ANW", 7)
                     check_exist = User.objects.filter(anwesha_id = self.anwesha_id)
             self.password = hashpassword(self.password)
