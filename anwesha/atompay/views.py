@@ -83,31 +83,34 @@ def payview(request):
             event = Events.objects.get(id = event_id)
             if not User.objects.filter(anwesha_id = team_member).exists():
                 error_msg.append(team_member+" does not exists")
-            elif TeamParticipant.objects.filter(anwesha_id = team_member, event_id = event).exists():
-                error_msg.append(team_member+" is already registered in this event")
+            # elif TeamParticipant.objects.filter(anwesha_id = team_member, event_id = event).exists():
+                # error_msg.append(team_member+" is already registered in this event")
         team_id = ""
         new_team = None
         # check whether a team is already registered by the leader for the same event and payment is not done
-        if Team.objects.filter(leader_id = user, event_id = event, payment_done = False).exists():
-            team_id = Team.objects.get(leader_id = user, event_id = event, payment_done = False).team_id
-            new_team = Team.objects.get(team_id = team_id)
-        else:
-            id = str(uuid.uuid4()).replace("-", "")
-            team_id = "TM"+id[:5]
-            print(team_id)
-            while Team.objects.filter(team_id = team_id).exists(): # create a non colliding team id
-                team_id = createId(prefix="TM",length=5)
-            try:
-                new_team = Team(
-                    team_id = team_id,
-                    event_id = event,
-                    leader_id = User.objects.get(anwesha_id = team_members[0]),
-                    team_name = team_name
-                )
-                new_team.save()
-            except Exception as e:
-                print(e)
-                return JsonResponse({"message":"internal server error [team creation]"},status=500)
+        try:
+            if Team.objects.filter(leader_id = user, event_id = event, payment_done = False).exists():
+                team_id = Team.objects.get(leader_id = user, event_id = event, payment_done = False).team_id
+                new_team = Team.objects.get(team_id = team_id)
+            else:
+                id = str(uuid.uuid4()).replace("-", "")
+                team_id = "TM"+id[:5]
+                print(team_id)
+                while Team.objects.filter(team_id = team_id).exists(): # create a non colliding team id
+                    team_id = createId(prefix="TM",length=5)
+                try:
+                    new_team = Team(
+                        team_id = team_id,
+                        event_id = event,
+                        leader_id = User.objects.get(anwesha_id = team_members[0]),
+                        team_name = team_name
+                    )
+                    new_team.save()
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"message":"internal server error [team creation]"},status=500)
+        except Exception as e:
+            print(e)
 
         print(team_members)
         for team_member in team_members:
