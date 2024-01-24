@@ -92,6 +92,8 @@ def payview(request):
             if Team.objects.filter(leader_id = user, event_id = event, payment_done = False).exists():
                 team_id = Team.objects.get(leader_id = user, event_id = event, payment_done = False).team_id
                 new_team = Team.objects.get(team_id = team_id)
+                # clear all the existing members in the new team
+                TeamParticipant.objects.filter(team_id = new_team).delete()
             else:
                 id = str(uuid.uuid4()).replace("-", "")
                 team_id = "TM"+id[:5]
