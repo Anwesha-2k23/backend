@@ -360,6 +360,30 @@ class RegenerateQR(APIView):
         return JsonResponse({
             "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
         },safe=False)
+        
+class GetQRData(APIView):
+    def get(self, request, **kwargs):
+        data = request.body
+        payload = json.loads(data)
+        # verify token
+        token = request.META.get("HTTP_AUTHORIZATION")
+        print(token)
+        if token == None:
+            return JsonResponse(
+                {"message": "you are unauthenticated , Please Log in First"}, status=401
+            )
+        elif token != "Bearer AnweshaIitpxSlick":
+            return JsonResponse(
+                {"message": "you are unauthenticated , Please Log in First"}, status=401
+            )
+        anw_id = payload["anwesha_id"]
+        qr_secret = createId("secret",10)
+        qr_signature = hash_id(anw_id, qr_secret)
+        return JsonResponse(
+            {
+                "qr_data": qr_signature
+            }, safe=False
+        )
 
 class Oauth_Login(APIView):
     def get(self,request):

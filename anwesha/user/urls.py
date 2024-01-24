@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views  import LogOut,  Login, editProfile, register , ForgetPassword, verifyEmail , sendVerificationEmail,Oauth_Login, Oauth_Logout, RegenerateQR
+from .views  import LogOut,  Login, editProfile, register , ForgetPassword, verifyEmail , sendVerificationEmail,Oauth_Login, Oauth_Logout, RegenerateQR, GetQRData
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import views as auth_views
 
@@ -15,4 +15,5 @@ user_urls = [
     path('regenerateqr/', RegenerateQR.as_view(), name='regenerateqr'),
     path('oauth-login/',Oauth_Login.as_view(),name='oauth-login'),
     path('oauth-logout/',Oauth_Logout.as_view(),name='oauth-logout'),
+    path('getqrdata/',GetQRData.as_view(),name='getqrdata'),
 ]
