@@ -391,11 +391,14 @@ class GetQRData(APIView):
                 {"message": "you are unauthenticated , Please Log in First"}, status=401
             )
         anw_id = payload["anwesha_id"]
-        qr_secret = createId("secret",10)
-        qr_signature = hash_id(anw_id, qr_secret)
+        user = User.objects.get(anwesha_id=anw_id)
+        user.secret = createId("secret", 10)
+        user.signature = hash_id(user.anwesha_id, user.secret)
+        user.qr_code = generate_qr(user.signature)
+        user.save()
         return JsonResponse(
             {
-                "qr_data": qr_signature
+                "qr_data": user.signature
             }, safe=False
         )
 
