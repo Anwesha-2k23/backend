@@ -161,18 +161,32 @@ class register(APIView):
         itime = time.time()
         print(f"time after validation {itime-stime}")
         print(full_name,email_id,password,college_name,user_type)
-        new_user = User.objects.create(
-            full_name=full_name,
-            email_id=email_id,
-            password=password,
-            phone_number=phone_number,
-            is_email_verified = True,
-            user_type=user_type,
-            collage_name=college_name,
-        )
-        print("New user created successfully")
-        print(new_user)
-        new_user.save()
+        if user_type == User.User_type_choice.IITP_STUDENT:
+            new_user = User.objects.create(
+                full_name=full_name,
+                email_id=email_id,
+                password=password,
+                phone_number=phone_number,
+                is_email_verified = False,
+                user_type=user_type,
+                collage_name=college_name,
+            )
+            print("New user created successfully")
+            print(new_user)
+            new_user.save()
+        else:
+            new_user = User.objects.create(
+                full_name=full_name,
+                email_id=email_id,
+                password=password,
+                phone_number=phone_number,
+                is_email_verified = True,
+                user_type=user_type,
+                collage_name=college_name,
+            )
+            print("New user created successfully")
+            print(new_user)
+            new_user.save()
 
         # e = EmailSending(new_user)
         # threading.Thread(target=e.email_varification).start()
