@@ -568,10 +568,9 @@ class SoloRegistration(APIView):
                 anwesha_id = user,
                 event_id = event,
             )
-            if user.user_type == User.User_type_choice.IITP_STUDENT and event.tags != '5':  
-                this_person.payment_done = True
-                this_person.save()
-                return JsonResponse({"message":"Event registration suceessfully completed", "payment_url": None },status=201)
+            this_person.payment_done = True
+            this_person.save()
+            return JsonResponse({"message":"Event registration suceessfully completed", "payment_url": None },status=201)
             this_person.save()
         except:
             return JsonResponse({"message":"internal server error"},status=500)
@@ -647,15 +646,14 @@ class TeamEventRegistration(APIView):
                 print(e)
                 return JsonResponse({"message":"internal server error [teammate creation]"},status=500)
 
-        if user.user_type == User.User_type_choice.IITP_STUDENT:
-            new_team.payment_done = True
-            new_team.save()
-            return JsonResponse(
-                {"message":"Registered Successfully", 
-                 "team_id":team_id,
-                "error": error_msg,
-                "payment_url": None}
-                ,status=201)
+        new_team.payment_done = True
+        new_team.save()
+        return JsonResponse(
+            {"message":"Registered Successfully", 
+                "team_id":team_id,
+            "error": error_msg,
+            "payment_url": None}
+            ,status=201)
 
         return JsonResponse({ 
             "message":"Registered Partially", 
