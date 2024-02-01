@@ -388,7 +388,7 @@ class ForgetPassword(APIView):
             }
 
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm="HS256")
-            link = "http://anwesha.live/user/reset_password/" + token
+            link = "https://anwesha.iitp.ac.in/user/reset_password/" + token
             text = f"""Hello {user.full_name}!\nThis is the link to change password click it to update your password:-\n{link}\nPS: please dont share it with anyone\nThanks\nTeam Anwesha"""
             ## send mail
             send_email_using_microservice(
@@ -401,11 +401,13 @@ class ForgetPassword(APIView):
     def put(self, request):  # chanfing the password
         token = request.data["token"]
         password = request.data["password"]
-
+        print(token, password)
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, "HS256")
         except jwt.ExpiredSignatureError:
             return Response({"message": "Cookie Expired"}, status=408)
+        except:
+            return Response({"message" : "Invalid Cookie"}, status = 403)
 
         try:
             user = User.objects.get(anwesha_id=payload["userid"])
