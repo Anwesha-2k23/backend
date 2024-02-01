@@ -99,7 +99,8 @@ class TeamAdmin(admin.ModelAdmin):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    list_display = ('team_id', 'event_id','eventname', 'leader_id', 'fullname', 'team_name')
+    list_display = ('team_id', 'event_id', 'eventname',
+                    'leader_id', 'fullname', 'team_name', 'payment_done')
     search_fields = ('team_id', 'event_id__id', 'event_id__name',
                      'leader_id__anwesha_id', 'leader_id__email_id', 'team_name')
     actions = [lock_user, export_as_csv]
