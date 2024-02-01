@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import User
-from utility import export_as_csv 
+from utility import export_as_csv, export_all_as_csv
 from .utility import mail_content , send_email_using_microservice
 # Register your models here.
 
@@ -29,7 +29,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
     list_display = ('anwesha_id', 'full_name', 'email_id', 'collage_name')
-    actions = [lock_user,export_as_csv,resend_mail]
+    actions = [lock_user, export_as_csv, resend_mail, export_all_as_csv]
     list_filter = ('user_type', 'is_locked', 'collage_name')
     fieldsets = (
         ('Basic Information', {

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Campus_ambassador
-from utility import export_as_csv
+from utility import export_as_csv, export_all_as_csv
 from django.db.models import F
 
 @admin.register(Campus_ambassador)
@@ -27,7 +27,7 @@ class CAadmin(admin.ModelAdmin):
         self.message_user(request, "Score incremented")
     
     list_display = ('ca_id', 'full_name', 'email_id', 'refferal_code','phone_number')
-    actions = [lock_user,export_as_csv, score5, score10, score15]
+    actions = [lock_user,export_as_csv, export_all_as_csv, score5, score10, score15]
     list_filter = ('college_name', 'college_city', 'intrests')
     fieldsets = (
         ('Basic Information', {
