@@ -126,6 +126,34 @@ def export_as_csv(self, request, queryset):
 
     return response
 
+def export_all_as_csv(self, request, queryset):
+    restricted_fields = [
+        'password',
+        'is_loggedin',
+        'validation',
+        'profile_photo',
+        'intrests',
+        'is_email_verified',
+        'is_profile_completed',
+        'is_locked',     
+    ]
+    meta = self.model._meta
+    field_names = []
+    for field in meta.fields:
+        if field.name not in restricted_fields:
+            field_names.append(field.name)
+
+    print(field_names)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in self.model.objects.all():
+        row = writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
 
 def check_token(request):
     '''
