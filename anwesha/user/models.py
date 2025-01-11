@@ -90,6 +90,7 @@ class User(models.Model):
                 check_exist = User.objects.filter(anwesha_id=self.anwesha_id)
             self.password = hashpassword(self.password)
             self.secret = createId("secret", 10)
+            # Made changes in the QR file name in the generate_qr function so that no unnecessary folders are created during saving the QR code.
             self.signature = hash_id(self.anwesha_id, self.secret)
-            self.qr_code = generate_qr(self.signature)
+            self.qr_code = generate_qr(self.anwesha_id,self.signature)
         super(User, self).save(*args, **kwargs)

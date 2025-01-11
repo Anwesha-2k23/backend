@@ -33,7 +33,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = env("CONFIGURATION")
-S3_ENABLED = env("S3_ENABLED")
+S3_ENABLED = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -247,12 +247,12 @@ EMAIL_HOST_USER = env('SMTP_ID')
 EMAIL_HOST_PASSWORD = env('SMTP_PASS')
 
 # Website host variable
-WEBSITE_HOST = env('WEBSITE_HOST')
+WEBSITE_HOST = "localhost"#env('WEBSITE_HOST')
 COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
 
 #razorpay api keys
-RAZORPAY_API_KEY_ID = env("RAZORPAY_API_KEY_ID")
-RAZORPAY_API_KEY_SECRET = env("RAZORPAY_API_KEY_SECRET")
+RAZORPAY_API_KEY_ID = ""#env("RAZORPAY_API_KEY_ID")
+RAZORPAY_API_KEY_SECRET =""# env("RAZORPAY_API_KEY_SECRET")
 
 '''
 :NOTE:
@@ -260,4 +260,4 @@ you will need an endpoint for sending email with required parameters
 if you dont have your own email service you can use this one :- https://github.com/melencholicmice/mail-service
 please make sure to isolate the docker container in microservice and not expose its port
 '''
-EMAIL_MICROSERVICE_ENDPOINT = env("EMAIL_MICROSERVICE_ENDPOINT")
+EMAIL_MICROSERVICE_ENDPOINT = "http://127.0.0.1:12000/send-mail/"

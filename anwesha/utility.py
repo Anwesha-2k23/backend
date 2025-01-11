@@ -15,7 +15,28 @@ from django.http import HttpResponse, JsonResponse
 import bcrypt
 import hmac
 import base64
+from requests import post
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET, EMAIL_MICROSERVICE_ENDPOINT
 
+def send_email_using_microservice(email_id, subject, text):
+    """
+    Sends an email using an external mail API.
+
+    Parameters:
+    - email_id (str): Email ID of the recipient.
+    - subject (str): Subject of the email.
+    - text (str): Content of the email.
+
+    Precautions:
+    - Ensure that the EMAIL_MICROSERVICE_ENDPOINT is properly configured.
+    - Handle any exceptions or errors that may occur during the email sending process.
+    """
+    PARAM = {
+        "to": email_id,
+        "subject": subject,
+        "text": text
+    }
+    r = post(url=EMAIL_MICROSERVICE_ENDPOINT, data=PARAM)
 
 def verification_mail(email, user):
     """
@@ -36,18 +57,18 @@ def verification_mail(email, user):
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
     link = "https://backend.anwesha.live/campasambassador/verifyemail/" + token
-    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/" + token
+    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"
     subject = "No reply"
     body = f'''
     Hello {user},\n\n
         Please click on the link below to verify your email address for anwesha login:
-         \n{link}
+         \n{localhost_link}
         \n\nThanks,
         \nTeam  Anwesha
     '''
     recipient_list = [email]
-    res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
-    return res
+    # res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
+    send_email_using_microservice(email,subject,body)
 
 
 def hashpassword(password):
@@ -127,7 +148,7 @@ def get_anwesha_id(request):
         return None
 
 
-def generate_qr(anwesha_id):
+def generate_qr(anwesha_id,hash):
     """
     Generates a QR code for the given Anwesha ID.
 
@@ -137,7 +158,7 @@ def generate_qr(anwesha_id):
     Returns:
         File: QR code image file.
     """
-    img = qrcode.make(anwesha_id)
+    img = qrcode.make(hash)
     blob = BytesIO()
     img.save(blob, "PNG")
     qr = File(blob, name=anwesha_id + "-qr.png")

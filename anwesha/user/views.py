@@ -24,6 +24,8 @@ from .utility import Autherize , send_email_using_microservice , mail_content
 import threading
 from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
+from anwesha.settings import CONFIGURATION,BASE_DIR
+import os
 
 
 class Login(APIView):
@@ -49,7 +51,12 @@ class Login(APIView):
             if user.is_email_verified:
                 user.is_loggedin = True
                 user.save()
-
+                
+                if CONFIGURATION == "local":
+                    qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+                else:
+                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+                
                 # Create a response object
                 response = Response()
                 response.data = {
@@ -58,7 +65,7 @@ class Login(APIView):
                     "anwesha_id": user.anwesha_id,
                     "user_type": user.user_type,
                     "status": "200",
-                    "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+                    "qr_code": qr_code
                 }
 
                 return response
@@ -105,13 +112,18 @@ class Login(APIView):
 
                 this_user.is_loggedin = True
                 this_user.save()
+                
+                if CONFIGURATION == "local":
+                    qr_code = str(os.path.join(BASE_DIR,""))+str(this_user.qr_code)
+                else:
+                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
 
                 response.data = {
                     "success": True,
                     "name": this_user.full_name,
                     "anwesha_id": this_user.anwesha_id,
                     "user_type": this_user.user_type,
-                    "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
+                    "qr_code": qr_code
                 }
 
                 # Set the JWT token as a cookie in the response
@@ -232,6 +244,12 @@ class EditProfile(APIView):
     def get(self, request, **kwargs):
         user = kwargs['user']
         response = Response()
+        
+        if CONFIGURATION == "local":
+            qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+        else:
+            qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+        
         response.data = {
             "anwesha_id": user.anwesha_id,
             "full_name": user.full_name,
@@ -244,7 +262,7 @@ class EditProfile(APIView):
             "is_profile_completed": user.is_profile_completed,
             "profile_picture": str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+            "qr_code": qr_code
         }
         return response
 
