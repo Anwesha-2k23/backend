@@ -22,7 +22,10 @@ from user.urls import user_urls
 from event.urls import event_urls
 from sponsor.urls import sponsor_urls
 from CA.urls import campus_ambassador_urls
-
+from map.urls import map_urls
+from multicity.urls import multicity_urls
+from atompay import views as view
+from Sleek.urls import sleek_urls
 from user import views
 
 # from user.views import UserViewSet
@@ -37,5 +40,10 @@ urlpatterns = [
     path("sponsors/", include(sponsor_urls)),
     path("campasambassador/", include(campus_ambassador_urls)), # new CA
     path("accounts/",include('allauth.urls')),
+    path("map/",include(map_urls)),
+    path("multicity/",include(multicity_urls)),
+    path('atompay/', view.payview),
+    path('response/', view.resp),
+    path('slick/', include(sleek_urls)),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

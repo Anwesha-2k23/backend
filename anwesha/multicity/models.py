@@ -33,18 +33,22 @@ class Multicity_Participants(models.Model):
     payment_done = models.BooleanField(default=False)
     organisation_type = models.CharField(max_length=20 , choices =Organisation_Type.choices , default=Organisation_Type.COLLEGE)
     solo_team = models.BooleanField(default=True)
+    
     leader_name = models.CharField(max_length=100)
     leader_email = models.CharField(max_length=100)
     leader_phone_no = models.CharField(max_length=13)
     leader_organisation= models.CharField(max_length=100)
+    
     member_one_name = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_one_email = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_one_organisation= models.CharField(max_length=100,blank=True,null=True,default=None)
     member_one_phone_no = models.CharField(max_length=13,blank=True,null=True,default=None)
+    
     member_two_name = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_two_email = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_two_organisation= models.CharField(max_length=100,blank=True,null=True,default=None)
     member_two_phone_no = models.CharField(max_length=13,blank=True,null=True,default=None)
+    
     member_three_name = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_three_email = models.CharField(max_length=100,blank=True,null=True,default=None)
     member_three_organisation= models.CharField(max_length=100,blank=True,null=True,default=None)

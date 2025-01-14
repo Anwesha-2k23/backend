@@ -8,14 +8,13 @@ from io import BytesIO
 from django.core.mail import send_mail
 from anwesha.settings import EMAIL_HOST_USER, COOKIE_ENCRYPTION_SECRET
 import datetime
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 import csv
 from django.http import HttpResponse, JsonResponse
 import bcrypt
 import hmac
 import base64
 from requests import post
+import re
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET, EMAIL_MICROSERVICE_ENDPOINT
 
 def send_email_using_microservice(email_id, subject, text):
@@ -107,22 +106,25 @@ def checkPhoneNumber(phone_number: str):
         phone_number (str): Phone number to check.
 
     Returns:
-        None
+        True if number is valid 
+        else False
     """
-    pass
+    return len(phone_number) == 10 and phone_number.isdigit()
 
 
 def isemail(email_id: str):
     """
-    Checks if the given email ID is valid or not.
+    Verifies if the given email address is in a valid format.
 
     Args:
-        email_id (str): Email ID to check.
+        email (str): The email address to verify.
 
     Returns:
-        bool: True if the email ID is valid, False otherwise.
+        bool: True if the email is valid, False otherwise.
     """
-    if "@" in email_id:
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+
+    if re.match(email_regex, email_id):
         return True
     return False
 

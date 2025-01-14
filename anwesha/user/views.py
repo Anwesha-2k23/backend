@@ -1,14 +1,7 @@
 import shutil
-from urllib import request
-from django.shortcuts import render
-from django.http.request import HttpRequest
-import json
 from multiprocessing import AuthenticationError
-from urllib import response
-from django.shortcuts import render
 from django.http import JsonResponse
 from .models import User
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
@@ -18,10 +11,9 @@ from rest_framework.response import Response
 import datetime
 from anwesha.settings import AWS_S3_CUSTOM_DOMAIN, COOKIE_ENCRYPTION_SECRET
 import jwt
-from utility import hashpassword, createId, isemail, generate_qr, EmailSending, hash_id
+from utility import hashpassword, createId, isemail, generate_qr, EmailSending, hash_id,send_email_using_microservice,checkPhoneNumber
 import time
-from .utility import Autherize , send_email_using_microservice , mail_content
-import threading
+from .utility import Autherize, mail_content
 from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
 from anwesha.settings import CONFIGURATION,BASE_DIR
@@ -123,7 +115,8 @@ class Login(APIView):
                     "name": this_user.full_name,
                     "anwesha_id": this_user.anwesha_id,
                     "user_type": this_user.user_type,
-                    "qr_code": qr_code
+                    "qr_code": qr_code,
+                    "status": 200
                 }
 
                 # Set the JWT token as a cookie in the response
@@ -146,8 +139,7 @@ class LogOut(APIView):
         token = request.COOKIES.get('jwt')
 
         if not token:
-            # Raise an AuthenticationError if the token is not present
-            raise AuthenticationError("Unauthenticated")
+            return Response({"message":"Unauthenticated"},status=401)
         else:
             try:
                 # Decode the token using the secret key
@@ -190,7 +182,8 @@ class Register(APIView):
             """
             if not isemail(email_id):
                 return JsonResponse({"message": "Please enter a valid email"}, status=409)
-
+            if not checkPhoneNumber(phone_number):
+                return JsonResponse({"message":"Please enter a valid phone number"},status=409)
             if User.objects.filter(email_id=email_id).exists():
                 return JsonResponse({'message': 'A user with the same email already exists', 'status': '409'}, status=409)
 
@@ -222,7 +215,7 @@ class Register(APIView):
             email_id=email_id,
             password=password,
             phone_number=phone_number,
-            is_email_verified=True,
+            is_email_verified=False,
             user_type=user_type,
             collage_name=college_name,
         )
@@ -373,8 +366,8 @@ class ForgetPassword(APIView):
             # Create a payload for the JWT token containing the user ID and expiration time
             payload = {
                 'userid': user.anwesha_id,
-                'exp': datetime.utcnow() + timedelta(minutes=7200),
-                'iat': datetime.utcnow()
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=10),
+                "iat": datetime.datetime.utcnow()
             }
 
             # Encode the payload into a token using the provided encryption secret

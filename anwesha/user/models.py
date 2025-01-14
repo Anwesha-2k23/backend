@@ -1,4 +1,3 @@
-from distutils.command import upload
 from email.policy import default
 from enum import Enum, unique
 from hashlib import blake2b

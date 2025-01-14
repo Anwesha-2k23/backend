@@ -8,31 +8,10 @@ from requests import post
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from utility import generate_jwt_token , verification_mail , createId
-from time import mktime
 import time
 import jwt
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET,CONFIGURATION,EMAIL_MICROSERVICE_ENDPOINT
-
-
-def send_email_using_microservice(email_id, subject, text):
-    """
-    Sends an email using an external mail API.
-
-    Parameters:
-    - email_id (str): Email ID of the recipient.
-    - subject (str): Subject of the email.
-    - text (str): Content of the email.
-
-    Precautions:
-    - Ensure that the EMAIL_MICROSERVICE_ENDPOINT is properly configured.
-    - Handle any exceptions or errors that may occur during the email sending process.
-    """
-    PARAM = {
-        "to": email_id,
-        "subject": subject,
-        "text": text
-    }
-    r = post(url=EMAIL_MICROSERVICE_ENDPOINT, data=PARAM)
+from utility import send_email_using_microservice
 
 def all_campas_ambassodor(request):
     if request.method == 'GET':
@@ -254,14 +233,14 @@ class editProfile(APIView):
             if user_object_of_ca.email_id == this_ca.email_id:
                 anwesha_id = provided_anwesha_id
             else:
-                return JsonResponse({"message":"The Anwesha ID you provided belongs to someone else , please ensure that email in both  the  places is same"}, status = 401)
+                return JsonResponse({"message":"The Anwesha ID you provided belongs to someone else , please ensure that email in both the places is same"}, status = 401)
         except:
             anwesha_id = this_ca.anwesha
 
         try:
             college_name = data['college_name']
         except:
-            college_name = this_ca.collage_name
+            college_name = this_ca.college_name
 
         try:
             college_city = data['college_city']

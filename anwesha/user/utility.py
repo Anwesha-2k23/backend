@@ -4,7 +4,7 @@ from .models import User
 from requests import post
 import jwt
 import datetime
-from anwesha.settings import COOKIE_ENCRYPTION_SECRET, EMAIL_MICROSERVICE_ENDPOINT
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET, EMAIL_MICROSERVICE_ENDPOINT,CONFIGURATION
 
 class Autherize:
     """
@@ -87,7 +87,10 @@ def mail_content(type, *args, **kwargs):
             "iat": datetime.datetime.utcnow()
         }
         token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://backend.anwesha.live/user/verifyemail/" + token
+        if CONFIGURATION == 'local':
+            link = "http://localhost:8000/user/verifyemail/"+token
+        else:
+            link = "https://backend.anwesha.live/user/verifyemail/" + token
         body = f'''Hello {user},
 
 Thank you for being part of Anwesha 2023.

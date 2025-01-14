@@ -173,9 +173,6 @@ def payview(request):
     # return render(request, "base.html", {'atomTokenId' : atomTokenId, 'merchId' : merchId, 'custEmail' : custEmail,  'custMobile' : custMobile, 'returnUrl' : returnUrl , 'amount' : amount, 'merchTxnId' : merchTxnId})
     return JsonResponse(response_data)
 
-
-
-
 @csrf_exempt
 def resp(request): 
     

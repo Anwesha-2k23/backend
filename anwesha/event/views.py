@@ -367,7 +367,7 @@ class RzPaySoloRegistration(APIView):
             })
             preRegister[0].order_id = payment["id"]
             preRegister[0].save()
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details":payment["id"] },status=404)
+            return JsonResponse({"message":"you have already registred for the events", "payment_details":payment["id"] },status=404)
         except Exception as e:
             print(e)
             pass

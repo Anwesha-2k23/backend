@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
 import os
 from pathlib import Path
 import pymysql
@@ -32,12 +31,13 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = ["*"]
-CONFIGURATION = env("CONFIGURATION")
+CONFIGURATION = "production"
 S3_ENABLED = True
 
 # Application definition
+
 INSTALLED_APPS = [
-     'jet.dashboard',
+    'jet.dashboard',
     "jet",
     "corsheaders",
     "django.contrib.admin",
@@ -50,12 +50,11 @@ INSTALLED_APPS = [
     "event",
     "map",
     "sponsor",
+    "participant",
     "CA",
-    "pytest_django",
-    "atompay",
     "multicity",
     "rest_framework",
-    "Sleek",
+#    'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -67,7 +66,6 @@ SITE_ID = 2
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-
     "DEFAULT_PERMISSION_CLASSES": [],
 }
 
@@ -76,7 +74,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'user.middle.DisableCSRFMiddleware',
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -104,25 +102,13 @@ WSGI_APPLICATION = "anwesha.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
-if CONFIGURATION == 'local':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-elif CONFIGURATION == 'production':
-   DATABASES = {
-        "default": {
-           "ENGINE": "django.db.backends.mysql",
-            "NAME": env("DB_NAME"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        }
-    }
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -173,37 +159,41 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 # AWS Credentials
 AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 
-## Storage Settings
-if S3_ENABLED:
-    AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
-    AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=86400",
-    }
-    AWS_STATIC_LOCATION = "static"
-    AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
-    AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr/"
-    AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
-    AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
-    STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
-    DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
-    DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
-    DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
+## Storage Settings
+
+AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+AWS_STATIC_LOCATION = "static"
+AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
+AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr"
+AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
+AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
+STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
+DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
+DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
+DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
+
+
 
 # CSRF Settings
+# CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/']
-
+# CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1/"]
+CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.112.69.130/']
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
+# CORS_ALLOW_ALL_ORIGINS = True
+# SESSION_COOKIE_SECURE=True
+# SESSION_COOKIE_SAMESITE = 'None'
 
 
 # JET CONFIGURATION
@@ -241,28 +231,18 @@ JET_THEMES = [
 ]
 
 JET_SIDE_MENU_COMPACT = False
-LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
-LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
+LOGIN_REDIRECT_URL = 'http://localhost:8000/user/oauth/'
+LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'
+
 
 # Mail configuration
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = env('SMTP_ID')
-EMAIL_HOST_PASSWORD = env('SMTP_PASS')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True  
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587  
+EMAIL_HOST_USER = env('SMTP_ID')  
+EMAIL_HOST_PASSWORD = env('SMTP_PASS') 
 
-# Website host variable
-WEBSITE_HOST = "localhost"#env('WEBSITE_HOST')
+# website host variable 
+WEBSITE_HOST = 'http://127.0.0.1:8000/'
 COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
-
-#razorpay api keys
-RAZORPAY_API_KEY_ID = ""#env("RAZORPAY_API_KEY_ID")
-RAZORPAY_API_KEY_SECRET =""# env("RAZORPAY_API_KEY_SECRET")
-
-'''
-:NOTE:
-you will need an endpoint for sending email with required parameters
-if you dont have your own email service you can use this one :- https://github.com/melencholicmice/mail-service
-please make sure to isolate the docker container in microservice and not expose its port
-'''
-EMAIL_MICROSERVICE_ENDPOINT = "http://127.0.0.1:12000/send-mail/"
