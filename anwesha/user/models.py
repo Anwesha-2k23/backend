@@ -56,8 +56,12 @@ class User(models.Model):
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
     profile = models.ImageField()
-    profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-    qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    # profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+    profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
+    
+    # qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)
+    
     signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
     secret = models.CharField(max_length=20, default="secret")
 
