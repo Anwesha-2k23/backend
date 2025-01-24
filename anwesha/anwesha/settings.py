@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG = False#env("DEBUG")
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = env("CONFIGURATION")
 S3_ENABLED = True
@@ -87,7 +87,7 @@ ROOT_URLCONF = "anwesha.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -198,13 +198,18 @@ if S3_ENABLED:
 
 # CSRF Settings
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/','https://anweshabackend.shop','https://anwesha.iitp.ac.in']
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1',
+    'http://3.108.191.128',
+    'http://localhost:3000',
+    'https://anweshabackend.shop',
+    'https://anwesha.iitp.ac.in'
+]
 CORS_ALLOW_CREDENTIALS = True
-
-
 
 # JET CONFIGURATION
 JET_THEMES = [
@@ -245,11 +250,12 @@ LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
 LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
 
 # Mail configuration
+EMAIL_BACKEND = 'anwesha.backends.CustomEmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = env('SMTP_ID')
-EMAIL_HOST_PASSWORD = env('SMTP_PASS')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # Website host variable
 WEBSITE_HOST = "localhost"#env('WEBSITE_HOST')

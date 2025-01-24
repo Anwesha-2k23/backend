@@ -5,6 +5,7 @@ from .models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
+from django.core.mail import EmailMessage
 import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,6 +19,16 @@ from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
 from anwesha.settings import CONFIGURATION,BASE_DIR
 import os
+import re
+import threading
+
+class EmailThread(threading.Thread):
+    def __init__(self,email):
+        self.email = email
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        self.email.send(fail_silently=False) 
 
 
 class Login(APIView):
@@ -116,11 +127,12 @@ class Login(APIView):
                     "anwesha_id": this_user.anwesha_id,
                     "user_type": this_user.user_type,
                     "qr_code": qr_code,
-                    "status": 200
+                    "status": 200,
+                    "token":token
                 }
 
                 # Set the JWT token as a cookie in the response
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite=None)
+                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
             else:
                 # Return an error response if the user's email is not verified
@@ -159,15 +171,17 @@ class LogOut(APIView):
             response = Response()
 
             # Delete the 'jwt' cookie from the response
-            response.delete_cookie('jwt')
+            response.delete_cookie(key='jwt',samesite='None')
+            #response.delete_cookie('jwt')
 
             response.data = {'message': 'Logout Successful', "status": "200"}
             return response
 
 class Register(APIView):
     def post(self, request):
-        stime = time.time()
 
+        stime = time.time()
+        
         try:
             # Retrieve data from the request
             password = request.data['password']
@@ -205,7 +219,9 @@ class Register(APIView):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message": "Please enter a proper user type"}, status=403)
-
+            pattern = r"^[a-zA-Z0-9]+_\d{2}[a-zA-Z]\d{2}res\d+@iitp\.ac\.in$"
+            if re.match(pattern, email_id):
+                user_type = User.User_type_choice.STUDENT
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)
 
@@ -223,11 +239,18 @@ class Register(APIView):
 
         # Prepare and send an email
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
-        send_email_using_microservice(
-            email_id=email_id,
-            subject="No reply",
-            text=text
-        )
+        sendMail = EmailMessage(
+                    "No reply",
+                    text,
+                    "anwesha.backed@gmail.com",
+                    [email_id],
+                    )
+        EmailThread(sendMail).start()
+        #send_email_using_microservice(
+        #    email_id=email_id,
+        #    subject="No reply",
+        #    text=text
+        #)
 
         return JsonResponse({'message': 'User created successfully!', "status": "201"})
 
@@ -346,7 +369,7 @@ def verifyEmail(request, *args, **kwargs):
         except User.DoesNotExist:
             return JsonResponse({"message": "Invalid token"}, status=401)
 
-        return redirect('https://anwesha.live/userLogin')
+        return redirect('https://anwesha.iitp.ac.in/userLogin')
 
 
 class ForgetPassword(APIView):
@@ -374,13 +397,21 @@ class ForgetPassword(APIView):
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
 
             # Create the reset password link with the token
-            link = "http://anwesha.live/user/reset_password/" + token
+            link = "http://anwesha.iitp.ac.in/user/reset_password/" + token
 
             # Compose the email text
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
+            
 
+            sendMail = EmailMessage(
+                        "No reply",
+                        text,
+                        "anwesha.backed@gmail.com",
+                        [email_id],
+                    )
+            EmailThread(sendMail).start()
             # Send the email with the reset password link
-            send_email_using_microservice(email_id=request.data['email'], subject="Change password", text=text)
+            #send_email_using_microservice(email_id=request.data['email'], subject="Change password", text=text)
 
             return Response({"message": "Reset link sent"}, status=200)
         except User.DoesNotExist:
@@ -421,7 +452,7 @@ class RegenerateQR(APIView):
         user = kwargs['user']
         user.secret = createId("secret",10)
         user.signature = hash_id(user.anwesha_id, user.secret)
-        user.qr_code = generate_qr(user.signature)
+        user.qr_code = generate_qr(user.anwesha_id,user.signature)
         user.save()
         return JsonResponse({
             "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)

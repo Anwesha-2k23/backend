@@ -68,7 +68,7 @@ class register(APIView):
                 if CONFIGURATION == "local":
                     link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
                 else:
-                    link = "https://backend.anwesha.live/campasambassador/verifyemail/" + token
+                    link = "https://anweshabackend.shop/campasambassador/verifyemail/" + token
                 subject = "No reply"
                 new_campus_ambassador.save()
                 send_email_using_microservice(email_id,subject,"Hello {0},\n\nPlease click on the link below to verify your email address for anwesha login:\n{1}\n\nThanks,\nTeam  Anwesha".format(full_name,link))

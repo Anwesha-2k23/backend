@@ -90,10 +90,10 @@ def mail_content(type, *args, **kwargs):
         if CONFIGURATION == 'local':
             link = "http://localhost:8000/user/verifyemail/"+token
         else:
-            link = "https://backend.anwesha.live/user/verifyemail/" + token
+            link = "https://anweshabackend.shop/user/verifyemail/" + token
         body = f'''Hello {user},
 
-Thank you for being part of Anwesha 2023.
+Thank you for being part of Anwesha 2025.
 Your Anwesha ID is: {anwesha_id}.
 Please click on the link below to verify your email address for Anwesha login:
 {link}

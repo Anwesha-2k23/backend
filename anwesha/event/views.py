@@ -595,13 +595,13 @@ class TeamEventRegistration(APIView):
         except:
             return JsonResponse({"message":"event does not exists"},status=404)
 
-        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = True )) >= 1: 
+        if Team.objects.filter(event_id = event,leader_id=user,payment_done = True ).exists(): 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
         
-        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = False )) >= 1: 
+        if Team.objects.filter(event_id = event,leader_id=user,payment_done = False ).exists() >= 1: 
             return JsonResponse({"message":"you are already registered in this event, but payment not varified yet", "payment_url": event.payment_link },status=403)
         
-        if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
+        if Team.objects.filter(event_id = event,team_name=team_name).exists() >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
         
         if len(team_members) > event.max_team_size or len(team_members) < event.min_team_size:

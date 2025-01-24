@@ -55,7 +55,7 @@ def verification_mail(email, user):
     }
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-    link = "https://backend.anwesha.live/campasambassador/verifyemail/" + token
+    link = "https://anweshabackend.shop/campasambassador/verifyemail/" + token
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"
     subject = "No reply"
     body = f'''
@@ -218,6 +218,31 @@ def export_as_csv(self, request, queryset):
 
     return response
 
+def export_all_as_csv(self, request, queryset):
+    restricted_fields = [
+        'password',
+        'is_loggedin',
+        'validation',
+        'profile_photo',
+        'intrests',
+        'is_email_verified',
+        'is_profile_completed',
+        'is_locked',     
+    ]
+    meta = self.model._meta
+    field_names = []
+    for field in meta.fields:
+        if field.name not in restricted_fields:
+            field_names.append(field.name)
+    print(field_names)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+    writer = csv.writer(response)
+    writer.writerow(field_names)
+    for obj in self.model.objects.all():
+        row = writer.writerow([getattr(obj, field) for field in field_names])
+    return response
+
 
 def check_token(request):
     """
@@ -290,7 +315,7 @@ class EmailSending:
         }
         token = jwt.encode(
             payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://backend.anwesha.live/user/verifyemail/" + token
+        link = "https://anweshabackend.shop/user/verifyemail/" + token
         localhost_link = "http://127.0.0.1:8000/user/verifyemail/" + token
         subject = "No reply"
         body = f'''
