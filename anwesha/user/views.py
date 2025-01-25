@@ -407,7 +407,7 @@ class ForgetPassword(APIView):
                         "No reply",
                         text,
                         "anwesha.backed@gmail.com",
-                        [email_id],
+                        [user.email_id],
                     )
             EmailThread(sendMail).start()
             # Send the email with the reset password link

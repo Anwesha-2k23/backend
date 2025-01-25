@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
     "user",
     "event",
     "map",
@@ -56,6 +57,8 @@ INSTALLED_APPS = [
     "multicity",
     "rest_framework",
     "Sleek",
+    "festpasses",
+    
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

@@ -25,6 +25,7 @@ from map.urls import map_urls
 from multicity.urls import multicity_urls
 from atompay import views as view
 from Sleek.urls import sleek_urls
+from festpasses.urls import festpasses_urls
 from user import views
 
 # from user.views import UserViewSet
@@ -42,6 +43,7 @@ urlpatterns = [
     path("map/",include(map_urls)),
     path("multicity/",include(multicity_urls)),
     path('atompay/', view.payview),
+    path('festpasses/',include(festpasses_urls)),
     path('response/', view.resp),
     path('slick/', include(sleek_urls)),
 
