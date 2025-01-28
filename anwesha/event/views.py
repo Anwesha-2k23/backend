@@ -10,6 +10,7 @@ import razorpay
 from user.utility import Autherize
 from urllib.parse import unquote
 from django.db.models import Q
+from atompay.models import Payments
 from django.core.management import call_command
 # Create your views here.
 
@@ -587,6 +588,8 @@ class TeamEventRegistration(APIView):
             event_id = request.data['event_id']
             team_name = request.data['team_name']
             team_members = request.data['team_members']
+            # atomTxnId = request.data['atomtransactionid']
+            # bankTxnId = request.data['banktransactionid']
         except:
             return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
         
@@ -598,7 +601,7 @@ class TeamEventRegistration(APIView):
         if Team.objects.filter(event_id = event,leader_id=user,payment_done = True ).exists(): 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
         
-        if Team.objects.filter(event_id = event,leader_id=user,payment_done = False ).exists() >= 1: 
+        if Team.objects.filter(event_id = event,leader_id=user,payment_done = False ).exists() : 
             return JsonResponse({"message":"you are already registered in this event, but payment not varified yet", "payment_url": event.payment_link },status=403)
         
         if Team.objects.filter(event_id = event,team_name=team_name).exists() >= 1: 
@@ -631,6 +634,18 @@ class TeamEventRegistration(APIView):
                 team_name = team_name
             )
             new_team.save()
+            
+            # paymentinstance = Payments.objects.create(
+            #         anwesha_id = user,
+            #         email_id = user.email_id,
+            #         name = user.full_name,
+            #         event_id = event,
+            #         event_type = "team",
+            #         atompay_transaction_id = atomTxnId,
+            #         bank_transaction_id = bankTxnId
+            #     )        
+            # paymentinstance.save()
+            
         except Exception as e:
             print(e)
             return JsonResponse({"message":"internal server error [team creation]"},status=500)

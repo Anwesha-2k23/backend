@@ -161,6 +161,16 @@ class SoloParicipants(models.Model):
     payment_done = models.BooleanField(default=False)
     order_id = models.CharField(max_length=100, blank=True, null=True)
     has_entered = models.BooleanField(default=False,null=True,blank=True)
+    
+    def is_duplicate(self):
+        return SoloParicipants.objects.filter(
+            anwesha_id=self.anwesha_id,
+            event_id=self.event_id
+        ).exclude(pk=self.pk).exists()
+
+    def save(self, *args, **kwargs):
+        if not self.is_duplicate():
+            super().save(*args, **kwargs)
 
 
 class PayUTxn(models.Model):

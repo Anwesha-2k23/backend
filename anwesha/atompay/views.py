@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
 from user.models import User
+from .models import Payments
 from event.models import Events,Team, TeamParticipant, SoloParicipants
 from utility import createId
 # Create your views here.
@@ -239,6 +240,19 @@ def resp(request):
                         payment_done = True
                     )
                     this_person.save()
+                    
+                    paymentinstance = Payments.objects.create(
+                        anwesha_id = user,
+                        email_id = user.email_id,
+                        name = user.full_name,
+                        event_id = event,
+                        event_type = "solo",
+                        atompay_transaction_id = atomTxnId,
+                        bank_transaction_id = bankTxnId
+                    )
+                    
+                    paymentinstance.save()
+                    
                 except Exception as error:
                     #print(error)
                     return JsonResponse({"message":"internal server error"},status=500)

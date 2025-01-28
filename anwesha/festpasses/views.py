@@ -3,6 +3,7 @@ import uuid
 import json
 import requests
 import re
+from models import FestPasses
 from time import gmtime, strftime
 from atompay.AESCipher import *
 from django.views.decorators.csrf import csrf_exempt
@@ -14,6 +15,17 @@ from user.utility import Autherize
 from rest_framework.views import APIView
 from .models import *
 from utility import createId
+
+class checkPass(APIView):
+    @Autherize()
+    def post(self,request,**kwargs):
+        user = kwargs['user']
+        # print()
+        exists = FestPasses.objects.filter(anwesha_id = user.anwesha_id)
+        # print(exists)
+        if exists.exists():
+            return JsonResponse({"message":"You are already registered"},status = 200)
+        return JsonResponse({"message":"You have not registered"},status=404)
 
 class festpasses(APIView):
     @Autherize()
@@ -83,10 +95,10 @@ def payview(request):
         product = 'STUDENT'
         custEmail = payload.get('email')
         custMobile = payload.get('phone')
-        event_id = payload.get('event_id')
+        event_id = payload.get('event_id') # FSTP
         type = payload.get('type')  # Remember to set type as FESTPASS
         anwesha_id = payload.get('anwesha_id')
-        returnUrl = 'https://anweshabackend.shop/festpasses/response/'
+        returnUrl = 'https://anweshabackend.shop/festpasses/response'
     except:
         return JsonResponse({"message":"Error in getting data"})
     
@@ -116,22 +128,21 @@ def payview(request):
     
     cafile = 'atompay/cacert.pem'
     response = requests.post(url, data=payload, headers=headers)
-    print("Data")
-    print(response.text)
-    print(response.json())
-
+    # print("Data")
+    # print(response.text)
+    # print(response.json())
     arraySplit = response.text.split('&')
     arraySplitTwo = arraySplit[1].split('=')
     decrypted = cipher.decrypt(arraySplitTwo[1])
     json_string = decrypted.replace("", " ")
-    #print(json_string)
+    # print(json_string)
     cleaned_string = re.sub(r'(?<=[\d])\s+(?=[\d])', '', json_string)  # Remove spaces between numbers
     cleaned_string = re.sub(r'(?<=[\w])\s+(?=[\w])', '', cleaned_string)  # Remove spaces between letters in keys/values
     #print(cleaned_string)
     y = json.loads(cleaned_string)
     atomTokenId = y[' atomTokenId ']
-    print("AtomTokenId")
-    print(atomTokenId)
+    # print("AtomTokenId")
+    # print(atomTokenId)
     response_data = {
         'atomTokenId': atomTokenId,
         'merchId': merchId,
@@ -141,6 +152,7 @@ def payview(request):
         'amount': amount,
         'merchTxnId': merchTxnId
     }
+    
     # return render(request, "base.html", {'atomTokenId' : atomTokenId, 'merchId' : merchId, 'custEmail' : custEmail,  'custMobile' : custMobile, 'returnUrl' : returnUrl , 'amount' : amount, 'merchTxnId' : merchTxnId})
     return JsonResponse(response_data)
 
@@ -154,7 +166,7 @@ def resp(request):
      rawData= request.POST["encData"]
      
     reskey = '66F34D46E547C535047F3465E640F32B'
-    print(rawData)
+    # print(rawData)
     cipher = AESCipher('self')
     decrypted = cipher.decrypt(rawData)
 
@@ -164,8 +176,8 @@ def resp(request):
     # # In below response ['payInstrument']['responseDetails']['statusCode'] is important to know if payment status is success or fail. You can redirect users to your custom Js page accordingly.
     if decodedData['payInstrument']['responseDetails']['statusCode'] == "OTS0000":
        
-        print("All Response Data:")
-        print(decodedData)
+        # print("All Response Data:")
+        # print(decodedData)
 
         transactiondate = decodedData['payInstrument']['merchDetails']['merchTxnDate']
         banktransactionid = decodedData['payInstrument']['payModeSpecificData']['bankDetails']['bankTxnId']
@@ -201,7 +213,6 @@ def resp(request):
                 try:
                     id = createId("PASS",7)
                     curr_pass = FestPasses.objects.create(
-                        id = id,
                         anwesha_id = user,
                         email_id = email,
                         transaction_id = atomTxnId,

@@ -3,7 +3,7 @@ from user.models import User
 
 
 class FestPasses(models.Model):
-    id = models.CharField(max_length=11,primary_key=True,unique=True)
+    id = models.AutoField(primary_key=True)
     anwesha_id = models.OneToOneField(User, on_delete=models.CASCADE,unique=True)
     email_id = models.EmailField(unique=True)
     transaction_id = models.CharField(max_length=255,blank=False)    # AtompayTransactionID.
