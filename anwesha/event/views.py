@@ -552,12 +552,11 @@ class SoloRegistration(APIView):
             return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
 
         try:
-            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
-            if preRegister[0].payment_done == True:
-                print("flag")
-                return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id },status=200)
-            
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id, "payment_url": event.payment_link },status=200)
+            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id).exists()
+            if preRegister:
+                #print("flag")
+                return JsonResponse({"messagge":"you have already registred for the events"},status=200)
+
         except Exception as e:
             print(e)
             pass

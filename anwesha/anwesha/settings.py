@@ -250,7 +250,7 @@ JET_THEMES = [
 
 JET_SIDE_MENU_COMPACT = False
 LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
-LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
+LOGOUT_REDIRECT_URL = 'https://anweshabackend.shop/admin/'
 
 # Mail configuration
 EMAIL_BACKEND = 'anwesha.backends.CustomEmailBackend'

@@ -21,6 +21,12 @@ class getStatus(APIView):
     def post(self,request):
         id = request.data["anwesha_id"]
         try:
+            user = User.objects.get(anwesha_id = id)
+            if user.user_type == "IITP-Student" or "iitp_student":
+                return JsonResponse({"anwesha_id":id,
+                                     "email":user.email_id,
+                                     "user_type":user.user_type,
+                                     "status":"200"})
             festobj = FestPasses.objects.filter(anwesha_id = id).first()
             return JsonResponse({"anwesha_id":id,
                                  "email":festobj.email_id,

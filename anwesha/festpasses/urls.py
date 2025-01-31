@@ -6,5 +6,6 @@ festpasses_urls = [
     path('response',resp,name="response"),
     path('register',festpasses.as_view(),name="festpasses"),
     path('getStatus',getStatus.as_view(),name = "getStatus"),
-    path('setStatus',setStatus.as_view(),name="setStatus")
+    path('setStatus',setStatus.as_view(),name="setStatus"),
+    path('get',checkPass.as_view())
 ]
