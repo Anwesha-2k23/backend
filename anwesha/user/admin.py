@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User,AppUsers
 from utility import export_as_csv
 from .utility import mail_content, send_email_using_microservice
 
@@ -65,3 +65,11 @@ class UserAdmin(admin.ModelAdmin):
     )
     empty_value_display = '-empty-'
     search_fields = ['full_name', 'anwesha_id', 'email_id', 'phone_number', 'collage_name']
+
+@admin.register(AppUsers)
+class AppUsersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'phone_number', 'email_id', 'is_logged_in')  
+    search_fields = ('id', 'phone_number', 'email_id')  
+    list_filter = ('is_logged_in',)  
+    ordering = ('id',)
+    readonly_fields = ('id',) 

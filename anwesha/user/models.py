@@ -97,3 +97,22 @@ class User(models.Model):
             self.signature = hash_id(self.anwesha_id, self.secret)
             self.qr_code = generate_qr(self.anwesha_id,self.signature)
         super(User, self).save(*args, **kwargs)
+
+
+class AppUsers(models.Model):
+    id = models.CharField(max_length=10,primary_key=True)
+    phone_number = models.CharField(max_length=10)
+    email_id = models.EmailField()
+    password = models.CharField(max_length = 100)
+    is_logged_in = models.BooleanField(default=False)
+    
+    def save(self,*args,**kwargs):
+        exist = AppUsers.objects.filter(email_id = self.email_id).exists()
+        if not exist:
+            self.id = createId("SUPER",5)
+            check_exist = AppUsers.objects.filter(id=self.id)
+            while check_exist: 
+                self.anwesha_id = createId("SUPER", 5)
+                check_exist = AppUsers.objects.filter(id=self.id)
+            self.password = hashpassword(self.password)
+            super(AppUsers,self).save(*args,**kwargs)

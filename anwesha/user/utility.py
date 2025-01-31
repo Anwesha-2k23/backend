@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from typing import Any
-from .models import User
+from .models import User,AppUsers
 from requests import post
 import jwt
 import datetime
@@ -124,3 +124,62 @@ def send_email_using_microservice(email_id, subject, text):
         "text": text
     }
     r = post(url=EMAIL_MICROSERVICE_ENDPOINT, data=PARAM)
+
+
+
+class AppAutherize:
+    """
+    Authorization decorator class.
+
+    Attributes:
+        mode (int): Mode of the decorator.
+
+    Methods:
+        __init__(self, mode): Initializes the Autherize instance.
+        __call__(self, func): Decorator method to authorize the function.
+    """
+
+    def __init__(self, mode=1) -> None:
+        """
+        Initializes the Autherize instance.
+
+        Args:
+            mode (int): Mode of the decorator.
+        """
+        self.mode = mode
+
+    def __call__(self, func) -> Any:
+        """
+        Decorator method to authorize the function.
+
+        Args:
+            func: Function to be authorized.
+
+        Returns:
+            Any: Result of the function call or error response.
+
+        Raises:
+            jwt.ExpiredSignatureError: If the token is expired.
+        """
+        def wrapper(*args, **kwargs):
+            request = args[1]
+            token = request.COOKIES.get('jwt')
+            # print("got token successfully")
+            if not token:
+                return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+            try:
+                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
+                # print("payload decoded .")
+            except jwt.ExpiredSignatureError:
+                return JsonResponse({"message": "Your token is expired. Please login again."}, status=409)
+
+            user = AppUsers.objects.get(id=payload["id"])
+            # print("user found")
+            if not user:
+                return JsonResponse({"message": "User not found."}, status=404)
+
+            # kwargs["user"] = user
+
+            return func(*args, **kwargs)
+        return wrapper

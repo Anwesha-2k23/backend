@@ -1,7 +1,7 @@
 import shutil
 from multiprocessing import AuthenticationError
 from django.http import JsonResponse
-from .models import User
+from .models import User,AppUsers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
@@ -29,6 +29,85 @@ class EmailThread(threading.Thread):
     
     def run(self):
         self.email.send(fail_silently=False) 
+
+
+class AppLogin(APIView):
+    def get(self,request):
+        token = request.COOKIES.get('jwt')
+    
+        if not token:
+            return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        try:
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message": "Your token is expired. Please generate a new one."}, status=409)
+
+        try:
+            user = AppUsers.objects.get(id=payload["id"])
+
+            if user:
+                user.is_logged_in = True
+                user.save()
+                
+                response = Response()
+                response.data = {
+                    "mssg": "Welcome",
+                    "email_id": user.email_id,
+                    "id": user.id,
+                    "status": "200",
+                }
+
+                return response
+            else:
+                return JsonResponse({"message": "Your email is not verified. Please verify your email to continue further."}, status=403)
+        except:
+            return JsonResponse({"message": "Invalid token."}, status=409)
+
+    def post(self, request):
+        response = Response()
+
+        try:
+            username = request.data['username']
+            password = request.data['password']
+        except:
+            response.data = {"status": "Incorrect input"}
+            response.status = 404
+            return response
+
+        password = hashpassword(password)
+        user = None
+        if isemail(username):
+            user = AppUsers.objects.filter(email_id=username, password=password)
+        else:
+            user = AppUsers.objects.filter(id=username, password=password)
+
+        this_user = user.first()
+
+        if user:
+                payload = {
+                    "id": this_user.id,
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=7200), # eq to 5 days
+                    "iat": datetime.datetime.utcnow()
+                }
+                token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+
+                this_user.is_logged_in = True
+                this_user.save()
+                
+                response.data = {
+                    "success": True,
+                    "email": this_user.email_id,
+                    "id": this_user.id,
+                    "token":token,
+                    "status": 200
+                }
+
+                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
+                return response
+        else:
+            return JsonResponse({"message": "Incorrect credentials."}, status=401)
+        
 
 
 class Login(APIView):
@@ -149,7 +228,7 @@ class LogOut(APIView):
     def post(self, request):
         # Retrieve the token from the request cookies
         token = request.COOKIES.get('jwt')
-
+        # print(token)
         if not token:
             return Response({"message":"Unauthenticated"},status=401)
         else:
@@ -160,12 +239,17 @@ class LogOut(APIView):
                 # Raise an AuthenticationError if the token has expired
                 raise AuthenticationError("Cookie Expired")
 
-            # Retrieve the user based on the decoded token
-            user = User.objects.get(anwesha_id=payload["id"])
+            id = payload["id"]
+            if "SUPER" in id:
+                user = AppUsers.objects.get(id = id)
+                user.is_logged_in = False
+                user.save()
+            else:
+                user = User.objects.get(anwesha_id=payload["id"])
 
             # Update the user's logged-in status and save the user object
-            user.is_loggedin = False
-            user.save()
+                user.is_loggedin = False
+                user.save()
 
             # Create a response object
             response = Response()

@@ -3,18 +3,50 @@ import uuid
 import json
 import requests
 import re
-from models import FestPasses
+from .models import FestPasses
 from time import gmtime, strftime
 from atompay.AESCipher import *
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from anwesha.settings import COOKIE_ENCRYPTION_SECRET
 import jwt
-from user.models import User
-from user.utility import Autherize
+from user.models import User,AppUsers
+from user.utility import Autherize,AppAutherize
 from rest_framework.views import APIView
 from .models import *
 from utility import createId
+
+class getStatus(APIView):
+    @AppAutherize()
+    def post(self,request):
+        id = request.data["anwesha_id"]
+        try:
+            festobj = FestPasses.objects.filter(anwesha_id = id).first()
+            return JsonResponse({"anwesha_id":id,
+                                 "email":festobj.email_id,
+                                 "has_entered":festobj.has_entered,
+                                 "payement_done":festobj.payment_done,
+                                 "status":"200"})
+        except:
+            return JsonResponse({"message": "Invalid token."}, status=409)
+
+class setStatus(APIView):
+    @AppAutherize()
+    def post(self,request):
+        id = request.data["anwesha_id"]
+        try:
+            festobj = FestPasses.objects.filter(anwesha_id = id).first()
+            festobj.has_entered = True
+            festobj.save()
+            return JsonResponse({"message":"User entered successfully",
+                                "anwesha_id":id,
+                                 "email":festobj.email_id,
+                                 "has_entered":festobj.has_entered,
+                                 "payement_done":festobj.payment_done,
+                                 "status":"200"})
+        except:
+            return JsonResponse({"message": "Invalid token."}, status=409)
+
 
 class checkPass(APIView):
     @Autherize()
