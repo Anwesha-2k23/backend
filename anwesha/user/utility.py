@@ -83,7 +83,7 @@ def mail_content(type, *args, **kwargs):
         payload = {
             'email': email,
             'id': anwesha_id,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=7200),
             "iat": datetime.datetime.utcnow()
         }
         token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
@@ -97,6 +97,9 @@ Thank you for being part of Anwesha 2025.
 Your Anwesha ID is: {anwesha_id}.
 Please click on the link below to verify your email address for Anwesha login:
 {link}
+
+The above link will be valid for 5 days.
+Please ignore if already verified.
 
 Thanks,
 Team Anwesha

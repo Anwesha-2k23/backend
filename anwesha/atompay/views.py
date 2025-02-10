@@ -80,7 +80,10 @@ def payview(request):
         # itrate over all team members and check id exists and not registered for this event
         error_msg = []
         for team_member in team_members:
-            team_member = User.objects.get(anwesha_id = team_member)
+            try:
+                team_member = User.objects.get(anwesha_id = team_member)
+            except:
+                return JsonResponse({"message":"This user does not exist"})
             event = Events.objects.get(id = event_id)
             if not User.objects.filter(anwesha_id = team_member).exists():
                 error_msg.append(team_member+" does not exists")

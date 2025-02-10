@@ -544,7 +544,7 @@ class SoloRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         user = kwargs['user']
-        print(user.user_type == User.User_type_choice.IITP_STUDENT)
+        #print(user.user_type == User.User_type_choice.IITP_STUDENT)
         try:
             event_id = request.data['event_id']
             event = Events.objects.get(id = event_id)

@@ -322,13 +322,16 @@ class Register(APIView):
         new_user.save()
 
         # Prepare and send an email
+        
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
+        
         sendMail = EmailMessage(
                     "No reply",
                     text,
-                    "anwesha.backed@gmail.com",
+                    "anweshatroubleshoot@gmail.com",
                     [email_id],
                     )
+        
         EmailThread(sendMail).start()
         #send_email_using_microservice(
         #    email_id=email_id,

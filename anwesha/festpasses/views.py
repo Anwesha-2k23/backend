@@ -16,40 +16,54 @@ from rest_framework.views import APIView
 from .models import *
 from utility import createId
 
+
 class getStatus(APIView):
     @AppAutherize()
     def post(self,request):
-        id = request.data["anwesha_id"]
+        id = request.data["signature"]
         try:
-            user = User.objects.get(anwesha_id = id)
-            if user.user_type == "IITP-Student" or "iitp_student":
-                return JsonResponse({"anwesha_id":id,
+            try:
+                user = User.objects.get(signature = id)
+            except:
+                return JsonResponse({"message":"User not found"},status=404)
+            anwesha_id = user.anwesha_id
+            if user.user_type == "IITP-Student" or user.user_type == "iitp_student":
+                #print(user.user_type)
+                return JsonResponse({"anwesha_id":anwesha_id,
                                      "email":user.email_id,
                                      "user_type":user.user_type,
                                      "status":"200"})
-            festobj = FestPasses.objects.filter(anwesha_id = id).first()
-            return JsonResponse({"anwesha_id":id,
+            else:
+    
+                try:
+                    festobj = FestPasses.objects.filter(anwesha_id = anwesha_id).first()
+                except:
+                    return JsonResponse({"message":"No entry found"},status=404)
+                return JsonResponse({"anwesha_id":anwesha_id,
                                  "email":festobj.email_id,
                                  "has_entered":festobj.has_entered,
-                                 "payement_done":festobj.payment_done,
+                                 "payment_done":festobj.payment_done,
+                                 "user_type":user.user_type,
                                  "status":"200"})
         except:
-            return JsonResponse({"message": "Invalid token."}, status=409)
+            return JsonResponse({"message": "No entry found"}, status=404)
 
 class setStatus(APIView):
     @AppAutherize()
     def post(self,request):
-        id = request.data["anwesha_id"]
+        id = request.data["signature"]
         try:
-            festobj = FestPasses.objects.filter(anwesha_id = id).first()
+            user = User.objects.get(signature = id)
+            anwesha_id = user.anwesha_id
+            festobj = FestPasses.objects.filter(anwesha_id = anwesha_id).first()
             festobj.has_entered = True
             festobj.save()
             return JsonResponse({"message":"User entered successfully",
-                                "anwesha_id":id,
-                                 "email":festobj.email_id,
-                                 "has_entered":festobj.has_entered,
-                                 "payement_done":festobj.payment_done,
-                                 "status":"200"})
+                                "anwesha_id":anwesha_id,
+                                "email":festobj.email_id,
+                                "has_entered":festobj.has_entered,
+                                "payment_done":festobj.payment_done,
+                                "status":"200"})
         except:
             return JsonResponse({"message": "Invalid token."}, status=409)
 
@@ -80,12 +94,12 @@ class festpasses(APIView):
                 preRegister = FestPasses.objects.filter(anwesha_id=anwesha_id,payment_done=True).exists()
                 data = FestPasses.objects.filter(anwesha_id=anwesha_id)
                 if preRegister:
-                    print("flag")
+                    #print("flag")
                     return JsonResponse({"messagge":"you have already registered", "payment_details": data[0].transaction_id },status=200)
                 return JsonResponse({"message":"you have already registered", "payment_details": data[0].transaction_id },status=200)
             
             except Exception as e:
-                print(e)
+                #print(e)
                 return JsonResponse({"message":"Internal Server Error"},status=500)
 
             # try:
