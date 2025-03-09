@@ -1,29 +1,113 @@
 import shutil
-from urllib import request
-from django.shortcuts import render
-from django.http.request import HttpRequest
-import json
 from multiprocessing import AuthenticationError
-from urllib import response
-from django.shortcuts import render
 from django.http import JsonResponse
-from .models import User
-from django.views import View
+from .models import User,AppUsers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import make_password, check_password
+from django.core.mail import EmailMessage
 import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
 from anwesha.settings import AWS_S3_CUSTOM_DOMAIN, COOKIE_ENCRYPTION_SECRET
 import jwt
-from utility import hashpassword, createId, isemail, generate_qr, EmailSending, hash_id
+from utility import hashpassword, createId, isemail, generate_qr, EmailSending, hash_id,send_email_using_microservice,checkPhoneNumber
 import time
-from .utility import Autherize , send_email_using_microservice , mail_content
-import threading
+from .utility import Autherize, mail_content
 from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
+from anwesha.settings import CONFIGURATION,BASE_DIR
+import os
+import re
+import threading
+
+class EmailThread(threading.Thread):
+    def __init__(self,email):
+        self.email = email
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        self.email.send(fail_silently=False) 
+
+
+class AppLogin(APIView):
+    def get(self,request):
+        token = request.COOKIES.get('jwt')
+    
+        if not token:
+            return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        try:
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message": "Your token is expired. Please generate a new one."}, status=409)
+
+        try:
+            user = AppUsers.objects.get(id=payload["id"])
+
+            if user:
+                user.is_logged_in = True
+                user.save()
+                
+                response = Response()
+                response.data = {
+                    "mssg": "Welcome",
+                    "email_id": user.email_id,
+                    "id": user.id,
+                    "status": "200",
+                }
+
+                return response
+            else:
+                return JsonResponse({"message": "Your email is not verified. Please verify your email to continue further."}, status=403)
+        except:
+            return JsonResponse({"message": "Invalid token."}, status=409)
+
+    def post(self, request):
+        response = Response()
+
+        try:
+            username = request.data['username']
+            password = request.data['password']
+        except:
+            response.data = {"status": "Incorrect input"}
+            response.status = 404
+            return response
+
+        password = hashpassword(password)
+        user = None
+        if isemail(username):
+            user = AppUsers.objects.filter(email_id=username, password=password)
+        else:
+            user = AppUsers.objects.filter(id=username, password=password)
+
+        this_user = user.first()
+
+        if user:
+                payload = {
+                    "id": this_user.id,
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=7200), # eq to 5 days
+                    "iat": datetime.datetime.utcnow()
+                }
+                token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+
+                this_user.is_logged_in = True
+                this_user.save()
+                
+                response.data = {
+                    "success": True,
+                    "email": this_user.email_id,
+                    "id": this_user.id,
+                    "token":token,
+                    "status": 200
+                }
+
+                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
+                return response
+        else:
+            return JsonResponse({"message": "Incorrect credentials."}, status=401)
+        
 
 
 class Login(APIView):
@@ -49,7 +133,12 @@ class Login(APIView):
             if user.is_email_verified:
                 user.is_loggedin = True
                 user.save()
-
+                
+                if CONFIGURATION == "local":
+                    qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+                else:
+                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+                
                 # Create a response object
                 response = Response()
                 response.data = {
@@ -58,7 +147,7 @@ class Login(APIView):
                     "anwesha_id": user.anwesha_id,
                     "user_type": user.user_type,
                     "status": "200",
-                    "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+                    "qr_code": qr_code
                 }
 
                 return response
@@ -105,17 +194,24 @@ class Login(APIView):
 
                 this_user.is_loggedin = True
                 this_user.save()
+                
+                if CONFIGURATION == "local":
+                    qr_code = str(os.path.join(BASE_DIR,""))+str(this_user.qr_code)
+                else:
+                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
 
                 response.data = {
                     "success": True,
                     "name": this_user.full_name,
                     "anwesha_id": this_user.anwesha_id,
                     "user_type": this_user.user_type,
-                    "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
+                    "qr_code": qr_code,
+                    "status": 200,
+                    "token":token
                 }
 
                 # Set the JWT token as a cookie in the response
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite=None)
+                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
             else:
                 # Return an error response if the user's email is not verified
@@ -132,10 +228,9 @@ class LogOut(APIView):
     def post(self, request):
         # Retrieve the token from the request cookies
         token = request.COOKIES.get('jwt')
-
+        # print(token)
         if not token:
-            # Raise an AuthenticationError if the token is not present
-            raise AuthenticationError("Unauthenticated")
+            return Response({"message":"Unauthenticated"},status=401)
         else:
             try:
                 # Decode the token using the secret key
@@ -144,26 +239,33 @@ class LogOut(APIView):
                 # Raise an AuthenticationError if the token has expired
                 raise AuthenticationError("Cookie Expired")
 
-            # Retrieve the user based on the decoded token
-            user = User.objects.get(anwesha_id=payload["id"])
+            id = payload["id"]
+            if "SUPER" in id:
+                user = AppUsers.objects.get(id = id)
+                user.is_logged_in = False
+                user.save()
+            else:
+                user = User.objects.get(anwesha_id=payload["id"])
 
             # Update the user's logged-in status and save the user object
-            user.is_loggedin = False
-            user.save()
+                user.is_loggedin = False
+                user.save()
 
             # Create a response object
             response = Response()
 
             # Delete the 'jwt' cookie from the response
-            response.delete_cookie('jwt')
+            response.delete_cookie(key='jwt',samesite='None')
+            #response.delete_cookie('jwt')
 
             response.data = {'message': 'Logout Successful', "status": "200"}
             return response
 
 class Register(APIView):
     def post(self, request):
-        stime = time.time()
 
+        stime = time.time()
+        
         try:
             # Retrieve data from the request
             password = request.data['password']
@@ -178,7 +280,8 @@ class Register(APIView):
             """
             if not isemail(email_id):
                 return JsonResponse({"message": "Please enter a valid email"}, status=409)
-
+            if not checkPhoneNumber(phone_number):
+                return JsonResponse({"message":"Please enter a valid phone number"},status=409)
             if User.objects.filter(email_id=email_id).exists():
                 return JsonResponse({'message': 'A user with the same email already exists', 'status': '409'}, status=409)
 
@@ -200,7 +303,9 @@ class Register(APIView):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message": "Please enter a proper user type"}, status=403)
-
+            pattern = r"^[a-zA-Z0-9]+_\d{2}[a-zA-Z]\d{2}res\d+@iitp\.ac\.in$"
+            if re.match(pattern, email_id):
+                user_type = User.User_type_choice.STUDENT
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)
 
@@ -210,19 +315,29 @@ class Register(APIView):
             email_id=email_id,
             password=password,
             phone_number=phone_number,
-            is_email_verified=True,
+            is_email_verified=False,
             user_type=user_type,
             collage_name=college_name,
         )
         new_user.save()
 
         # Prepare and send an email
+        
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
-        send_email_using_microservice(
-            email_id=email_id,
-            subject="No reply",
-            text=text
-        )
+        
+        sendMail = EmailMessage(
+                    "No reply",
+                    text,
+                    "anweshatroubleshoot@gmail.com",
+                    [email_id],
+                    )
+        
+        EmailThread(sendMail).start()
+        #send_email_using_microservice(
+        #    email_id=email_id,
+        #    subject="No reply",
+        #    text=text
+        #)
 
         return JsonResponse({'message': 'User created successfully!', "status": "201"})
 
@@ -232,6 +347,12 @@ class EditProfile(APIView):
     def get(self, request, **kwargs):
         user = kwargs['user']
         response = Response()
+        
+        if CONFIGURATION == "local":
+            qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+        else:
+            qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+        
         response.data = {
             "anwesha_id": user.anwesha_id,
             "full_name": user.full_name,
@@ -244,7 +365,7 @@ class EditProfile(APIView):
             "is_profile_completed": user.is_profile_completed,
             "profile_picture": str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+            "qr_code": qr_code
         }
         return response
 
@@ -335,7 +456,7 @@ def verifyEmail(request, *args, **kwargs):
         except User.DoesNotExist:
             return JsonResponse({"message": "Invalid token"}, status=401)
 
-        return redirect('https://anwesha.live/userLogin')
+        return redirect('https://anwesha.iitp.ac.in/userLogin')
 
 
 class ForgetPassword(APIView):
@@ -355,21 +476,29 @@ class ForgetPassword(APIView):
             # Create a payload for the JWT token containing the user ID and expiration time
             payload = {
                 'userid': user.anwesha_id,
-                'exp': datetime.utcnow() + timedelta(minutes=7200),
-                'iat': datetime.utcnow()
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=10),
+                "iat": datetime.datetime.utcnow()
             }
 
             # Encode the payload into a token using the provided encryption secret
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
 
             # Create the reset password link with the token
-            link = "http://anwesha.live/user/reset_password/" + token
+            link = "http://anwesha.iitp.ac.in/user/reset_password/" + token
 
             # Compose the email text
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
+            
 
+            sendMail = EmailMessage(
+                        "No reply",
+                        text,
+                        "anwesha.backed@gmail.com",
+                        [user.email_id],
+                    )
+            EmailThread(sendMail).start()
             # Send the email with the reset password link
-            send_email_using_microservice(email_id=request.data['email'], subject="Change password", text=text)
+            #send_email_using_microservice(email_id=request.data['email'], subject="Change password", text=text)
 
             return Response({"message": "Reset link sent"}, status=200)
         except User.DoesNotExist:
@@ -410,7 +539,7 @@ class RegenerateQR(APIView):
         user = kwargs['user']
         user.secret = createId("secret",10)
         user.signature = hash_id(user.anwesha_id, user.secret)
-        user.qr_code = generate_qr(user.signature)
+        user.qr_code = generate_qr(user.anwesha_id,user.signature)
         user.save()
         return JsonResponse({
             "qr_code":'https://'+ AWS_S3_CUSTOM_DOMAIN +'/'+ AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)

@@ -1,7 +1,9 @@
 from django.contrib import admin
-from .models import User
+from .models import User,AppUsers
 from utility import export_as_csv
-from .utility import mail_content, send_email_using_microservice
+from .utility import mail_content
+from django.core.mail import EmailMessage
+from .views import EmailThread
 
 # Register your models here.
 
@@ -29,11 +31,13 @@ class UserAdmin(admin.ModelAdmin):
             email = obj.email_id
             fullname = obj.full_name
             body = mail_content(type=1, email_id=email, anwesha_id=anwesha_id, full_name=fullname)
-            send_email_using_microservice(
-                email_id=email,
-                subject="No reply",
-                text=body
-            )
+            sendMail = EmailMessage(
+                    "No reply",
+                    body,
+                    "anwesha.backed@gmail.com",
+                    [email],
+                    )
+            EmailThread(sendMail).start()
         self.message_user(request, "Email sent again")
 
     list_display = ('anwesha_id', 'full_name', 'email_id', 'collage_name')
@@ -65,3 +69,11 @@ class UserAdmin(admin.ModelAdmin):
     )
     empty_value_display = '-empty-'
     search_fields = ['full_name', 'anwesha_id', 'email_id', 'phone_number', 'collage_name']
+
+@admin.register(AppUsers)
+class AppUsersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'phone_number', 'email_id', 'is_logged_in')  
+    search_fields = ('id', 'phone_number', 'email_id')  
+    list_filter = ('is_logged_in',)  
+    ordering = ('id',)
+    readonly_fields = ('id',) 

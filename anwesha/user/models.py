@@ -1,4 +1,3 @@
-from distutils.command import upload
 from email.policy import default
 from enum import Enum, unique
 from hashlib import blake2b
@@ -57,8 +56,12 @@ class User(models.Model):
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
     profile = models.ImageField()
-    profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-    qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    # profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+    profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
+    
+    # qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+    qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)
+    
     signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
     secret = models.CharField(max_length=20, default="secret")
 
@@ -90,6 +93,26 @@ class User(models.Model):
                 check_exist = User.objects.filter(anwesha_id=self.anwesha_id)
             self.password = hashpassword(self.password)
             self.secret = createId("secret", 10)
+            # Made changes in the QR file name in the generate_qr function so that no unnecessary folders are created during saving the QR code.
             self.signature = hash_id(self.anwesha_id, self.secret)
-            self.qr_code = generate_qr(self.signature)
+            self.qr_code = generate_qr(self.anwesha_id,self.signature)
         super(User, self).save(*args, **kwargs)
+
+
+class AppUsers(models.Model):
+    id = models.CharField(max_length=10,primary_key=True)
+    phone_number = models.CharField(max_length=10)
+    email_id = models.EmailField()
+    password = models.CharField(max_length = 100)
+    is_logged_in = models.BooleanField(default=False)
+    
+    def save(self,*args,**kwargs):
+        exist = AppUsers.objects.filter(email_id = self.email_id).exists()
+        if not exist:
+            self.id = createId("SUPER",5)
+            check_exist = AppUsers.objects.filter(id=self.id)
+            while check_exist: 
+                self.anwesha_id = createId("SUPER", 5)
+                check_exist = AppUsers.objects.filter(id=self.id)
+            self.password = hashpassword(self.password)
+            super(AppUsers,self).save(*args,**kwargs)

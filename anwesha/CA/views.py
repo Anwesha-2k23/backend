@@ -4,17 +4,14 @@ from utility import hashpassword, createId, isemail
 from CA.models import Campus_ambassador
 from user.models import User
 from django.http import JsonResponse
-
+from requests import post
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from utility import generate_jwt_token , verification_mail , createId
-from time import mktime
-
-from datetime import datetime ,timedelta ,timezone
+import time
 import jwt
-from anwesha.settings import COOKIE_ENCRYPTION_SECRET
-
-
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET,CONFIGURATION,EMAIL_MICROSERVICE_ENDPOINT
+from utility import send_email_using_microservice
 
 def all_campas_ambassodor(request):
     if request.method == 'GET':
@@ -61,8 +58,20 @@ class register(APIView):
                     refferal_code = refferal_code , 
                     ca_id = ca_id
                 )
+                payload = {
+                    'email': email_id,
+                    "exp": int(time.time()) + 60 * 60,
+                    "iat": int(time.time())
+                }
+                token = jwt.encode(
+                    payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
+                if CONFIGURATION == "local":
+                    link = "http://127.0.0.1:8000/campasambassador/verifyemail/"+token
+                else:
+                    link = "https://anweshabackend.shop/campasambassador/verifyemail/" + token
+                subject = "No reply"
                 new_campus_ambassador.save()
-                #varification_mail(email=email_id)
+                send_email_using_microservice(email_id,subject,"Hello {0},\n\nPlease click on the link below to verify your email address for anwesha login:\n{1}\n\nThanks,\nTeam  Anwesha".format(full_name,link))
                 return JsonResponse({'message': 'Campus ambassador created successfully!' ,'status':'201'} ,status=201)
          except:
              return JsonResponse({'message': 'Campus ambassador registration failed', 'status': '400'},status=400)
@@ -96,7 +105,7 @@ class Login(APIView):
     def post(self, request):
         response = Response()
         try:
-            username = request.data['username']
+            username = request.data['username']  # username is email_id
             password = request.data['password']
         except:
             response.data = { "status" : "Incorrrect input" }
@@ -116,8 +125,8 @@ class Login(APIView):
             if this_ca.validation == True :
                 payload = {
                     "id" : this_ca.ca_id,
-                    "exp": datetime.utcnow() + timedelta(minutes=60),
-                    "iat": datetime.utcnow()
+                    "exp": int(time.time()) + 60 * 60,
+                    "iat": int(time.time())
                 }
 
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
@@ -224,14 +233,14 @@ class editProfile(APIView):
             if user_object_of_ca.email_id == this_ca.email_id:
                 anwesha_id = provided_anwesha_id
             else:
-                return JsonResponse({"message":"The Anwesha ID you provided belongs to someone else , please ensure that email in both  the  places is same"}, status = 401)
+                return JsonResponse({"message":"The Anwesha ID you provided belongs to someone else , please ensure that email in both the places is same"}, status = 401)
         except:
             anwesha_id = this_ca.anwesha
 
         try:
             college_name = data['college_name']
         except:
-            college_name = this_ca.collage_name
+            college_name = this_ca.college_name
 
         try:
             college_city = data['college_city']
@@ -304,15 +313,14 @@ class sendVerificationEmail(APIView):
     def post(self,request):
         try:
             email = request.data["email_id"]
-            print(email)
             if Campus_ambassador.objects.filter(email_id = email).exists():
                 try:
                     payload = {
                         "email":email ,
-                        "exp": datetime.utcnow() + timedelta(days=1),
-                        "iat": datetime.utcnow()
+                        "exp": int(time.time()) + 60 * 60,
+                        "iat": int(time.time())
                     } 
-                    token = jwt.encode( payload=payload, key=COOKIE_ENCRYPTION_SECRET , algorithm="HS256") # not working ?? 
+                    token = jwt.encode( payload=payload, key=COOKIE_ENCRYPTION_SECRET , algorithm="HS256")
                     return JsonResponse({"token": token},status=201)
                 except:
                     return JsonResponse({"message":"Token cannot be generated"} , status=409)
@@ -326,7 +334,7 @@ def verifyEmail(request , *arg , **kwarg):
     if request.method == 'GET':
         token = kwarg['pk']
         try:
-            jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256') # not working ?? 
+            jwt_payload = jwt.decode(token,COOKIE_ENCRYPTION_SECRET,algorithms = 'HS256') 
         except:
             return JsonResponse({"message":"token expired"} , status=409)
         try:

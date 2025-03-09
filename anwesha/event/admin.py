@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Events, Gallery
 from .models import TeamParticipant, Team, Payer, SoloParicipants, PayUTxn
-from utility import export_as_csv
+from utility import export_as_csv, export_all_as_csv
 # Register your models here.
 
 # admin.site.register(Events)
@@ -35,7 +35,7 @@ class EventsAdmin(admin.ModelAdmin):
         }),
     )
     empty_value_display = '-empty-'
-    actions = [export_as_csv]
+    actions = [export_as_csv, export_all_as_csv]
 
 
 @admin.register(Gallery)
@@ -82,7 +82,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name',
                      'team_id__team_id', 'team_id__team_name')
-    actions = [lock_user, export_as_csv]
+    actions = [lock_user, export_as_csv, export_all_as_csv]
 
 
 @admin.register(Team)
@@ -99,10 +99,11 @@ class TeamAdmin(admin.ModelAdmin):
         queryset.update(is_locked=True)
         self.message_user(request, "Selected User Locked")
 
-    list_display = ('team_id', 'event_id','eventname', 'leader_id', 'fullname', 'team_name')
+    list_display = ('team_id', 'event_id', 'eventname',
+                    'leader_id', 'fullname', 'team_name', 'payment_done')
     search_fields = ('team_id', 'event_id__id', 'event_id__name',
                      'leader_id__anwesha_id', 'leader_id__email_id', 'team_name')
-    actions = [lock_user, export_as_csv]
+    actions = [lock_user, export_as_csv, export_all_as_csv]
 
 
 @admin.register(Payer)
@@ -116,7 +117,7 @@ class PayerAdmin(admin.ModelAdmin):
     list_display = ('team_id', 'payer_id', 'payment_status',)
     search_fields = ('team_id', 'payer_id', 'reference_id')
     list_filter = ('payment_status',)
-    actions = [lock_user, export_as_csv]
+    actions = [lock_user, export_as_csv, export_all_as_csv]
 
 
 @admin.register(SoloParicipants)
@@ -138,7 +139,7 @@ class SoloAdmin(admin.ModelAdmin):
     search_fields = ('anwesha_id__anwesha_id', 'anwesha_id__email_id',
                      'anwesha_id__full_name', 'event_id__id', 'event_id__name')
     list_filter = (('payment_done', admin.BooleanFieldListFilter),)
-    actions = [lock_user, export_as_csv]
+    actions = [lock_user, export_as_csv, export_all_as_csv]
 
 
 @admin.register(PayUTxn)

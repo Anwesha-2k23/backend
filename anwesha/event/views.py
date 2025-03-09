@@ -10,6 +10,7 @@ import razorpay
 from user.utility import Autherize
 from urllib.parse import unquote
 from django.db.models import Q
+from atompay.models import Payments
 from django.core.management import call_command
 # Create your views here.
 
@@ -367,7 +368,7 @@ class RzPaySoloRegistration(APIView):
             })
             preRegister[0].order_id = payment["id"]
             preRegister[0].save()
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details":payment["id"] },status=404)
+            return JsonResponse({"message":"you have already registred for the events", "payment_details":payment["id"] },status=404)
         except Exception as e:
             print(e)
             pass
@@ -543,7 +544,7 @@ class SoloRegistration(APIView):
     @Autherize()
     def post(self,request, **kwargs):
         user = kwargs['user']
-        print(user.user_type == User.User_type_choice.IITP_STUDENT)
+        #print(user.user_type == User.User_type_choice.IITP_STUDENT)
         try:
             event_id = request.data['event_id']
             event = Events.objects.get(id = event_id)
@@ -551,12 +552,11 @@ class SoloRegistration(APIView):
             return JsonResponse({"messagge":"this event does not exists please provide correct event id"},status=404)
 
         try:
-            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id)
-            if preRegister[0].payment_done == True:
-                print("flag")
-                return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id },status=200)
-            
-            return JsonResponse({"messagge":"you have already registred for the events", "payment_details": preRegister[0].order_id, "payment_url": event.payment_link },status=200)
+            preRegister = SoloParicipants.objects.filter(event_id=event,anwesha_id=user.anwesha_id).exists()
+            if preRegister:
+                #print("flag")
+                return JsonResponse({"messagge":"you have already registred for the events"},status=200)
+
         except Exception as e:
             print(e)
             pass
@@ -587,6 +587,8 @@ class TeamEventRegistration(APIView):
             event_id = request.data['event_id']
             team_name = request.data['team_name']
             team_members = request.data['team_members']
+            # atomTxnId = request.data['atomtransactionid']
+            # bankTxnId = request.data['banktransactionid']
         except:
             return JsonResponse({"message":"Invalid or incomplete from data"}, status=403)
         
@@ -595,13 +597,13 @@ class TeamEventRegistration(APIView):
         except:
             return JsonResponse({"message":"event does not exists"},status=404)
 
-        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = True )) >= 1: 
+        if Team.objects.filter(event_id = event,leader_id=user,payment_done = True ).exists(): 
             return JsonResponse({"message":"you are already registered in this event"},status=403)
         
-        if len(Team.objects.filter(event_id = event,leader_id=user,payment_done = False )) >= 1: 
+        if Team.objects.filter(event_id = event,leader_id=user,payment_done = False ).exists() : 
             return JsonResponse({"message":"you are already registered in this event, but payment not varified yet", "payment_url": event.payment_link },status=403)
         
-        if len(Team.objects.filter(event_id = event,team_name=team_name)) >= 1: 
+        if Team.objects.filter(event_id = event,team_name=team_name).exists() >= 1: 
             return JsonResponse({"message":"A team with same name have already registered for this event"},status=403)
         
         if len(team_members) > event.max_team_size or len(team_members) < event.min_team_size:
@@ -631,6 +633,18 @@ class TeamEventRegistration(APIView):
                 team_name = team_name
             )
             new_team.save()
+            
+            # paymentinstance = Payments.objects.create(
+            #         anwesha_id = user,
+            #         email_id = user.email_id,
+            #         name = user.full_name,
+            #         event_id = event,
+            #         event_type = "team",
+            #         atompay_transaction_id = atomTxnId,
+            #         bank_transaction_id = bankTxnId
+            #     )        
+            # paymentinstance.save()
+            
         except Exception as e:
             print(e)
             return JsonResponse({"message":"internal server error [team creation]"},status=500)

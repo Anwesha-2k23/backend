@@ -8,14 +8,34 @@ from io import BytesIO
 from django.core.mail import send_mail
 from anwesha.settings import EMAIL_HOST_USER, COOKIE_ENCRYPTION_SECRET
 import datetime
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 import csv
 from django.http import HttpResponse, JsonResponse
 import bcrypt
 import hmac
 import base64
+from requests import post
+import re
+from anwesha.settings import COOKIE_ENCRYPTION_SECRET, EMAIL_MICROSERVICE_ENDPOINT
 
+def send_email_using_microservice(email_id, subject, text):
+    """
+    Sends an email using an external mail API.
+
+    Parameters:
+    - email_id (str): Email ID of the recipient.
+    - subject (str): Subject of the email.
+    - text (str): Content of the email.
+
+    Precautions:
+    - Ensure that the EMAIL_MICROSERVICE_ENDPOINT is properly configured.
+    - Handle any exceptions or errors that may occur during the email sending process.
+    """
+    PARAM = {
+        "to": email_id,
+        "subject": subject,
+        "text": text
+    }
+    r = post(url=EMAIL_MICROSERVICE_ENDPOINT, data=PARAM)
 
 def verification_mail(email, user):
     """
@@ -35,19 +55,19 @@ def verification_mail(email, user):
     }
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-    link = "https://backend.anwesha.live/campasambassador/verifyemail/" + token
-    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/" + token
+    link = "https://anweshabackend.shop/campasambassador/verifyemail/" + token
+    localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"
     subject = "No reply"
     body = f'''
     Hello {user},\n\n
         Please click on the link below to verify your email address for anwesha login:
-         \n{link}
+         \n{localhost_link}
         \n\nThanks,
         \nTeam  Anwesha
     '''
     recipient_list = [email]
-    res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
-    return res
+    # res = send_mail(subject, body, EMAIL_HOST_USER, recipient_list)
+    send_email_using_microservice(email,subject,body)
 
 
 def hashpassword(password):
@@ -86,22 +106,25 @@ def checkPhoneNumber(phone_number: str):
         phone_number (str): Phone number to check.
 
     Returns:
-        None
+        True if number is valid 
+        else False
     """
-    pass
+    return len(phone_number) == 10 and phone_number.isdigit()
 
 
 def isemail(email_id: str):
     """
-    Checks if the given email ID is valid or not.
+    Verifies if the given email address is in a valid format.
 
     Args:
-        email_id (str): Email ID to check.
+        email (str): The email address to verify.
 
     Returns:
-        bool: True if the email ID is valid, False otherwise.
+        bool: True if the email is valid, False otherwise.
     """
-    if "@" in email_id:
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+
+    if re.match(email_regex, email_id):
         return True
     return False
 
@@ -127,7 +150,7 @@ def get_anwesha_id(request):
         return None
 
 
-def generate_qr(anwesha_id):
+def generate_qr(anwesha_id,hash):
     """
     Generates a QR code for the given Anwesha ID.
 
@@ -137,7 +160,7 @@ def generate_qr(anwesha_id):
     Returns:
         File: QR code image file.
     """
-    img = qrcode.make(anwesha_id)
+    img = qrcode.make(hash)
     blob = BytesIO()
     img.save(blob, "PNG")
     qr = File(blob, name=anwesha_id + "-qr.png")
@@ -193,6 +216,31 @@ def export_as_csv(self, request, queryset):
     for obj in queryset:
         row = writer.writerow([getattr(obj, field) for field in field_names])
 
+    return response
+
+def export_all_as_csv(self, request, queryset):
+    restricted_fields = [
+        'password',
+        'is_loggedin',
+        'validation',
+        'profile_photo',
+        'intrests',
+        'is_email_verified',
+        'is_profile_completed',
+        'is_locked',     
+    ]
+    meta = self.model._meta
+    field_names = []
+    for field in meta.fields:
+        if field.name not in restricted_fields:
+            field_names.append(field.name)
+    print(field_names)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+    writer = csv.writer(response)
+    writer.writerow(field_names)
+    for obj in self.model.objects.all():
+        row = writer.writerow([getattr(obj, field) for field in field_names])
     return response
 
 
@@ -267,7 +315,7 @@ class EmailSending:
         }
         token = jwt.encode(
             payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://backend.anwesha.live/user/verifyemail/" + token
+        link = "https://anweshabackend.shop/user/verifyemail/" + token
         localhost_link = "http://127.0.0.1:8000/user/verifyemail/" + token
         subject = "No reply"
         body = f'''

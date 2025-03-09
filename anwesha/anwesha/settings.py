@@ -30,14 +30,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG = False#env("DEBUG")
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = env("CONFIGURATION")
-S3_ENABLED = env("S3_ENABLED")
+S3_ENABLED = True
 
 # Application definition
 INSTALLED_APPS = [
-    'jet.dashboard',
+     'jet.dashboard',
     "jet",
     "corsheaders",
     "django.contrib.admin",
@@ -46,11 +46,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
     "user",
     "event",
+    "map",
     "sponsor",
     "CA",
+    "pytest_django",
+    "atompay",
+    "multicity",
     "rest_framework",
+    "Sleek",
+    "festpasses",
+    
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -82,7 +90,7 @@ ROOT_URLCONF = "anwesha.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -193,13 +201,18 @@ if S3_ENABLED:
 
 # CSRF Settings
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['https://backend.anwesha.live','http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/','https://anweshabackend.shop','https://anwesha.iitp.ac.in']
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1',
+    'http://3.108.191.128',
+    'http://localhost:3000',
+    'https://anweshabackend.shop',
+    'https://anwesha.iitp.ac.in'
+]
 CORS_ALLOW_CREDENTIALS = True
-
-
 
 # JET CONFIGURATION
 JET_THEMES = [
@@ -237,22 +250,23 @@ JET_THEMES = [
 
 JET_SIDE_MENU_COMPACT = False
 LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
-LOGOUT_REDIRECT_URL = 'https://backend.anwesha.live/accounts/login/'
+LOGOUT_REDIRECT_URL = 'https://anweshabackend.shop/admin/'
 
 # Mail configuration
+EMAIL_BACKEND = 'anwesha.backends.CustomEmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = env('SMTP_ID')
-EMAIL_HOST_PASSWORD = env('SMTP_PASS')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # Website host variable
-WEBSITE_HOST = env('WEBSITE_HOST')
+WEBSITE_HOST = "localhost"#env('WEBSITE_HOST')
 COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
 
 #razorpay api keys
-RAZORPAY_API_KEY_ID = env("RAZORPAY_API_KEY_ID")
-RAZORPAY_API_KEY_SECRET = env("RAZORPAY_API_KEY_SECRET")
+RAZORPAY_API_KEY_ID = ""#env("RAZORPAY_API_KEY_ID")
+RAZORPAY_API_KEY_SECRET =""# env("RAZORPAY_API_KEY_SECRET")
 
 '''
 :NOTE:
@@ -260,4 +274,4 @@ you will need an endpoint for sending email with required parameters
 if you dont have your own email service you can use this one :- https://github.com/melencholicmice/mail-service
 please make sure to isolate the docker container in microservice and not expose its port
 '''
-EMAIL_MICROSERVICE_ENDPOINT = env("EMAIL_MICROSERVICE_ENDPOINT")
+EMAIL_MICROSERVICE_ENDPOINT = "http://127.0.0.1:12000/send-mail/"
