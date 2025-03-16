@@ -1,3 +1,14 @@
+## Issues to be addressed
+1. Adding Rate Limiter and concurrent request limiter  
+2. Improving Documentation  
+3. Faculty register endpoints  
+4. Alumini Register endpoints  
+5. Bulk mail feature to all users in admin panel  
+6. Improve mail format and optimize mail sending  
+7. Implement Tests using pytest  
+8. Implement OAuth for google and microsoft login  
+
+
 ## What is this Application ? 🤔
 This Application is an online registration, user-data management and QR entry framework created for IIT Patna's annual cultural Festival [Awesha](https://anwesha.live/). The primary objective is to provide an easily deployable and highly scalable framework for online registration that anyone can set up easily. It is built on Django and offers a comprehensive set of REST APIs for registration, user data management, entry management and more.
 
