@@ -30,10 +30,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False#env("DEBUG")
+DEBUG = True  # Enable DEBUG for local development
 ALLOWED_HOSTS = ["*"]
 CONFIGURATION = env("CONFIGURATION")
-S3_ENABLED = True
+S3_ENABLED = env.bool("S3_ENABLED", default=False)
 
 # Application definition
 INSTALLED_APPS = [
@@ -181,27 +181,36 @@ AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 
 ## Storage Settings
+# Define AWS location variables for both S3 and local (needed by storage_backend.py)
+AWS_STATIC_LOCATION = "static"
+AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
+AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr/"
+AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
+AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
+
 if S3_ENABLED:
     AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
     AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=86400",
     }
-    AWS_STATIC_LOCATION = "static"
-    AWS_PUBLIC_MEDIA_LOCATION1 = "static/profile"
-    AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr/"
-    AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
-    AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
     STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
     DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
     DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
     DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
+else:
+    # Local storage settings for development
+    AWS_S3_CUSTOM_DOMAIN = ""  # Empty for local usage
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CSRF Settings
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/','https://anweshabackend.shop','https://anwesha.iitp.ac.in']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/','https://anweshabackend.shop','https://anwesha.iitp.ac.in', 'http://127.0.0.1:8000', 'http://localhost:8000']
 
 # CORS Settings
 # CORS_ALLOW_ALL_ORIGINS = True

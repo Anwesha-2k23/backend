@@ -1,14 +1,20 @@
 from django.db import models
-from anwesha.storage_backend import MultiCityStorage
+from anwesha.settings import S3_ENABLED
 from utility import createId
+
+# Conditionally import S3 storage only if enabled
+if S3_ENABLED:
+    from anwesha.storage_backend import MultiCityStorage
 
 class Multicity_Events(models.Model):
     event_id = models.CharField(max_length=4,unique=True)
     event_name = models.CharField(max_length=100,primary_key=True)
     event_description = models.TextField(default="description coming soon...")
-    event_poster = models.ImageField(
-        storage=MultiCityStorage, blank=True, null=True
-    )
+    # event_poster uses S3 storage if enabled, otherwise local storage
+    if S3_ENABLED:
+        event_poster = models.ImageField(storage=MultiCityStorage, blank=True, null=True)
+    else:
+        event_poster = models.ImageField(upload_to='static/multicity', blank=True, null=True)
     event_date = models.DateTimeField(auto_now_add=False)
 
     def save(self, *args, **kwargs):
