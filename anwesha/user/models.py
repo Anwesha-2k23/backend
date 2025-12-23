@@ -4,10 +4,13 @@ from hashlib import blake2b
 from re import T
 from secrets import choice
 from django.db import models
-from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
-from anwesha.settings import CONFIGURATION
+from anwesha.settings import CONFIGURATION, S3_ENABLED
 from utility import generate_qr, createId, hashpassword, hash_id
 from django.core.files.storage import FileSystemStorage
+
+# Conditionally import S3 storage only if enabled
+if S3_ENABLED:
+    from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 
 '''
 :NOTE:
@@ -56,11 +59,13 @@ class User(models.Model):
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)
     profile = models.ImageField()
-    # profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-    profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
-    
-    # qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
-    qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)
+    # profile_photo and qr_code use S3 storage if enabled, otherwise local storage
+    if S3_ENABLED:
+        profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
+        qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)
+    else:
+        profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
+        qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
     
     signature = models.CharField(max_length=200, blank=True, null=True, default="signature")
     secret = models.CharField(max_length=20, default="secret")

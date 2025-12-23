@@ -49,7 +49,7 @@ def payview(request):
         amount = payload.get('amount')
         merchTxnId = uuid.uuid4().hex[:12]
         merchId = '564719'
-        password = 'b5d2bc5e'
+        password = 'anwesha@24'
         product = 'STUDENT'
         custEmail = payload.get('email')
         custMobile = payload.get('phone')

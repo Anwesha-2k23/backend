@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from .models import User,AppUsers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import EmailMessage
 import uuid
@@ -31,6 +32,7 @@ class EmailThread(threading.Thread):
         self.email.send(fail_silently=False) 
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AppLogin(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
@@ -110,6 +112,12 @@ class AppLogin(APIView):
         
 
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+# ... other code ...
+
+@method_decorator(csrf_exempt, name='dispatch')
 class Login(APIView):
     def get(self, request):
         # Retrieve the token from the request cookies
@@ -134,10 +142,12 @@ class Login(APIView):
                 user.is_loggedin = True
                 user.save()
                 
-                if CONFIGURATION == "local":
-                    qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
-                else:
-                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+                # Build QR code URL based on storage backend
+                try:
+                    qr_code = user.qr_code.url
+                except Exception:
+                    # Fallback for environments without .url
+                    qr_code = '/static/qr/' + str(user.qr_code).split('/')[-1]
                 
                 # Create a response object
                 response = Response()
@@ -195,10 +205,11 @@ class Login(APIView):
                 this_user.is_loggedin = True
                 this_user.save()
                 
-                if CONFIGURATION == "local":
-                    qr_code = str(os.path.join(BASE_DIR,""))+str(this_user.qr_code)
-                else:
-                    qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(this_user.qr_code)
+                # Build QR code URL based on storage backend
+                try:
+                    qr_code = this_user.qr_code.url
+                except Exception:
+                    qr_code = '/static/qr/' + str(this_user.qr_code).split('/')[-1]
 
                 response.data = {
                     "success": True,
