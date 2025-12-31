@@ -24,6 +24,7 @@ google-auth==2.13.0
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.7.0
 googleapis-common-protos==1.56.4
+google-cloud-storage==2.10.0
 httplib2==0.21.0
 idna==3.4
 importlib-metadata==5.0.0
@@ -62,3 +63,8 @@ tzdata==2024.2
 uritemplate==4.1.1
 urllib3==1.26.13
 zipp==3.10.0
+gunicorn==21.2.0
+Pillow==9.5.0
+pycryptodome==3.18.0
+setuptools==67.8.0
+whitenoise==6.6.0

@@ -150,7 +150,7 @@ def payview(request):
         event_id = payload.get('event_id') # FSTP
         type = payload.get('type')  # Remember to set type as FESTPASS
         anwesha_id = payload.get('anwesha_id')
-        returnUrl = 'https://anweshabackend.shop/festpasses/response'
+        returnUrl = 'https://anwesha.shop/festpasses/response'
     except:
         return JsonResponse({"message":"Error in getting data"})
     

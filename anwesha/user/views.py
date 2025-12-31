@@ -336,10 +336,11 @@ class Register(APIView):
         
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
         
+        from anwesha.settings import EMAIL_HOST_USER
         sendMail = EmailMessage(
                     "No reply",
                     text,
-                    "anweshatroubleshoot@gmail.com",
+                    EMAIL_HOST_USER,
                     [email_id],
                     )
         
@@ -467,7 +468,7 @@ def verifyEmail(request, *args, **kwargs):
         except User.DoesNotExist:
             return JsonResponse({"message": "Invalid token"}, status=401)
 
-        return redirect('https://anwesha.iitp.ac.in/userLogin')
+        return redirect('https://anwesha26test.vercel.app/login')
 
 
 class ForgetPassword(APIView):
@@ -495,7 +496,7 @@ class ForgetPassword(APIView):
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
 
             # Create the reset password link with the token
-            link = "http://anwesha.iitp.ac.in/user/reset_password/" + token
+            link = "https://anwesha26test.vercel.app/reset-password/" + token
 
             # Compose the email text
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''

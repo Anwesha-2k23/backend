@@ -57,7 +57,7 @@ def payview(request):
         type = payload.get('type')
         anwesha_id = payload.get('anwesha_id')
         #print(event_id)
-        returnUrl = 'https://anweshabackend.shop/response/'
+        returnUrl = 'https://anwesha.shop/response/'
     except:
         return JsonResponse({"message":"Error in getting data"})
         #print("Error in getting")

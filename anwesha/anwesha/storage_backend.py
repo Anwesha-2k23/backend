@@ -1,8 +1,37 @@
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
+# Google Cloud Storage
+if settings.GCP_STORAGE_ENABLED:
+    from storages.backends.gcloud import GoogleCloudStorage
+
+    class ProfileImageStorage(GoogleCloudStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/profile'
+            super().__init__(*args, **kwargs)
+
+    class StaticStorage(GoogleCloudStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static'
+            super().__init__(*args, **kwargs)
+
+    class PublicQrStorage(GoogleCloudStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/qr'
+            super().__init__(*args, **kwargs)
+
+    class PublicGalleryStorage(GoogleCloudStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/gallery'
+            super().__init__(*args, **kwargs)
+
+    class MultiCityStorage(GoogleCloudStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/multicity'
+            super().__init__(*args, **kwargs)
+
 # Only use S3 storage classes when S3 is enabled
-if settings.S3_ENABLED:
+elif settings.S3_ENABLED:
     from storages.backends.s3boto3 import S3Boto3Storage
 
     class ProfileImageStorage(S3Boto3Storage):

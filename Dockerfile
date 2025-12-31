@@ -16,9 +16,10 @@ RUN pip install -r requirements.txt
 # copy project
 COPY . /usr/src/backend/
 
-EXPOSE 8000
+EXPOSE 8080
 
 WORKDIR /usr/src/backend/anwesha
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Run migrations, collect static files, then start gunicorn (for Cloud Run)
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn anwesha.wsgi:application --bind 0.0.0.0:8080 --workers 4"]
 
