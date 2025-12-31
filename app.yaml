@@ -1,0 +1,27 @@
+runtime: custom
+env: flex
+entrypoint: gunicorn anwesha.wsgi:application --bind 0.0.0.0:8080 --workers 4
+
+env_variables:
+  CONFIGURATION: "gcp"
+  DEBUG: "false"
+  PYTHONUNBUFFERED: "1"
+  GCP_PROJECT_ID: "anwesha-26-472317"
+
+beta_settings:
+  cloud_sql_instances: "anwesha-26-472317:asia-south1:anwesha-mysql"
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  cool_down_period_sec: 60
+  cpu_utilization:
+    target_utilization: 0.65
+
+health_check:
+  enable_health_check: true
+  check_interval_sec: 30
+  timeout_sec: 10
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+  restart_threshold: 50

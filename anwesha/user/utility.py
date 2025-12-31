@@ -90,7 +90,7 @@ def mail_content(type, *args, **kwargs):
         if CONFIGURATION == 'local':
             link = "http://localhost:8000/user/verifyemail/"+token
         else:
-            link = "https://anweshabackend.shop/user/verifyemail/" + token
+            link = "https://anwesha.shop/user/verifyemail/" + token
         body = f'''Hello {user},
 
 Thank you for being part of Anwesha 2025.

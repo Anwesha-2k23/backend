@@ -55,7 +55,7 @@ def verification_mail(email, user):
     }
     token = jwt.encode(
         payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-    link = "https://anweshabackend.shop/campasambassador/verifyemail/" + token
+    link = "https://anwesha.shop/campasambassador/verifyemail/" + token
     localhost_link = "http://127.0.0.1:8000/campasambassador/verifyemail/"
     subject = "No reply"
     body = f'''
@@ -315,7 +315,7 @@ class EmailSending:
         }
         token = jwt.encode(
             payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
-        link = "https://anweshabackend.shop/user/verifyemail/" + token
+        link = "https://anwesha.shop/user/verifyemail/" + token
         localhost_link = "http://127.0.0.1:8000/user/verifyemail/" + token
         subject = "No reply"
         body = f'''

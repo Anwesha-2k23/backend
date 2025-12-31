@@ -30,10 +30,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Enable DEBUG for local development
-ALLOWED_HOSTS = ["*"]
+DEBUG = env.bool("DEBUG", default=True)
 CONFIGURATION = env("CONFIGURATION")
 S3_ENABLED = env.bool("S3_ENABLED", default=False)
+
+if CONFIGURATION == 'gcp':
+    ALLOWED_HOSTS = ["anwesha.shop", "anwesha-backend-11582232718.asia-south1.run.app", "localhost", "127.0.0.1"]
+else:
+    ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,6 +80,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,6 +118,18 @@ if CONFIGURATION == 'local':
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+elif CONFIGURATION == 'gcp':
+    # Google Cloud SQL connection via Unix socket (Cloud Run)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env("DB_NAME"),
+            'USER': env("DB_USER"),
+            'PASSWORD': env("DB_PASSWORD"),
+            'HOST': f"/cloudsql/{env('CLOUD_SQL_CONNECTION_NAME')}",
+            'PORT': '',
         }
     }
 elif CONFIGURATION == 'production':
@@ -176,9 +193,9 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# AWS Credentials
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+# AWS Credentials (optional - only needed if using S3)
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default="")
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")
 
 ## Storage Settings
 # Define AWS location variables for both S3 and local (needed by storage_backend.py)
@@ -188,7 +205,28 @@ AWS_PUBLIC_MEDIA_LOCATION2 = "static/qr/"
 AWS_PUBLIC_MEDIA_LOCATION3 = "static/gallery"
 AWS_PUBLIC_MEDIA_LOCATION4 = "static/multicity"
 
-if S3_ENABLED:
+GCP_STORAGE_ENABLED = env.bool("GCP_STORAGE_ENABLED", default=False)
+
+# Initialize AWS_S3_CUSTOM_DOMAIN as empty string (for compatibility)
+AWS_S3_CUSTOM_DOMAIN = ""
+
+if GCP_STORAGE_ENABLED:
+    # Google Cloud Storage configuration
+    GCS_BUCKET_NAME = env("GCS_BUCKET_NAME")
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    # Keep WhiteNoise for static files, use GCS only for media (user uploads)
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    
+    GS_BUCKET_NAME = GCS_BUCKET_NAME
+    GS_PROJECT_ID = env("GCP_PROJECT_ID")
+    GS_AUTO_CREATE_BUCKET = False
+    
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    MEDIA_URL = f"https://storage.googleapis.com/{GCS_BUCKET_NAME}/media/"
+    AWS_S3_CUSTOM_DOMAIN = f"storage.googleapis.com/{GCS_BUCKET_NAME}"  # For compatibility with existing code
+elif S3_ENABLED:
     AWS_STORAGE_BUCKET_NAME = "anwesha-storage-bucket"
     AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
     AWS_S3_OBJECT_PARAMETERS = {
@@ -198,29 +236,52 @@ if S3_ENABLED:
     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_STATIC_LOCATION)
     STATICFILES_STORAGE = "anwesha.storage_backend.StaticStorage"
     DEFAULT_PROFILE_STORAGE = "anwesha.storage_backend.ProfileImageStorage"
-    DEFAULT_QR_STORAGE = "amwesha.storage_backend.ProfileQRStorage"
+    DEFAULT_QR_STORAGE = "anwesha.storage_backend.ProfileQRStorage"
     DEFAULT_GALLERY_STORAGE = "anwesha.storage_backend.PublicGalleryStorage"
 else:
     # Local storage settings for development
     AWS_S3_CUSTOM_DOMAIN = ""  # Empty for local usage
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CSRF Settings
-CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1/', 'http://3.108.191.128/', 'http://localhost:3000/','https://anweshabackend.shop','https://anwesha.iitp.ac.in', 'http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_COOKIE_SECURE = not DEBUG
+if CONFIGURATION == 'gcp':
+    CSRF_TRUSTED_ORIGINS = [
+        'https://anwesha.shop',
+        'https://anwesha26test.vercel.app',
+        'https://anwesha-backend-11582232718.asia-south1.run.app',
+        'http://localhost:3000',
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[
+        'http://127.0.0.1/', 
+        'http://localhost:3000/',
+        'http://127.0.0.1:8000', 
+        'http://localhost:8000',
+        'https://anwesha.shop',
+        'https://anwesha-backend-11582232718.asia-south1.run.app'
+    ])
 
 # CORS Settings
-# CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1',
-    'http://3.108.191.128',
-    'http://localhost:3000',
-    'https://anweshabackend.shop',
-    'https://anwesha.iitp.ac.in'
-]
+if CONFIGURATION == 'gcp':
+    CORS_ALLOWED_ORIGINS = [
+        'https://anwesha.shop',
+        'https://anwesha26test.vercel.app',
+        'http://localhost:3000',
+        'http://127.0.0.1',
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[
+        'http://127.0.0.1',
+        'http://localhost:3000',
+        'https://anwesha.shop',
+        'https://anwesha26test.vercel.app'
+    ])
 CORS_ALLOW_CREDENTIALS = True
 
 # JET CONFIGURATION
@@ -257,9 +318,15 @@ JET_THEMES = [
     }
 ]
 
+WEBSITE_HOST = env('WEBSITE_HOST', default='localhost')
+COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
+
+# GCP specific settings
+GCP_PROJECT_ID = env('GCP_PROJECT_ID', default='anwesha-26-472317')
+
 JET_SIDE_MENU_COMPACT = False
 LOGIN_REDIRECT_URL = 'http://backend.anwesha.live/user/oauth/'
-LOGOUT_REDIRECT_URL = 'https://anweshabackend.shop/admin/'
+LOGOUT_REDIRECT_URL = 'https://anwesha.shop/admin/'
 
 # Mail configuration
 EMAIL_BACKEND = 'anwesha.backends.CustomEmailBackend'
@@ -268,10 +335,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-
-# Website host variable
-WEBSITE_HOST = "localhost"#env('WEBSITE_HOST')
-COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
 
 #razorpay api keys
 RAZORPAY_API_KEY_ID = ""#env("RAZORPAY_API_KEY_ID")
