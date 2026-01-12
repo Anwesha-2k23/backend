@@ -1,0 +1,18 @@
+<form method="POST" action="https://paynetzuat.atomtech.in/paynetz/epi/fts">
+  <!-- Token obtained from /atompay/ backend endpoint -->
+  <input type="hidden" name="atomTokenId" value="15000036573256">
+  <input type="hidden" name="merchId" value="564719">
+  
+  <!-- Return URL where Atom redirects after payment -->
+  <input type="hidden" name="returnUrl" value="http://127.0.0.1:8000/response/">
+  
+  <!-- Transaction details from /atompay/ response -->
+  <input type="hidden" name="amount" value="100">
+  <input type="hidden" name="merchTxnId" value="451caa3c284e">
+  
+  <!-- Customer details from /atompay/ response -->
+  <input type="hidden" name="custEmail" value="teststudent@example.com">
+  <input type="hidden" name="custMobile" value="9876543211">
+  
+  <button type="submit">Proceed to Payment</button>
+</form>

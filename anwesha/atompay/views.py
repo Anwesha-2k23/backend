@@ -57,7 +57,7 @@ def payview(request):
         type = payload.get('type')
         anwesha_id = payload.get('anwesha_id')
         #print(event_id)
-        returnUrl = 'https://anweshabackend.shop/response/'
+        returnUrl = 'https://anwesha.shop/response/'
     except:
         return JsonResponse({"message":"Error in getting data"})
         #print("Error in getting")
@@ -66,7 +66,7 @@ def payview(request):
     if type == 'solo':
         event = Events.objects.get(id = event_id)
         if SoloParicipants.objects.filter(event_id=event,anwesha_id=user).exists():
-                return JsonResponse({"messagge":"you have already registred for the events"},status=404)
+                return JsonResponse({"message":"you have already registered for the events"},status=404)
         jsondata = '{ "payInstrument": { "headDetails": { "version": "OTSv1.1", "api": "AUTH", "platform": "FLASH" }, "merchDetails": { "merchId": "'+str(merchId)+'", "userId": "", "password": "'+str(password)+'", "merchTxnId": "'+str(merchTxnId)+'", "merchTxnDate": "'+str(txnDate)+'" }, "payDetails": { "amount": "'+str(
             amount)+'", "product": "'+str(product)+'",  "txnCurrency": "INR" }, "custDetails": { "custEmail": "'+str(custEmail)+'", "custMobile": "'+str(custMobile)+'" }, "extras":{ "udf1": "'+str(event_id)+'","udf2": "'+str(anwesha_id)+'", "udf3":"udf3", "udf4":"udf4", "udf5": "'+str(type)+'"} } }'
     
@@ -144,7 +144,7 @@ def payview(request):
     cipher = AESCipher('self')
     encrypted = cipher.encrypt(bytes(jsondata, encoding="raw_unicode_escape"))
     #print(encrypted)
-    url = "https://payment1.atomtech.in/ots/aipay/auth"
+    url = "https://caller.atomtech.in/ots/aipay/auth"
     #    payload = "encData="+encrypted+"&merchId="+str(merchId)
     payload = {'encData':encrypted, 'merchId':str(merchId)}
     headers = {
@@ -186,11 +186,14 @@ def payview(request):
 
 
 @csrf_exempt
-def resp(request): 
+def resp(request):
+    if request.method != 'POST':
+        return JsonResponse({"message": "Method not allowed"}, status=405)
     
-    if request.method == 'POST':
-     rawData= request.POST["encData"]
-     
+    rawData = request.POST.get("encData")
+    if not rawData:
+        return JsonResponse({"message": "Missing encData"}, status=400)
+    
     reskey = '66F34D46E547C535047F3465E640F32B'
     #print(rawData)
     cipher = AESCipher('self')
@@ -225,7 +228,7 @@ def resp(request):
 
         signature_validation = ""
         
-        if respsignature == final_cret_sign or respsignature != final_cret_sign:
+        if respsignature == final_cret_sign:
             signature_validation = "Transaction success, Signature valid!"
             #print(decodedData['payInstrument']['extras']['udf2'])
             #print(decodedData['payInstrument']['extras']['udf1'])
@@ -327,7 +330,7 @@ def resp(request):
         #print("Response Signature : " + respsignature)
         
     else:
-        return JsonResponse({"msg":"Payment Failed"})
+        return JsonResponse({"message":"Payment Failed"}, status=400)
         #print("Payment failed, Please try again.. <br>")
 
 
