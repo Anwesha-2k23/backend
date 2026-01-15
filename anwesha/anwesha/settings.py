@@ -253,6 +253,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 if CONFIGURATION == 'gcp':
     CSRF_TRUSTED_ORIGINS = [
         'https://anwesha.shop',
+        'https://anwesha.iitp.ac.in',
         'https://anwesha26test.vercel.app',
         'https://anwesha-backend-11582232718.asia-south1.run.app',
         'http://localhost:3000',
@@ -271,6 +272,7 @@ else:
 if CONFIGURATION == 'gcp':
     CORS_ALLOWED_ORIGINS = [
         'https://anwesha.shop',
+        'https://anwesha.iitp.ac.in',
         'https://anwesha26test.vercel.app',
         'http://localhost:3000',
         'http://127.0.0.1',
