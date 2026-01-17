@@ -49,7 +49,7 @@ def payview(request):
         amount = payload.get('amount')
         merchTxnId = uuid.uuid4().hex[:12]
         merchId = '564719'
-        password = 'anwesha@24'
+        password = 'b5d2bc5e'
         product = 'STUDENT'
         custEmail = payload.get('email')
         custMobile = payload.get('phone')
@@ -144,7 +144,7 @@ def payview(request):
     cipher = AESCipher('self')
     encrypted = cipher.encrypt(bytes(jsondata, encoding="raw_unicode_escape"))
     #print(encrypted)
-    url = "https://caller.atomtech.in/ots/aipay/auth"
+    url = "https://payment1.atomtech.in/ots/aipay/auth"
     #    payload = "encData="+encrypted+"&merchId="+str(merchId)
     payload = {'encData':encrypted, 'merchId':str(merchId)}
     headers = {
