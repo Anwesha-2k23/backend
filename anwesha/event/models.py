@@ -3,6 +3,7 @@ from django.db import models
 import datetime
 from user.models import User
 from utility import createId
+from anwesha.storage_backend import PosterFileStorage
 
 ###  Code for TAGS  ###
 # Add your Event Tags here
@@ -48,7 +49,7 @@ class Events(models.Model):
     registration_deadline = models.DateTimeField(blank=True, null=True)
     video = models.URLField(blank=True)
     poster = models.URLField(blank=True)
-    poster_file = models.ImageField(upload_to='static/event_posters/', blank=True, null=True)
+    poster_file = models.ImageField(blank=True, null=True, storage=PosterFileStorage())
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
     max_team_size = models.SmallIntegerField(default=1)
     min_team_size = models.SmallIntegerField(default=1)
