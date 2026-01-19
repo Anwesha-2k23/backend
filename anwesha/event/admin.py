@@ -26,12 +26,15 @@ class EventsAdmin(admin.ModelAdmin):
                 ('registration_fee', 'registration_deadline'),
                 ('description'),
                 ('max_team_size', 'min_team_size'),
-                ('poster', 'video'),
                 ('is_active', 'is_online'),
                 ('registration_link'),
                 ('order'),
                 ('payment_link', 'payment_key'),
             ),
+        }),
+        ('Media', {
+            'fields': ('poster', 'poster_file', 'video'),
+            'description': 'Upload poster_file to auto-upload to GCS, or paste poster URL for external links'
         }),
     )
     empty_value_display = '-empty-'

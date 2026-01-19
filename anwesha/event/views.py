@@ -677,3 +677,54 @@ class TeamEventRegistration(APIView):
             "team_id":team_id,
             "error": error_msg
             },status=201)
+    """API endpoint for uploading event posters to Google Cloud Storage"""
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, event_id):
+        """Upload poster image for an event"""
+        try:
+            # Check if event exists
+            event = Events.objects.get(id=event_id)
+            
+            # Validate poster file exists
+            if 'poster' not in request.FILES:
+                return JsonResponse(
+                    {"message": "No poster file provided", "status": "400"},
+                    status=400
+                )
+            
+            poster_file = request.FILES['poster']
+            
+            # Validate file type (only images)
+            allowed_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.webp')
+            if not poster_file.name.lower().endswith(allowed_extensions):
+                return JsonResponse(
+                    {"message": "Only image files allowed (jpg, jpeg, png, gif, webp)", "status": "400"},
+                    status=400
+                )
+            
+            # Save the file (will be stored in GCS automatically if GCP_STORAGE_ENABLED)
+            event.poster = poster_file
+            event.save()
+            
+            # Get the poster URL
+            poster_url = event.poster.url if event.poster else None
+            
+            return JsonResponse({
+                "message": "Poster uploaded successfully",
+                "event_id": event_id,
+                "poster_url": poster_url,
+                "status": "200"
+            }, status=200)
+            
+        except Events.DoesNotExist:
+            return JsonResponse(
+                {"message": "Event not found", "status": "404"},
+                status=404
+            )
+        except Exception as e:
+            return JsonResponse(
+                {"message": f"Error uploading poster: {str(e)}", "status": "500"},
+                status=500
+            )

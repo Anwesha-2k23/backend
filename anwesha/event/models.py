@@ -48,6 +48,7 @@ class Events(models.Model):
     registration_deadline = models.DateTimeField(blank=True, null=True)
     video = models.URLField(blank=True)
     poster = models.URLField(blank=True)
+    poster_file = models.ImageField(upload_to='static/event_posters/', blank=True, null=True)
     tags = models.CharField(max_length=40, choices=TAGS, blank=True)
     max_team_size = models.SmallIntegerField(default=1)
     min_team_size = models.SmallIntegerField(default=1)
@@ -60,6 +61,13 @@ class Events(models.Model):
     
     def __str__(self):
         return self.name
+    
+    @property
+    def get_poster(self):
+        """Return file URL if exists, else return manual URL"""
+        if self.poster_file:
+            return self.poster_file.url
+        return self.poster
     
     class Meta:
         ordering = ['start_time']
