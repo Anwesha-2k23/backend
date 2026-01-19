@@ -29,6 +29,18 @@ if settings.GCP_STORAGE_ENABLED:
         def __init__(self, *args, **kwargs):
             kwargs['location'] = 'static/multicity'
             super().__init__(*args, **kwargs)
+    
+    class PosterFileStorage(GoogleCloudStorage):
+        """GCS storage for poster files with public read access"""
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/event_posters'
+            super().__init__(*args, **kwargs)
+        
+        def _save(self, name, content):
+            name = super()._save(name, content)
+            # Make the file publicly readable
+            self.bucket.blob(self.location + '/' + name).make_public()
+            return name
 
 # Only use S3 storage classes when S3 is enabled
 elif settings.S3_ENABLED:

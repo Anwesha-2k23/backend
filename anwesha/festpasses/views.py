@@ -72,12 +72,19 @@ class checkPass(APIView):
     @Autherize()
     def post(self,request,**kwargs):
         user = kwargs['user']
-        # print()
-        exists = FestPasses.objects.filter(anwesha_id = user.anwesha_id)
-        # print(exists)
-        if exists.exists():
-            return JsonResponse({"message":"You are already registered"},status = 200)
-        return JsonResponse({"message":"You have not registered"},status=404)
+        try:
+            festpass = FestPasses.objects.get(anwesha_id=user.anwesha_id)
+            return JsonResponse({
+                "anwesha_id": festpass.anwesha_id.anwesha_id,
+                "email": festpass.email_id,
+                "has_entered": festpass.has_entered,
+                "payment_done": festpass.payment_done,
+                "status": "200"
+            }, status=200)
+        except FestPasses.DoesNotExist:
+            return JsonResponse({"message": "Fest pass not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"message": "Error retrieving fest pass info"}, status=500)
 
 class festpasses(APIView):
     @Autherize()
@@ -95,8 +102,8 @@ class festpasses(APIView):
                 data = FestPasses.objects.filter(anwesha_id=anwesha_id)
                 if preRegister:
                     #print("flag")
-                    return JsonResponse({"messagge":"you have already registered", "payment_details": data[0].transaction_id },status=200)
-                return JsonResponse({"message":"you have already registered", "payment_details": data[0].transaction_id },status=200)
+                    return JsonResponse({"message":"You have already purchased festpass"},status=200)
+                return JsonResponse({"message":"You have already purchased festpass"},status=200)
             
             except Exception as e:
                 #print(e)
@@ -140,7 +147,8 @@ def payview(request):
     except:
         return JsonResponse({"message":"this user does not exist"},status=404)
     try:
-        amount = payload.get('amount')
+        # Always charge ₹899 for FESTPASS, ignore client-sent amount
+        amount = 899
         merchTxnId = uuid.uuid4().hex[:12]
         merchId = '564719'
         password = 'b5d2bc5e'
