@@ -470,38 +470,7 @@ def verifyEmail(request, *args, **kwargs):
         except User.DoesNotExist:
             return JsonResponse({"message": "Invalid token"}, status=401)
 
-        def build_redirect_url(request_obj, fallback_host: str) -> str:
-            redirect_base = (
-                request_obj.GET.get('redirect')
-                or request_obj.META.get('HTTP_ORIGIN')
-                or request_obj.META.get('HTTP_REFERER')
-                or fallback_host
-            )
-
-            parsed = urlparse(redirect_base)
-            # If only host without scheme is provided, ensure scheme/netloc are set
-            if not parsed.scheme and parsed.netloc:
-                parsed = parsed._replace(scheme="https")
-            elif not parsed.scheme and not parsed.netloc:
-                # Handle plain host like 'anwesha.shop'
-                parsed = parsed._replace(scheme="https", netloc=parsed.path, path="")
-
-            # If scheme is still missing, default to https
-            if not parsed.scheme:
-                parsed = parsed._replace(scheme="https")
-
-            # If netloc missing (e.g., /path only), fall back to provided host
-            if not parsed.netloc and fallback_host:
-                host_parsed = urlparse(fallback_host)
-                if not host_parsed.scheme and not host_parsed.netloc:
-                    host_parsed = host_parsed._replace(scheme="https", netloc=host_parsed.path, path="")
-                parsed = parsed._replace(scheme=host_parsed.scheme, netloc=host_parsed.netloc)
-
-            return urlunparse((parsed.scheme, parsed.netloc, "/userLogin", "", "", ""))
-
-        fallback = getattr(settings, "WEBSITE_HOST", "") or "anwesha.shop"
-        redirect_url = build_redirect_url(request, fallback)
-        return redirect(redirect_url)
+        return redirect('https://anwesha.iitp.ac.in/userLogin')
 
 
 class ForgetPassword(APIView):
@@ -529,7 +498,7 @@ class ForgetPassword(APIView):
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
 
             # Create the reset password link with the token
-            link = "https://anwesha26test.vercel.app/reset-password/" + token
+            link = "https://anwesha.iitp.ac.in/reset-password/" + token
 
             # Compose the email text
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
