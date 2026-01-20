@@ -18,7 +18,9 @@ import time
 from .utility import Autherize, mail_content
 from anwesha.settings import  AWS_PUBLIC_MEDIA_LOCATION2
 from django.shortcuts import redirect
+from urllib.parse import urlparse, urlunparse
 from anwesha.settings import CONFIGURATION,BASE_DIR
+from django.conf import settings
 import os
 import re
 import threading
@@ -468,7 +470,7 @@ def verifyEmail(request, *args, **kwargs):
         except User.DoesNotExist:
             return JsonResponse({"message": "Invalid token"}, status=401)
 
-        return redirect('https://anwesha26test.vercel.app/login')
+        return redirect('https://anwesha.iitp.ac.in/userLogin')
 
 
 class ForgetPassword(APIView):
@@ -496,7 +498,7 @@ class ForgetPassword(APIView):
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm='HS256')
 
             # Create the reset password link with the token
-            link = "https://anwesha26test.vercel.app/reset-password/" + token
+            link = "https://anwesha.iitp.ac.in/reset-password/" + token
 
             # Compose the email text
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
