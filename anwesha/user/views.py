@@ -342,7 +342,7 @@ class Register(APIView):
         sendMail = EmailMessage(
                     "No reply",
                     text,
-                    EMAIL_HOST_USER,
+                    EMAIL_HOST_USER.strip(),
                     [email_id],
                     )
         
@@ -504,10 +504,11 @@ class ForgetPassword(APIView):
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
             
 
+            from anwesha.settings import EMAIL_HOST_USER
             sendMail = EmailMessage(
-                        "No reply",
+                        "Reset Password - Anwesha",
                         text,
-                        "anwesha.backed@gmail.com",
+                        EMAIL_HOST_USER.strip(),
                         [user.email_id],
                     )
             EmailThread(sendMail).start()
