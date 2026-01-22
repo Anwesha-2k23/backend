@@ -8,8 +8,10 @@ from anwesha.settings import CONFIGURATION, S3_ENABLED, GCP_STORAGE_ENABLED
 from utility import generate_qr, createId, hashpassword, hash_id
 from django.core.files.storage import FileSystemStorage
 
-# Conditionally import S3 storage only if enabled
-if S3_ENABLED:
+# Conditionally import storage backends
+if GCP_STORAGE_ENABLED:
+    from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
+elif S3_ENABLED:
     from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 
 '''
@@ -61,9 +63,9 @@ class User(models.Model):
     profile = models.ImageField()
     # profile_photo and qr_code use cloud storage (GCS or S3) if enabled, otherwise local storage
     if GCP_STORAGE_ENABLED:
-        # When GCS is enabled, use default storage (configured via DEFAULT_FILE_STORAGE)
-        profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-        qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+        # Use custom storage backends with public ACL
+        profile_photo = models.ImageField(blank=True, null=True, storage=ProfileImageStorage())
+        qr_code = models.ImageField(blank=True, null=True, storage=PublicQrStorage())
     elif S3_ENABLED:
         profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
         qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)

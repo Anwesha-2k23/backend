@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import uuid
 import json
 import datetime
@@ -355,24 +355,6 @@ def resp(request):
     #   }
     #return JsonResponse(response_data)
     if decodedData['payInstrument']['extras']['udf5'] == 'team':
-        return render(request, "response.html", {
-            'transactiondate': transactiondate,
-            'banktransactionid': banktransactionid,
-            'invoice_number' : decodedData['payInstrument']['payDetails']['atomTxnId'],
-            'cust_email': decodedData['payInstrument']['custDetails']['custEmail'],
-            'cust_mobile': decodedData['payInstrument']['custDetails']['custMobile'],
-            'anwesha_id': decodedData['payInstrument']['extras']['udf4'],
-            'event_id': decodedData['payInstrument']['extras']['udf1'],
-            'amount': decodedData['payInstrument']['payDetails']['totalAmount'],
-            })
+        return redirect('https://anwesha.iitp.ac.in/events')
     else:
-        return render(request, "response.html", {
-            'transactiondate': transactiondate,
-            'banktransactionid': banktransactionid,
-            'invoice_number' : decodedData['payInstrument']['payDetails']['atomTxnId'],
-            'cust_email': decodedData['payInstrument']['custDetails']['custEmail'],
-            'cust_mobile': decodedData['payInstrument']['custDetails']['custMobile'],
-            'anwesha_id': decodedData['payInstrument']['extras']['udf2'],
-            'event_id': decodedData['payInstrument']['extras']['udf1'],
-            'amount': decodedData['payInstrument']['payDetails']['totalAmount'],
-            })
+        return redirect('https://anwesha.iitp.ac.in/events')

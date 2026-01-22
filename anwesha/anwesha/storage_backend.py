@@ -16,9 +16,16 @@ if settings.GCP_STORAGE_ENABLED:
             super().__init__(*args, **kwargs)
 
     class PublicQrStorage(GoogleCloudStorage):
+        """GCS storage for QR codes with public read access"""
         def __init__(self, *args, **kwargs):
             kwargs['location'] = 'static/qr'
             super().__init__(*args, **kwargs)
+        
+        def _save(self, name, content):
+            name = super()._save(name, content)
+            # Make the file publicly readable
+            self.bucket.blob(self.location + '/' + name).make_public()
+            return name
 
     class PublicGalleryStorage(GoogleCloudStorage):
         def __init__(self, *args, **kwargs):

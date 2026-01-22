@@ -364,6 +364,10 @@ class EditProfile(APIView):
         
         if CONFIGURATION == "local":
             qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+        elif CONFIGURATION == "gcp":
+            from django.conf import settings as django_settings
+            # Return direct GCS URL (QR codes are for authenticated users only via this endpoint)
+            qr_code = f'https://storage.googleapis.com/{django_settings.GCS_BUCKET_NAME}/{AWS_PUBLIC_MEDIA_LOCATION2}{user.qr_code}'
         else:
             qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
         
