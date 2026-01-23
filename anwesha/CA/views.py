@@ -78,9 +78,10 @@ class register(APIView):
         
 class Login(APIView):
     def get(self, request):
-        token = request.COOKIES.get('jwt')
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
+        token = auth_header.split(' ', 1)[1].strip()
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
         except jwt.ExpiredSignatureError:
@@ -130,9 +131,7 @@ class Login(APIView):
                 }
 
                 token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-
-                response.data = { "success" : True , "name" : this_ca.full_name}
-                response.set_cookie(key='jwt', value=token, httponly=True)
+                response.data = { "success" : True , "name" : this_ca.full_name, "token": token}
             else:
                 response.data = {
                     "message" : "Please verify email to log in to your account",
@@ -146,24 +145,23 @@ class Login(APIView):
 
 class LogOut(APIView):
     def post(self, request):
-        token = request.COOKIES.get('jwt')
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
-        else:
-            try:
-                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
-            try:
-                this_ca = Campus_ambassador.objects.get(ca_id = payload["id"]) 
-            except:
-                return JsonResponse({"message":"Invalid Token value"},status=401)
-            this_ca.is_loggedin = False
-            this_ca.save()
-            response = Response()
-            response.delete_cookie('jwt')
-            response.data = {'message': 'Logout Successful' , "status" : "200"}
-            return response
+        token = auth_header.split(' ', 1)[1].strip()
+        try:
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message":"Your token is expired please generate new one"},status=409) 
+        try:
+            this_ca = Campus_ambassador.objects.get(ca_id = payload["id"]) 
+        except:
+            return JsonResponse({"message":"Invalid Token value"},status=401)
+        this_ca.is_loggedin = False
+        this_ca.save()
+        response = Response()
+        response.data = {'message': 'Logout Successful' , "status" : "200"}
+        return response
 
 
 class leaderBoardData(View):
@@ -177,9 +175,10 @@ class leaderBoardData(View):
 
 class editProfile(APIView):
     def get(self, request):
-        token = request.COOKIES.get('jwt')
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
@@ -206,10 +205,10 @@ class editProfile(APIView):
         return response
 
     def post(self, request):
-        token = request.COOKIES.get('jwt')
-        
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "you are unauthenticated"} , status=401)
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')

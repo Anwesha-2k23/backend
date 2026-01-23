@@ -5,6 +5,9 @@ import datetime
 import requests
 import sys
 import re
+import os
+import hashlib
+import hmac
 from time import gmtime, strftime
 from atompay.AESCipher import *
 from django.http import HttpResponse
@@ -30,11 +33,10 @@ def payview(request):
         data = request.body
         payload = json.loads(data)
         #print(data)
-    token = request.COOKIES.get('jwt')
-    #print(token)
-
-    if not token:
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+    token = auth_header.split(' ', 1)[1].strip()
 
     try:
         payload_jwt = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
@@ -48,8 +50,8 @@ def payview(request):
     try:
         amount = payload.get('amount')
         merchTxnId = uuid.uuid4().hex[:12]
-        merchId = '564719'
-        password = 'b5d2bc5e'
+        merchId = os.getenv('ATOM_MERCHANT_ID', '564719')
+        password = os.getenv('ATOM_MERCHANT_PASSWORD', 'b5d2bc5e')
         product = 'STUDENT'
         custEmail = payload.get('email')
         custMobile = payload.get('phone')
@@ -194,16 +196,33 @@ def resp(request):
     if not rawData:
         return JsonResponse({"message": "Missing encData"}, status=400)
     
-    reskey = '66F34D46E547C535047F3465E640F32B'
+    print(f"DEBUG PAYMENT RESPONSE RECEIVED: Processing payment response...")
+    
+    reskey = os.getenv('ATOM_RESPONSE_KEY', '66F34D46E547C535047F3465E640F32B')
     #print(rawData)
     cipher = AESCipher('self')
-    decrypted = cipher.decrypt(rawData)
+    try:
+        decrypted = cipher.decrypt(rawData)
+        print(f"DEBUG PAYMENT: Decryption successful")
+    except Exception as e:
+        print(f"DEBUG PAYMENT ERROR: Decryption failed - {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"message": "Decryption error"}, status=400)
 
-    jstring = decrypted
-    decodedData = json.loads(jstring)
+    try:
+        jstring = decrypted
+        decodedData = json.loads(jstring)
+        print(f"DEBUG PAYMENT: JSON decode successful, status code: {decodedData.get('payInstrument', {}).get('responseDetails', {}).get('statusCode', 'UNKNOWN')}")
+    except Exception as e:
+        print(f"DEBUG PAYMENT ERROR: JSON decode failed - {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"message": "JSON decode error"}, status=400)
 
     # # In below response ['payInstrument']['responseDetails']['statusCode'] is important to know if payment status is success or fail. You can redirect users to your custom Js page accordingly.
     if decodedData['payInstrument']['responseDetails']['statusCode'] == "OTS0000":
+        print(f"DEBUG PAYMENT: Status code is OTS0000 (success), proceeding with signature validation")
        
         #print("All Response Data:")
         #print(decodedData)
@@ -236,7 +255,9 @@ def resp(request):
                 try:
                     user = User.objects.get(anwesha_id = decodedData['payInstrument']['extras']['udf2'])
                     event = Events.objects.get(id = decodedData['payInstrument']['extras']['udf1'])
-                except:
+                    print(f"DEBUG PAYMENT RESPONSE: User {user.anwesha_id} (type: {user.user_type}, email: {user.email_id}) registering for event {event.id}")
+                except Exception as e:
+                    print(f"DEBUG PAYMENT RESPONSE ERROR: Failed to get user/event - {e}")
                     return JsonResponse({"message":"User or event does not exist"},status=403)
                     #print("user or event does not exist")
                 try:
@@ -246,6 +267,7 @@ def resp(request):
                         payment_done = True
                     )
                     this_person.save()
+                    print(f"DEBUG PAYMENT: Successfully created SoloParticipant record ID {this_person.id} for user {user.anwesha_id}")
                     
                     paymentinstance = Payments.objects.create(
                         anwesha_id = user,
@@ -258,9 +280,12 @@ def resp(request):
                     )
                     
                     paymentinstance.save()
+                    print(f"DEBUG PAYMENT: Successfully created Payment record ID {paymentinstance.id}")
                     
                 except Exception as error:
-                    #print(error)
+                    print(f"DEBUG PAYMENT ERROR: Failed to create registration - {error}")
+                    import traceback
+                    traceback.print_exc()
                     return JsonResponse({"message":"internal server error"},status=500)
             elif decodedData['payInstrument']['extras']['udf5'] == "team":
                 #team_members_str = eval(decodedData['payInstrument']['extras']['udf2'])

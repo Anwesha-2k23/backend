@@ -1,6 +1,6 @@
 import shutil
 from multiprocessing import AuthenticationError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .models import User,AppUsers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -37,10 +37,11 @@ class EmailThread(threading.Thread):
 @method_decorator(csrf_exempt, name='dispatch')
 class AppLogin(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
-    
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
@@ -106,8 +107,6 @@ class AppLogin(APIView):
                     "token":token,
                     "status": 200
                 }
-
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
         else:
             return JsonResponse({"message": "Incorrect credentials."}, status=401)
@@ -122,12 +121,13 @@ from django.utils.decorators import method_decorator
 @method_decorator(csrf_exempt, name='dispatch')
 class Login(APIView):
     def get(self, request):
-        # Retrieve the token from the request cookies
-        token = request.COOKIES.get('jwt')
-
-        if not token:
+        # Retrieve the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             # Return an error response if the token is not present
             return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             # Decode the token using the secret key
@@ -195,6 +195,8 @@ class Login(APIView):
         this_user = user.first()
 
         if user:
+            # DEBUG: Log verification status
+            print(f"DEBUG LOGIN: User {this_user.anwesha_id}, email_verified={this_user.is_email_verified}, user_type={this_user.user_type}")
             if this_user.is_email_verified:
                 # Create a JWT token for the authenticated user
                 payload = {
@@ -222,9 +224,6 @@ class Login(APIView):
                     "status": 200,
                     "token":token
                 }
-
-                # Set the JWT token as a cookie in the response
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
             else:
                 # Return an error response if the user's email is not verified
@@ -239,40 +238,35 @@ class Login(APIView):
 
 class LogOut(APIView):
     def post(self, request):
-        # Retrieve the token from the request cookies
-        token = request.COOKIES.get('jwt')
-        # print(token)
-        if not token:
+        # Retrieve the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return Response({"message":"Unauthenticated"},status=401)
+        token = auth_header.split(' ', 1)[1].strip()
+        
+        try:
+            # Decode the token using the secret key
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            # Raise an AuthenticationError if the token has expired
+            raise AuthenticationError("Cookie Expired")
+
+        id = payload["id"]
+        if "SUPER" in id:
+            user = AppUsers.objects.get(id = id)
+            user.is_logged_in = False
+            user.save()
         else:
-            try:
-                # Decode the token using the secret key
-                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
-            except jwt.ExpiredSignatureError:
-                # Raise an AuthenticationError if the token has expired
-                raise AuthenticationError("Cookie Expired")
-
-            id = payload["id"]
-            if "SUPER" in id:
-                user = AppUsers.objects.get(id = id)
-                user.is_logged_in = False
-                user.save()
-            else:
-                user = User.objects.get(anwesha_id=payload["id"])
-
+            user = User.objects.get(anwesha_id=payload["id"])
             # Update the user's logged-in status and save the user object
-                user.is_loggedin = False
-                user.save()
+            user.is_loggedin = False
+            user.save()
 
-            # Create a response object
-            response = Response()
+        # Create a response object
+        response = Response()
 
-            # Delete the 'jwt' cookie from the response
-            response.delete_cookie(key='jwt',samesite='None')
-            #response.delete_cookie('jwt')
-
-            response.data = {'message': 'Logout Successful', "status": "200"}
-            return response
+        response.data = {'message': 'Logout Successful', "status": "200"}
+        return response
 
 class Register(APIView):
     def post(self, request):
@@ -316,9 +310,16 @@ class Register(APIView):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message": "Please enter a proper user type"}, status=403)
-            pattern = r"^[a-zA-Z0-9]+_\d{2}[a-zA-Z]\d{2}res\d+@iitp\.ac\.in$"
-            if re.match(pattern, email_id):
-                user_type = User.User_type_choice.STUDENT
+            
+            # Validate IITP email format
+            if email_id.endswith("@iitp.ac.in"):
+                # Valid IITP_STUDENT: firstname_2301mc40@iitp.ac.in or 2301mc40@iitp.ac.in
+                # Roll format: exactly 4 digits + 2 letters + 2 digits
+                valid_iitp_pattern = r"^(?:[a-zA-Z0-9]+_)?(\d{4}[a-zA-Z]{2}\d{2})@iitp\.ac\.in$"
+                
+                if not re.match(valid_iitp_pattern, email_id):
+                    # Any non-standard IITP email format forces to STUDENT
+                    user_type = User.User_type_choice.STUDENT
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)
 
@@ -455,9 +456,22 @@ class SendVerificationEmail(APIView):
 
 
 def verifyEmail(request, *args, **kwargs):
-    if request.method == 'GET':
-        token = kwargs['pk']
+    token = kwargs['pk']
 
+    # First hop (GET) only renders a confirmation form to prevent scanners from auto-verifying
+    if request.method == 'GET':
+        html = f"""
+        <html><body>
+        <h3>Email Verification</h3>
+        <p>Click the button below to verify your email.</p>
+        <form method='POST'>
+          <button type='submit'>Verify Email</button>
+        </form>
+        </body></html>
+        """
+        return HttpResponse(html)
+
+    if request.method == 'POST':
         try:
             # Decode the token using the provided encryption secret
             jwt_payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
@@ -475,6 +489,8 @@ def verifyEmail(request, *args, **kwargs):
             return JsonResponse({"message": "Invalid token"}, status=401)
 
         return redirect('https://anwesha.iitp.ac.in/userLogin')
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
 class ForgetPassword(APIView):
@@ -587,10 +603,9 @@ class Oauth_Login(APIView):
                     }
             response = Response()
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-            response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
-            response.data={'user':'logged in','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            response.data={'user':'logged in','username':username,'first_name':first_name, 'last_name':last_name,'email':email, 'token': token}
             return response
         else:
             anwesha_id = createId("ANW", 7)
@@ -615,20 +630,19 @@ class Oauth_Login(APIView):
                     }
             response = Response()
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-            response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
-            response.data={'user':'registered','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            response.data={'user':'registered','username':username,'first_name':first_name, 'last_name':last_name,'email':email, 'token': token}
             return response
 
     # return JsonResponse({'status':'success' },safe=False)
 
 class Oauth_Logout(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             raise AuthenticationError("Unauthenticated")
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
@@ -639,5 +653,4 @@ class Oauth_Logout(APIView):
         user.is_loggedin=False
         user.save()
         response = Response()
-        response.delete_cookie('jwt')
         return response

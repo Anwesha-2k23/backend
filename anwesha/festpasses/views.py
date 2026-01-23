@@ -132,10 +132,10 @@ def payview(request):
     if request.method == 'POST':
         data = request.body
         payload = json.loads(data)
-    token = request.COOKIES.get('jwt')
-
-    if not token:
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({"message": "you are unauthenticated , Please Log in First"} , status=401)
+    token = auth_header.split(' ', 1)[1].strip()
 
     try:
         payload_jwt = jwt.decode(token,COOKIE_ENCRYPTION_SECRET , algorithms = 'HS256')
