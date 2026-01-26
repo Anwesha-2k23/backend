@@ -655,3 +655,115 @@ class Oauth_Logout(APIView):
         user.save()
         response = Response()
         return response
+
+
+class UserRegistrations(APIView):
+    @Autherize()
+    def get(self, request, **kwargs):
+        """
+        Get all registrations (solo, team, festpass) for the authenticated user
+        Includes team member details for team registrations
+        """
+        from event.models import SoloParicipants, Team, TeamParticipant, Events
+        from festpasses.models import FestPasses
+        
+        user = kwargs['user']
+        
+        # Solo registrations
+        solo_regs = SoloParicipants.objects.filter(anwesha_id=user).select_related('event_id')
+        solo_data = []
+        for reg in solo_regs:
+            solo_data.append({
+                "registration_id": reg.id,
+                "event_id": reg.event_id.id,
+                "event_name": reg.event_id.name,
+                "event_category": reg.event_id.get_tags_display() if reg.event_id.tags else None,
+                "payment_done": reg.payment_done,
+                "has_entered": reg.has_entered,
+                "registration_fee": float(reg.event_id.registration_fee)
+            })
+        
+        # Team registrations - where user is team leader
+        team_leader = Team.objects.filter(leader_id=user).select_related('event_id')
+        team_data = []
+        for team in team_leader:
+            # Get all team members
+            members = TeamParticipant.objects.filter(team_id=team).select_related('anwesha_id')
+            member_data = []
+            for member in members:
+                member_data.append({
+                    "anwesha_id": member.anwesha_id.anwesha_id,
+                    "full_name": member.anwesha_id.full_name,
+                    "email": member.anwesha_id.email_id,
+                    "has_entered": member.has_entered
+                })
+            
+            team_data.append({
+                "team_id": team.team_id,
+                "team_name": team.team_name,
+                "event_id": team.event_id.id,
+                "event_name": team.event_id.name,
+                "event_category": team.event_id.get_tags_display() if team.event_id.tags else None,
+                "is_leader": True,
+                "payment_done": team.payment_done,
+                "registration_fee": float(team.event_id.registration_fee),
+                "team_members": member_data
+            })
+        
+        # Team registrations - where user is a team member (not leader)
+        team_member = TeamParticipant.objects.filter(anwesha_id=user).exclude(
+            team_id__leader_id=user
+        ).select_related('team_id', 'team_id__event_id', 'team_id__leader_id')
+        
+        for tp in team_member:
+            team = tp.team_id
+            # Get all team members for this team
+            members = TeamParticipant.objects.filter(team_id=team).select_related('anwesha_id')
+            member_data = []
+            for member in members:
+                member_data.append({
+                    "anwesha_id": member.anwesha_id.anwesha_id,
+                    "full_name": member.anwesha_id.full_name,
+                    "email": member.anwesha_id.email_id,
+                    "has_entered": member.has_entered
+                })
+            
+            team_data.append({
+                "team_id": team.team_id,
+                "team_name": team.team_name,
+                "event_id": team.event_id.id,
+                "event_name": team.event_id.name,
+                "event_category": team.event_id.get_tags_display() if team.event_id.tags else None,
+                "is_leader": False,
+                "leader_anwesha_id": team.leader_id.anwesha_id,
+                "leader_name": team.leader_id.full_name,
+                "payment_done": team.payment_done,
+                "registration_fee": float(team.event_id.registration_fee),
+                "team_members": member_data
+            })
+        
+        # Fest pass
+        festpass_data = None
+        try:
+            festpass = FestPasses.objects.get(anwesha_id=user)
+            festpass_data = {
+                "pass_id": festpass.id,
+                "transaction_id": festpass.transaction_id,
+                "payment_done": festpass.payment_done,
+                "has_entered": festpass.has_entered,
+                "amount": 899.00
+            }
+        except FestPasses.DoesNotExist:
+            pass
+        
+        return JsonResponse({
+            "status": "success",
+            "user": {
+                "anwesha_id": user.anwesha_id,
+                "full_name": user.full_name,
+                "email": user.email_id
+            },
+            "solo_registrations": solo_data,
+            "team_registrations": team_data,
+            "festpass": festpass_data
+        }, status=200)
