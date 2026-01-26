@@ -310,15 +310,16 @@ class Register(APIView):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message": "Please enter a proper user type"}, status=403)
-            
-            # Validate IITP email format
+            # Enforce strict IITP email pattern: either firstname_roll or roll_name
             if email_id.endswith("@iitp.ac.in"):
-                # Valid IITP_STUDENT: firstname_2301mc40@iitp.ac.in or 2301mc40@iitp.ac.in
-                # Roll format: exactly 4 digits + 2 letters + 2 digits
-                valid_iitp_pattern = r"^(?:[a-zA-Z0-9]+_)?(\d{4}[a-zA-Z]{2}\d{2})@iitp\.ac\.in$"
-                
-                if not re.match(valid_iitp_pattern, email_id):
-                    # Any non-standard IITP email format forces to STUDENT
+                roll_pattern = r"\d{4}[a-zA-Z]{2}\d{2}"  # 4 digits + 2 letters + 2 digits
+                pattern_first_roll = rf"^[a-zA-Z0-9]+_{roll_pattern}@iitp\.ac\.in$"
+                pattern_roll_first = rf"^{roll_pattern}_[a-zA-Z0-9]+@iitp\.ac\.in$"
+
+                if re.match(pattern_first_roll, email_id) or re.match(pattern_roll_first, email_id):
+                    user_type = User.User_type_choice.IITP_STUDENT
+                else:
+                    # Any non-conforming IITP email is treated as regular STUDENT
                     user_type = User.User_type_choice.STUDENT
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)

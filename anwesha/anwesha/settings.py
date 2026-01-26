@@ -322,6 +322,8 @@ JET_THEMES = [
 
 WEBSITE_HOST = env('WEBSITE_HOST', default='localhost')
 COOKIE_ENCRYPTION_SECRET = env('COOKIE_SECRET')
+# Atom payment response signature key (kept in secret manager)
+ATOM_RESPONSE_KEY = env('ATOM_RESPONSE_KEY', default='')
 
 # GCP specific settings
 GCP_PROJECT_ID = env('GCP_PROJECT_ID', default='anwesha-26-472317')
