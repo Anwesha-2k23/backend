@@ -4,12 +4,15 @@ from hashlib import blake2b
 from re import T
 from secrets import choice
 from django.db import models
+from django.core.validators import RegexValidator
 from anwesha.settings import CONFIGURATION, S3_ENABLED, GCP_STORAGE_ENABLED
 from utility import generate_qr, createId, hashpassword, hash_id
 from django.core.files.storage import FileSystemStorage
 
-# Conditionally import S3 storage only if enabled
-if S3_ENABLED:
+# Conditionally import storage backends
+if GCP_STORAGE_ENABLED:
+    from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
+elif S3_ENABLED:
     from anwesha.storage_backend import ProfileImageStorage, PublicQrStorage
 
 '''
@@ -61,9 +64,9 @@ class User(models.Model):
     profile = models.ImageField()
     # profile_photo and qr_code use cloud storage (GCS or S3) if enabled, otherwise local storage
     if GCP_STORAGE_ENABLED:
-        # When GCS is enabled, use default storage (configured via DEFAULT_FILE_STORAGE)
-        profile_photo = models.ImageField(blank=True, null=True, upload_to="static/profile")
-        qr_code = models.ImageField(blank=True, null=True, upload_to="static/qr")
+        # Use custom storage backends with public ACL
+        profile_photo = models.ImageField(blank=True, null=True, storage=ProfileImageStorage())
+        qr_code = models.ImageField(blank=True, null=True, storage=PublicQrStorage())
     elif S3_ENABLED:
         profile_photo = models.ImageField(blank=True,null=True,storage=ProfileImageStorage)
         qr_code = models.ImageField(blank=True,null=True,storage=PublicQrStorage)
@@ -125,3 +128,22 @@ class AppUsers(models.Model):
                 check_exist = AppUsers.objects.filter(id=self.id)
             self.password = hashpassword(self.password)
             super(AppUsers,self).save(*args,**kwargs)
+
+
+class AadhaarDetail(models.Model):
+    aadhaar_validator = RegexValidator(
+        regex=r"^\d{12}$",
+        message="Aadhaar number must be exactly 12 digits"
+    )
+
+    anwesha_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="aadhaar_detail")
+    aadhaar_number = models.CharField(max_length=12, unique=True, validators=[aadhaar_validator])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.anwesha_user.anwesha_id} - {self.aadhaar_number}"
+
+    class Meta:
+        verbose_name = "Aadhaar Detail"
+        verbose_name_plural = "Aadhaar Details"

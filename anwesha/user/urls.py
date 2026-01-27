@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views  import EditProfile, Register , ForgetPassword, verifyEmail , SendVerificationEmail, RegenerateQR,Login ,LogOut,AppLogin
+from .views  import EditProfile, Register , ForgetPassword, verifyEmail , SendVerificationEmail, RegenerateQR,Login ,LogOut,AppLogin, UserRegistrations
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import views as auth_views
 
@@ -13,4 +13,5 @@ user_urls = [
     path('verifyemail' , SendVerificationEmail.as_view(), name='send_verificaion_email'),
     path('verifyemail/<str:pk>' , verifyEmail , name='verifyEmail' ),
     path('regenerateqr/', RegenerateQR.as_view(), name='regenerateqr'),
+    path('registrations/', UserRegistrations.as_view(), name='user_registrations'),
 ]

@@ -64,8 +64,6 @@ def register(request):
         if User.objects.filter(email_id=email_id).exists():
             # return anwesha id of the user
             existing_user = User.objects.get(email_id=email_id)
-            existing_user.is_email_verified = True
-            existing_user.save()
             return JsonResponse(
                 {
                     "Anwesha_id": existing_user.anwesha_id,
@@ -74,8 +72,6 @@ def register(request):
             )
         if User.objects.filter(phone_number=phone_number).exists():
             existing_user = User.objects.get(phone_number=phone_number)
-            existing_user.is_email_verified = True
-            existing_user.save()
             return JsonResponse(
                 {
                     "Anwesha_id": existing_user.anwesha_id,
@@ -105,7 +101,7 @@ def register(request):
             email_id=email_id,
             password=password,
             phone_number=phone_number,
-            is_email_verified=True,
+            is_email_verified=False,
             user_type=user_type,
             collage_name=college_name,
         )

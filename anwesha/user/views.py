@@ -1,7 +1,7 @@
 import shutil
 from multiprocessing import AuthenticationError
-from django.http import JsonResponse
-from .models import User,AppUsers
+from django.http import JsonResponse, HttpResponse
+from .models import User, AppUsers, AadhaarDetail
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
@@ -37,10 +37,11 @@ class EmailThread(threading.Thread):
 @method_decorator(csrf_exempt, name='dispatch')
 class AppLogin(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
-    
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
@@ -106,8 +107,6 @@ class AppLogin(APIView):
                     "token":token,
                     "status": 200
                 }
-
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
         else:
             return JsonResponse({"message": "Incorrect credentials."}, status=401)
@@ -122,12 +121,13 @@ from django.utils.decorators import method_decorator
 @method_decorator(csrf_exempt, name='dispatch')
 class Login(APIView):
     def get(self, request):
-        # Retrieve the token from the request cookies
-        token = request.COOKIES.get('jwt')
-
-        if not token:
+        # Retrieve the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             # Return an error response if the token is not present
             return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             # Decode the token using the secret key
@@ -195,6 +195,8 @@ class Login(APIView):
         this_user = user.first()
 
         if user:
+            # DEBUG: Log verification status
+            print(f"DEBUG LOGIN: User {this_user.anwesha_id}, email_verified={this_user.is_email_verified}, user_type={this_user.user_type}")
             if this_user.is_email_verified:
                 # Create a JWT token for the authenticated user
                 payload = {
@@ -222,9 +224,6 @@ class Login(APIView):
                     "status": 200,
                     "token":token
                 }
-
-                # Set the JWT token as a cookie in the response
-                response.set_cookie(key='jwt', value=token, httponly=True, samesite="None",secure=True)
                 return response
             else:
                 # Return an error response if the user's email is not verified
@@ -239,40 +238,35 @@ class Login(APIView):
 
 class LogOut(APIView):
     def post(self, request):
-        # Retrieve the token from the request cookies
-        token = request.COOKIES.get('jwt')
-        # print(token)
-        if not token:
+        # Retrieve the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             return Response({"message":"Unauthenticated"},status=401)
+        token = auth_header.split(' ', 1)[1].strip()
+        
+        try:
+            # Decode the token using the secret key
+            payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            # Raise an AuthenticationError if the token has expired
+            raise AuthenticationError("Cookie Expired")
+
+        id = payload["id"]
+        if "SUPER" in id:
+            user = AppUsers.objects.get(id = id)
+            user.is_logged_in = False
+            user.save()
         else:
-            try:
-                # Decode the token using the secret key
-                payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
-            except jwt.ExpiredSignatureError:
-                # Raise an AuthenticationError if the token has expired
-                raise AuthenticationError("Cookie Expired")
-
-            id = payload["id"]
-            if "SUPER" in id:
-                user = AppUsers.objects.get(id = id)
-                user.is_logged_in = False
-                user.save()
-            else:
-                user = User.objects.get(anwesha_id=payload["id"])
-
+            user = User.objects.get(anwesha_id=payload["id"])
             # Update the user's logged-in status and save the user object
-                user.is_loggedin = False
-                user.save()
+            user.is_loggedin = False
+            user.save()
 
-            # Create a response object
-            response = Response()
+        # Create a response object
+        response = Response()
 
-            # Delete the 'jwt' cookie from the response
-            response.delete_cookie(key='jwt',samesite='None')
-            #response.delete_cookie('jwt')
-
-            response.data = {'message': 'Logout Successful', "status": "200"}
-            return response
+        response.data = {'message': 'Logout Successful', "status": "200"}
+        return response
 
 class Register(APIView):
     def post(self, request):
@@ -287,6 +281,7 @@ class Register(APIView):
             phone_number = request.data['phone_number']
             college_name = request.data['college_name']
             user_type = request.data['user_type']
+            aadhaar_number = request.data.get('aadhaar_number')
 
             """
             Data validation
@@ -300,6 +295,14 @@ class Register(APIView):
 
             if User.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'A user with the same phone number already exists', 'status': '409'}, status=409)
+
+            # Aadhaar validation
+            if not aadhaar_number:
+                return JsonResponse({'message': 'Aadhaar number is required', 'status': '409'}, status=409)
+            if not re.match(r'^\d{12}$', aadhaar_number):
+                return JsonResponse({'message': 'Aadhaar number must be exactly 12 digits', 'status': '409'}, status=409)
+            if AadhaarDetail.objects.filter(aadhaar_number=aadhaar_number).exists():
+                return JsonResponse({'message': 'This Aadhaar number is already registered', 'status': '409'}, status=409)
 
             """
             Assigning user types
@@ -316,9 +319,17 @@ class Register(APIView):
                 user_type = User.User_type_choice.GUEST
             else:
                 return JsonResponse({"message": "Please enter a proper user type"}, status=403)
-            pattern = r"^[a-zA-Z0-9]+_\d{2}[a-zA-Z]\d{2}res\d+@iitp\.ac\.in$"
-            if re.match(pattern, email_id):
-                user_type = User.User_type_choice.STUDENT
+            # Enforce strict IITP email pattern: either firstname_roll or roll_name
+            if email_id.endswith("@iitp.ac.in"):
+                roll_pattern = r"\d{4}[a-zA-Z]{2}\d{2}"  # 4 digits + 2 letters + 2 digits
+                pattern_first_roll = rf"^[a-zA-Z0-9]+_{roll_pattern}@iitp\.ac\.in$"
+                pattern_roll_first = rf"^{roll_pattern}_[a-zA-Z0-9]+@iitp\.ac\.in$"
+
+                if re.match(pattern_first_roll, email_id) or re.match(pattern_roll_first, email_id):
+                    user_type = User.User_type_choice.IITP_STUDENT
+                else:
+                    # Any non-conforming IITP email is treated as regular STUDENT
+                    user_type = User.User_type_choice.STUDENT
         except KeyError:
             return JsonResponse({"message": "Required form data not received"}, status=401)
 
@@ -334,6 +345,12 @@ class Register(APIView):
         )
         new_user.save()
 
+        # Create Aadhaar detail
+        AadhaarDetail.objects.create(
+            anwesha_user=new_user,
+            aadhaar_number=aadhaar_number
+        )
+
         # Prepare and send an email
         
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
@@ -342,7 +359,7 @@ class Register(APIView):
         sendMail = EmailMessage(
                     "No reply",
                     text,
-                    EMAIL_HOST_USER,
+                    EMAIL_HOST_USER.strip(),
                     [email_id],
                     )
         
@@ -364,8 +381,19 @@ class EditProfile(APIView):
         
         if CONFIGURATION == "local":
             qr_code = str(os.path.join(BASE_DIR,""))+str(user.qr_code)
+        elif CONFIGURATION == "gcp":
+            from django.conf import settings as django_settings
+            # Return direct GCS URL (QR codes are for authenticated users only via this endpoint)
+            qr_code = f'https://storage.googleapis.com/{django_settings.GCS_BUCKET_NAME}/{AWS_PUBLIC_MEDIA_LOCATION2}{user.qr_code}'
         else:
             qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+
+        # Aadhaar surface (masked if present)
+        aadhaar_obj = getattr(user, "aadhaar_detail", None)
+        aadhaar_number = None
+        if aadhaar_obj and aadhaar_obj.aadhaar_number:
+            # mask first 8 digits for display
+            aadhaar_number = f"XXXX XXXX {aadhaar_obj.aadhaar_number[-4:]}"
         
         response.data = {
             "anwesha_id": user.anwesha_id,
@@ -379,7 +407,8 @@ class EditProfile(APIView):
             "is_profile_completed": user.is_profile_completed,
             "profile_picture": str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": qr_code
+            "qr_code": qr_code,
+            "aadhaar_number": aadhaar_number
         }
         return response
 
@@ -409,6 +438,20 @@ class EditProfile(APIView):
 
         # Update profile photo if provided, otherwise retain the current value
         profile_photo = data.get('profile_photo', user.profile_photo)
+
+        # Optionally add Aadhaar if not present
+        aadhaar_number = data.get('aadhaar_number')
+        if aadhaar_number:
+            if hasattr(user, 'aadhaar_detail') and user.aadhaar_detail:
+                return Response({'message': 'Aadhaar already added'}, status=409)
+            if not re.match(r'^\d{12}$', str(aadhaar_number)):
+                return Response({'message': 'Aadhaar number must be exactly 12 digits'}, status=409)
+            if AadhaarDetail.objects.filter(aadhaar_number=aadhaar_number).exists():
+                return Response({'message': 'This Aadhaar number is already registered'}, status=409)
+            AadhaarDetail.objects.create(
+                anwesha_user=user,
+                aadhaar_number=aadhaar_number
+            )
 
         # Update the user object with the new data
         user.full_name = full_name
@@ -451,9 +494,22 @@ class SendVerificationEmail(APIView):
 
 
 def verifyEmail(request, *args, **kwargs):
-    if request.method == 'GET':
-        token = kwargs['pk']
+    token = kwargs['pk']
 
+    # First hop (GET) only renders a confirmation form to prevent scanners from auto-verifying
+    if request.method == 'GET':
+        html = f"""
+        <html><body>
+        <h3>Email Verification</h3>
+        <p>Click the button below to verify your email.</p>
+        <form method='POST'>
+          <button type='submit'>Verify Email</button>
+        </form>
+        </body></html>
+        """
+        return HttpResponse(html)
+
+    if request.method == 'POST':
         try:
             # Decode the token using the provided encryption secret
             jwt_payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
@@ -471,6 +527,8 @@ def verifyEmail(request, *args, **kwargs):
             return JsonResponse({"message": "Invalid token"}, status=401)
 
         return redirect('https://anwesha.iitp.ac.in/userLogin')
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
 class ForgetPassword(APIView):
@@ -504,10 +562,11 @@ class ForgetPassword(APIView):
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
             
 
+            from anwesha.settings import EMAIL_HOST_USER
             sendMail = EmailMessage(
-                        "No reply",
+                        "Reset Password - Anwesha",
                         text,
-                        "anwesha.backed@gmail.com",
+                        EMAIL_HOST_USER.strip(),
                         [user.email_id],
                     )
             EmailThread(sendMail).start()
@@ -582,10 +641,9 @@ class Oauth_Login(APIView):
                     }
             response = Response()
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-            response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
-            response.data={'user':'logged in','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            response.data={'user':'logged in','username':username,'first_name':first_name, 'last_name':last_name,'email':email, 'token': token}
             return response
         else:
             anwesha_id = createId("ANW", 7)
@@ -610,20 +668,19 @@ class Oauth_Login(APIView):
                     }
             response = Response()
             token = jwt.encode(payload, COOKIE_ENCRYPTION_SECRET, algorithm = 'HS256')
-            response.set_cookie(key='jwt', value=token, httponly=True)
             user.is_loggedin=True
             user.save()
-            response.data={'user':'registered','username':username,'first_name':first_name, 'last_name':last_name,'email':email}
+            response.data={'user':'registered','username':username,'first_name':first_name, 'last_name':last_name,'email':email, 'token': token}
             return response
 
     # return JsonResponse({'status':'success' },safe=False)
 
 class Oauth_Logout(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
             raise AuthenticationError("Unauthenticated")
+        token = auth_header.split(' ', 1)[1].strip()
 
         try:
             payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms = 'HS256')
@@ -634,5 +691,116 @@ class Oauth_Logout(APIView):
         user.is_loggedin=False
         user.save()
         response = Response()
-        response.delete_cookie('jwt')
         return response
+
+
+class UserRegistrations(APIView):
+    @Autherize()
+    def get(self, request, **kwargs):
+        """
+        Get all registrations (solo, team, festpass) for the authenticated user
+        Includes team member details for team registrations
+        """
+        from event.models import SoloParicipants, Team, TeamParticipant, Events
+        from festpasses.models import FestPasses
+        
+        user = kwargs['user']
+        
+        # Solo registrations
+        solo_regs = SoloParicipants.objects.filter(anwesha_id=user).select_related('event_id')
+        solo_data = []
+        for reg in solo_regs:
+            solo_data.append({
+                "registration_id": reg.id,
+                "event_id": reg.event_id.id,
+                "event_name": reg.event_id.name,
+                "event_category": reg.event_id.get_tags_display() if reg.event_id.tags else None,
+                "payment_done": reg.payment_done,
+                "has_entered": reg.has_entered,
+                "registration_fee": float(reg.event_id.registration_fee)
+            })
+        
+        # Team registrations - where user is team leader
+        team_leader = Team.objects.filter(leader_id=user).select_related('event_id')
+        team_data = []
+        for team in team_leader:
+            # Get all team members
+            members = TeamParticipant.objects.filter(team_id=team).select_related('anwesha_id')
+            member_data = []
+            for member in members:
+                member_data.append({
+                    "anwesha_id": member.anwesha_id.anwesha_id,
+                    "full_name": member.anwesha_id.full_name,
+                    "email": member.anwesha_id.email_id,
+                    "has_entered": member.has_entered
+                })
+            
+            team_data.append({
+                "team_id": team.team_id,
+                "team_name": team.team_name,
+                "event_id": team.event_id.id,
+                "event_name": team.event_id.name,
+                "event_category": team.event_id.get_tags_display() if team.event_id.tags else None,
+                "is_leader": True,
+                "payment_done": team.payment_done,
+                "registration_fee": float(team.event_id.registration_fee),
+                "team_members": member_data
+            })
+        
+        # Team registrations - where user is a team member (not leader)
+        team_member = TeamParticipant.objects.filter(anwesha_id=user).exclude(
+            team_id__leader_id=user
+        ).select_related('team_id', 'team_id__event_id', 'team_id__leader_id')
+        
+        for tp in team_member:
+            team = tp.team_id
+            # Get all team members for this team
+            members = TeamParticipant.objects.filter(team_id=team).select_related('anwesha_id')
+            member_data = []
+            for member in members:
+                member_data.append({
+                    "anwesha_id": member.anwesha_id.anwesha_id,
+                    "full_name": member.anwesha_id.full_name,
+                    "email": member.anwesha_id.email_id,
+                    "has_entered": member.has_entered
+                })
+            
+            team_data.append({
+                "team_id": team.team_id,
+                "team_name": team.team_name,
+                "event_id": team.event_id.id,
+                "event_name": team.event_id.name,
+                "event_category": team.event_id.get_tags_display() if team.event_id.tags else None,
+                "is_leader": False,
+                "leader_anwesha_id": team.leader_id.anwesha_id,
+                "leader_name": team.leader_id.full_name,
+                "payment_done": team.payment_done,
+                "registration_fee": float(team.event_id.registration_fee),
+                "team_members": member_data
+            })
+        
+        # Fest pass
+        festpass_data = None
+        try:
+            festpass = FestPasses.objects.get(anwesha_id=user)
+            festpass_data = {
+                "pass_id": festpass.id,
+                "transaction_id": festpass.transaction_id,
+                "payment_done": festpass.payment_done,
+                "has_entered": festpass.has_entered,
+                "amount": 899.00
+            }
+        except FestPasses.DoesNotExist:
+            pass
+        
+        return JsonResponse({
+            "status": "success",
+            "user": {
+                "anwesha_id": user.anwesha_id,
+                "full_name": user.full_name,
+                "email": user.email_id
+            },
+            "solo_registrations": solo_data,
+            "team_registrations": team_data,
+            "festpass": festpass_data
+        }, status=200)

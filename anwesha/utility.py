@@ -139,9 +139,10 @@ def get_anwesha_id(request):
     Returns:
         str: Anwesha ID of the user.
     """
-    token = request.COOKIES.get("jwt")
-    if not token:
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
         return None
+    token = auth_header.split(' ', 1)[1].strip()
     try:
         payload = jwt.decode(token, "ufdhufhufgefef", algorithms="HS256")
         id = payload["id"]
@@ -246,7 +247,7 @@ def export_all_as_csv(self, request, queryset):
 
 def check_token(request):
     """
-    Checks the token from the request's cookie.
+    Checks the token from the Authorization header.
 
     Args:
         request: Django request object.
@@ -254,10 +255,11 @@ def check_token(request):
     Returns:
         JsonResponse: JSON response with the token payload or an error message.
     """
-    token = request.COOKIES.get('jwt')
-
-    if not token:
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({"message": "you are unauthenticated, Please Log in First"}, status=401)
+
+    token = auth_header.split(' ', 1)[1].strip()
 
     try:
         payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')

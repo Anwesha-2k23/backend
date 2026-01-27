@@ -42,9 +42,10 @@ class Autherize:
         """
         def wrapper(*args, **kwargs):
             request = args[1]
-            token = request.COOKIES.get('jwt')
-            if not token:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
                 return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+            token = auth_header.split(' ', 1)[1].strip()
 
             try:
                 payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
@@ -166,10 +167,12 @@ class AppAutherize:
         """
         def wrapper(*args, **kwargs):
             request = args[1]
-            token = request.COOKIES.get('jwt')
+            auth_header = request.headers.get('Authorization')
             # print("got token successfully")
-            if not token:
+            if not auth_header or not auth_header.startswith('Bearer '):
                 return JsonResponse({"message": "You are unauthenticated. Please log in first."}, status=401)
+
+            token = auth_header.split(' ', 1)[1].strip()
 
             try:
                 payload = jwt.decode(token, COOKIE_ENCRYPTION_SECRET, algorithms='HS256')
