@@ -76,6 +76,11 @@ elif settings.S3_ENABLED:
         location = settings.AWS_PUBLIC_MEDIA_LOCATION4
         file_overwrite = False
         default_acl = "public-read"
+
+    class PosterFileStorage(S3Boto3Storage):
+        location = 'static/event_posters'
+        file_overwrite = False
+        default_acl = "public-read"
 else:
     # Use FileSystemStorage for local development, with base_url for proper .url generation
     class ProfileImageStorage(FileSystemStorage):
@@ -105,5 +110,11 @@ else:
     class MultiCityStorage(FileSystemStorage):
         def __init__(self, *args, **kwargs):
             kwargs['location'] = 'static/multicity'
+            kwargs['base_url'] = settings.STATIC_URL
+            super().__init__(*args, **kwargs)
+
+    class PosterFileStorage(FileSystemStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/event_posters'
             kwargs['base_url'] = settings.STATIC_URL
             super().__init__(*args, **kwargs)

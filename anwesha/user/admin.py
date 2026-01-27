@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User,AppUsers
+from .models import User,AppUsers, AadhaarDetail
 from utility import export_as_csv
 from .utility import mail_content
 from django.core.mail import EmailMessage
@@ -77,3 +77,10 @@ class AppUsersAdmin(admin.ModelAdmin):
     list_filter = ('is_logged_in',)  
     ordering = ('id',)
     readonly_fields = ('id',) 
+
+
+@admin.register(AadhaarDetail)
+class AadhaarDetailAdmin(admin.ModelAdmin):
+    list_display = ("anwesha_user", "aadhaar_number", "created_at", "updated_at")
+    search_fields = ("anwesha_user__anwesha_id", "aadhaar_number")
+    readonly_fields = ("created_at", "updated_at")
