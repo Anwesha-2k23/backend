@@ -1,7 +1,7 @@
 import shutil
 from multiprocessing import AuthenticationError
 from django.http import JsonResponse, HttpResponse
-from .models import User,AppUsers
+from .models import User, AppUsers, AadhaarDetail
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
@@ -281,6 +281,7 @@ class Register(APIView):
             phone_number = request.data['phone_number']
             college_name = request.data['college_name']
             user_type = request.data['user_type']
+            aadhaar_number = request.data.get('aadhaar_number')
 
             """
             Data validation
@@ -294,6 +295,14 @@ class Register(APIView):
 
             if User.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message': 'A user with the same phone number already exists', 'status': '409'}, status=409)
+
+            # Aadhaar validation
+            if not aadhaar_number:
+                return JsonResponse({'message': 'Aadhaar number is required', 'status': '409'}, status=409)
+            if not re.match(r'^\d{12}$', aadhaar_number):
+                return JsonResponse({'message': 'Aadhaar number must be exactly 12 digits', 'status': '409'}, status=409)
+            if AadhaarDetail.objects.filter(aadhaar_number=aadhaar_number).exists():
+                return JsonResponse({'message': 'This Aadhaar number is already registered', 'status': '409'}, status=409)
 
             """
             Assigning user types
@@ -336,6 +345,12 @@ class Register(APIView):
         )
         new_user.save()
 
+        # Create Aadhaar detail
+        AadhaarDetail.objects.create(
+            anwesha_user=new_user,
+            aadhaar_number=aadhaar_number
+        )
+
         # Prepare and send an email
         
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
@@ -372,6 +387,13 @@ class EditProfile(APIView):
             qr_code = f'https://storage.googleapis.com/{django_settings.GCS_BUCKET_NAME}/{AWS_PUBLIC_MEDIA_LOCATION2}{user.qr_code}'
         else:
             qr_code = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/' + AWS_PUBLIC_MEDIA_LOCATION2 + str(user.qr_code)
+
+        # Aadhaar surface (masked if present)
+        aadhaar_obj = getattr(user, "aadhaar_detail", None)
+        aadhaar_number = None
+        if aadhaar_obj and aadhaar_obj.aadhaar_number:
+            # mask first 8 digits for display
+            aadhaar_number = f"XXXX XXXX {aadhaar_obj.aadhaar_number[-4:]}"
         
         response.data = {
             "anwesha_id": user.anwesha_id,
@@ -385,7 +407,8 @@ class EditProfile(APIView):
             "is_profile_completed": user.is_profile_completed,
             "profile_picture": str(user.profile_photo),
             "user_type": user.user_type,
-            "qr_code": qr_code
+            "qr_code": qr_code,
+            "aadhaar_number": aadhaar_number
         }
         return response
 
@@ -415,6 +438,20 @@ class EditProfile(APIView):
 
         # Update profile photo if provided, otherwise retain the current value
         profile_photo = data.get('profile_photo', user.profile_photo)
+
+        # Optionally add Aadhaar if not present
+        aadhaar_number = data.get('aadhaar_number')
+        if aadhaar_number:
+            if hasattr(user, 'aadhaar_detail') and user.aadhaar_detail:
+                return Response({'message': 'Aadhaar already added'}, status=409)
+            if not re.match(r'^\d{12}$', str(aadhaar_number)):
+                return Response({'message': 'Aadhaar number must be exactly 12 digits'}, status=409)
+            if AadhaarDetail.objects.filter(aadhaar_number=aadhaar_number).exists():
+                return Response({'message': 'This Aadhaar number is already registered'}, status=409)
+            AadhaarDetail.objects.create(
+                anwesha_user=user,
+                aadhaar_number=aadhaar_number
+            )
 
         # Update the user object with the new data
         user.full_name = full_name
