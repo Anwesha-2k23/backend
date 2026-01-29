@@ -1,7 +1,7 @@
 from email.policy import default
 from enum import Enum, unique
 from hashlib import blake2b
-from re import T
+
 from secrets import choice
 from django.db import models
 from django.core.validators import RegexValidator
@@ -58,6 +58,9 @@ class User(models.Model):
     is_profile_completed = models.BooleanField(default=False)
     instagram_id = models.CharField(max_length=255, blank=True, null=True)
     facebook_id = models.CharField(max_length=255, blank=True, null=True)
+    myntraVerified = models.BooleanField(default=False)
+    myntraFestival = models.CharField(max_length=255, blank=True, null=True)
+    myntraVerifiedAt = models.DateTimeField(blank=True, null=True)
     time_of_registration = models.DateTimeField(auto_now_add=True)
     is_locked = models.BooleanField(default=False)
     is_loggedin = models.BooleanField(default=False)

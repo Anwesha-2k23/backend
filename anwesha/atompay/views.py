@@ -9,7 +9,7 @@ from time import gmtime, strftime
 from atompay.AESCipher import *
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import cgi
+
 import binascii
 import hmac
 import hashlib

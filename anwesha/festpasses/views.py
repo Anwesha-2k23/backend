@@ -56,6 +56,11 @@ class setStatus(APIView):
         id = request.data["signature"]
         try:
             user = User.objects.get(signature = id)
+            
+            # Check Myntra Verification
+            if not user.myntraVerified:
+                return JsonResponse({"message": "Entry Denied: You have not filled the Myntra Sponsor Form. Please fill it to verify your ticket.", "status": "403"}, status=403)
+
             anwesha_id = user.anwesha_id
             festobj = FestPasses.objects.filter(anwesha_id = anwesha_id).first()
             festobj.has_entered = True
@@ -340,5 +345,7 @@ def resp(request):
         'anwesha_id': decodedData['payInstrument']['extras']['udf2'],
         'event_id': decodedData['payInstrument']['extras']['udf1'],
         'amount': decodedData['payInstrument']['payDetails']['totalAmount'],
+        'myntra_url': 'https://myntra.onelink.me/dNYC/psb0vkzt',
+        'show_myntra_warning': True,
     })
 

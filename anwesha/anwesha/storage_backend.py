@@ -118,3 +118,9 @@ else:
             kwargs['location'] = 'static/event_posters'
             kwargs['base_url'] = settings.STATIC_URL
             super().__init__(*args, **kwargs)
+
+    class PosterFileStorage(FileSystemStorage):
+        def __init__(self, *args, **kwargs):
+            kwargs['location'] = 'static/event_posters'
+            kwargs['base_url'] = settings.STATIC_URL
+            super().__init__(*args, **kwargs)
