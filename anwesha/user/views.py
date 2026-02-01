@@ -355,15 +355,8 @@ class Register(APIView):
         
         text = mail_content(type=1, email_id=email_id, full_name=full_name, anwesha_id=new_user.anwesha_id)
         
-        from anwesha.settings import EMAIL_HOST_USER
-        sendMail = EmailMessage(
-                    "No reply",
-                    text,
-                    EMAIL_HOST_USER.strip(),
-                    [email_id],
-                    )
-        
-        EmailThread(sendMail).start()
+        from anwesha.email_rotation import EmailThreadRotated
+        EmailThreadRotated(email_id, "No reply", text).start()
         #send_email_using_microservice(
         #    email_id=email_id,
         #    subject="No reply",
@@ -562,14 +555,8 @@ class ForgetPassword(APIView):
             text = f'''Hello {user.full_name}!\nThis is the link to change your password. Click on it to update your password:\n{link}\nPS: Please don't share it with anyone.\nThanks,\nTeam Anwesha'''
             
 
-            from anwesha.settings import EMAIL_HOST_USER
-            sendMail = EmailMessage(
-                        "Reset Password - Anwesha",
-                        text,
-                        EMAIL_HOST_USER.strip(),
-                        [user.email_id],
-                    )
-            EmailThread(sendMail).start()
+            from anwesha.email_rotation import EmailThreadRotated
+            EmailThreadRotated(user.email_id, "Reset Password - Anwesha", text).start()
             # Send the email with the reset password link
             #send_email_using_microservice(email_id=request.data['email'], subject="Change password", text=text)
 
